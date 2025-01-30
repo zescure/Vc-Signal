@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>/VC data Forex GRATIS</title>
+    <style>
+        .preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85); /* Semi-transparent black overlay */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
+        }
+
+        /* Background image container */
+        .bg-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: -2;
+        }
+
+        /* Smoke effect overlay */
+        .smoke {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 10%, transparent 70%);
+            filter: blur(50px);
+            animation: smokeEffect 8s infinite alternate;
+            z-index: -1;
+        }
+
+        .forex-loader {
+            width: 120px;
+            height: 120px;
+            border: 4px solid #FFD700;
+            border-radius: 50%;
+            position: relative;
+            animation: rotate 2s linear infinite;
+        }
+
+        .forex-loader::before {
+            content: "FOREX";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #FFD700;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+        }
+
+        .forex-loader::after {
+            content: "";
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            border-radius: 50%;
+            border: 4px solid transparent;
+            border-top-color: #FFD700;
+            animation: rotate 1.7s linear infinite;
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            color: #FFD700;
+            font-family: Arial, sans-serif;
+            font-size: 18px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .progress {
+            width: 200px;
+            height: 4px;
+            background: rgba(51, 51, 51, 0.5);
+            margin-top: 20px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: #FFD700;
+            animation: progress 8s ease-in-out forwards;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes progress {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        @keyframes smokeEffect {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 0.3;
+            }
+            100% {
+                transform: translateY(-50px) scale(1.5);
+                opacity: 0.1;
+            }
+        }
+
+        .preloader.fade-out {
+            opacity: 0;
+        }
+
+        .content {
+            display: none;
+        }
+
+        .content.visible {
+            display: block;
+        }
+
+        /* File input styling */
+        .bg-control {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 20px;
+            z-index: 10000;
+        }
+
+        .bg-control label {
+            color: #FFD700;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .bg-control input {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Background image container -->
+    <div class="bg-image" id="bgImage"></div>
+
+    <!-- Smoke effect -->
+    <div class="smoke"></div>
+    <!-- Background control -->
+    <div class="bg-control">
+        <label for="bgInput">
+            
+            <input type="file" id="bgInput" accept="image/*">
+        </label>
+    </div
+    <!-- Preloader content -->
+    <div class="preloader" id="preloader">
+        <div class="forex-loader"></div>
+        <div class="loading-text">Loading VC Signal Forex...</div>
+        <div class="progress">
+            <div class="progress-bar"></div>
+        </div>
+    </div>
+
+    <script>
+        // Background image handler
+        const bgInput = document.getElementById('bgInput');
+        const bgImage = document.getElementById('bgImage');
+
+        bgInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    bgImage.style.backgroundImage = `url(${e.target.result})`;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Preloader handler
+        window.addEventListener('load', function() {
+            const preloader = document.getElementById('preloader');
+            
+            setTimeout(function() {
+                preloader.classList.add('fade-out');
+                
+                setTimeout(function() {
+                    preloader.style.display = 'none';
+                }, 500);
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>/vc signal forex gratis</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #000; /* Latar belakang hitam */
+            color: #FFD700; /* Teks kuning keemasan */
+            text-align: center;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 400px;
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        .marquee-container {
+            background-color: #FFD700;
+            border-radius: 50px;
+            padding: 10px;
+            font-size: 14px;
+            color: black;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .btn {
+            background-color: #FFD700;
+            color: black;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 75px;
+            padding: 12px;
+            cursor: pointer;
+            border: none;
+            margin: 10px;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background-color: black;
+            color: #FFD700;
+            border: 2px solid #FFD700;
+        }
+
+        .tab-container {
+            background: linear-gradient(to right bottom, #222, #444);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: rgba(255, 215, 0, 0.5) 0px 2px 8px 0px;
+            margin-bottom: 20px;
+        }
+
+        .tab-container p {
+            background-color: #FFD700;
+            color: black;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .menu {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .menu a {
+            text-decoration: none;
+            color: #FFD700;
+            display: block;
+            text-align: center;
+            font-size: 14px;
+            width: 80px;
+        }
+
+        .menu img {
+            width: 70px;
+            border-radius: 10px;
+            box-shadow: rgba(255, 215, 0, 0.5) 0px 1px 5px 0px;
+        }
+        body {
+    position: relative;
+    overflow: ;
+}
+
+/* Gaya dasar */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #000; /* Hitam sebagai dasar */
+    color: #FFD700; /* Kuning keemasan */
+    margin: 0;
+    padding: 0;
+    min-height: 100vh; /* Memastikan halaman bisa di-scroll */
+    position: relative;
+}
+
+/* Efek Asap Kuning Bergerak */
+body::before {
+    content: "";
+    position: fixed; /* Tetap di latar belakang tanpa mengganggu scroll */
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 215, 0, 0.3) 10%, transparent 70%);
+    filter: blur(100px);
+    animation: smokeMove 10s infinite linear;
+    z-index: -1;
+}
+
+@keyframes smokeMove {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        transform: translate(50%, 50%) scale(1.5);
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="tab-container">
+    <meta name="viewport" content="width=device-width, initial-scale=0.5">
+    <title>Embed Website</title>
+    <style>
+        .container {
+            width: auto; /* Atur lebar */
+            height: 600px; /* Atur tinggi */
+            border: 1px solid #333; /* Tambahkan border */
+            overflow: hidden;
+        }
+        iframe {
+            width: 100%;
+            height: 80%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <h2>ALL DATA ANALIS (ONLY GOLD)</h2>
+    <h8>scroll untuk melihat data gold lain</h8>
+    <div class="container">
+        <iframe src="https://market-bulls.com/cot-report-gold/"></iframe>
+    </div>
+    <div class="container">
+    <div class="tab-container">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Embed Website</title>
+    <style>
+        .container {
+            width: auto; /* Atur lebar */
+            height: 1000px; /* Atur tinggi */
+            border: 0.6px solid #333; /* Tambahkan border */
+            overflow: hidden;
+        }
+        iframe {
+            width: 100%;
+            height: 80%;
+            border: none;
+        }
+    </style>
+
+    </div>
+    </div>
+    </div>
+    </div>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Popup Gambar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            height: 200vh; /* Simulasi halaman panjang untuk melihat efek scroll */
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            border-radius: 8px;
+            width: 50vw;
+            height: 50vh;
+            min-width: 300px;
+            min-height: 250px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .popup img {
+            max-width: 80%;
+            max-height: 50%;
+            border-radius: 5px;
+        }
+        .popup p {
+            margin: 10px 0;
+        }
+        .popup button {
+            margin-top: 10px;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            width: 80%;
+        }
+        .btn-paham {
+            background: gray;
+            color: white;
+            cursor: not-allowed;
+        }
+        .btn-lanjut {
+            background: blue;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="overlay" id="overlay"></div>
+
+    <div class="popup" id="popup">
+        <img src="https://www.icealion.co.tz/wp-content/uploads/2021/04/44190-under-construction-1.gif" alt="Gambar">
+        <p>Dear Pengguna , dimohon untuk bersabar dikarenakan konstruksi menu belum sepenuhnya lengkap</p>
+        <h7>update secara berkala dengan merefresh halaman</h7>
+        <button class="btn-lanjut" onclick="window.open('https://example.com', '_blank')">Lebih Lanjut</button>
+        <button class="btn-paham" id="btnPaham" disabled>Paham (8)</button>
+    </div>
+
+    <script>
+        let cooldownTime = 8;
+        let cooldownInterval;
+
+        window.onload = function() {
+            showPopup();
+        };
+
+        function showPopup() {
+            document.getElementById('popup').style.display = 'flex';
+            document.getElementById('overlay').style.display = 'block';
+            startCooldown();
+        }
+
+        function startCooldown() {
+            const btnPaham = document.getElementById('btnPaham');
+            btnPaham.disabled = true;
+            btnPaham.style.background = "gray";
+            btnPaham.style.cursor = "not-allowed";
+            btnPaham.textContent = `Paham (${cooldownTime})`;
+
+            cooldownInterval = setInterval(() => {
+                cooldownTime--;
+                btnPaham.textContent = `Paham (${cooldownTime})`;
+                if (cooldownTime <= 0) {
+                    clearInterval(cooldownInterval);
+                    btnPaham.disabled = false;
+                    btnPaham.style.background = "green";
+                    btnPaham.style.cursor = "pointer";
+                    btnPaham.textContent = "Paham";
+                    btnPaham.onclick = closePopup;
+                }
+            }, 1000);
+        }
+
+        function closePopup() {
+            document.getElementById('popup').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        }
+    </script>
+
+</body>
+</html>
+<div class="container">
+    <div class="tab-container">
+    <meta name="viewport" content="width=device-width, initial-scale=0.5">
+    <title>Embed Website</title>
+    <style>
+        .container {
+            width: auto; /* Atur lebar */
+            height: 800px; /* Atur tinggi */
+            border: 1px solid #333; /* Tambahkan border */
+            overflow: hidden;
+        }
+        iframe {
+            width: 100%;
+            height: 80%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <h2>Kalkulator Ukuran Lot</h2>
+    <div class="container">
+        <iframe src="https://market-bulls.com/forex-lot-size-calculator/"></iframe>
+    </div>
+    <div class="container">
+    <div class="tab-container">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Embed Website</title>
+    <style>
+        .container {
+            width: auto; /* Atur lebar */
+            height: 800px; /* Atur tinggi */
+            border: 0.6px solid #333; /* Tambahkan border */
+            overflow: hidden;
+        }
+        iframe {
+            width: 100%;
+            height: 80%;
+            border: none;
+        }
+    </style>
+
+    </div>
+    </div>
+    </div>
+    </div>
+  </body>
