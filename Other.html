@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FX Signal Pro - Trading Signals</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.33/moment-timezone.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+        }
+
+        .navbar {
+            background-color: #1a1a1a;
+            color: white;
+            padding: 1rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 80px auto 20px;
+            padding: 0 20px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .chart-container {
+            height: 300px;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f8f9fa;
+        }
+
+        .positive {
+            color: #28a745;
+        }
+
+        .negative {
+            color: #dc3545;
+        }
+
+        .news-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .sentiment {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .sentiment.bullish {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .sentiment.bearish {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .sentiment.neutral {
+            background-color: #e2e3e5;
+            color: #383d41;
+        }
+
+        #clock {
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: right;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>FX Signal Pro</h1>
+            <div id="clock">Loading...</div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Market Analytics -->
+        <div class="grid">
+            <div class="card">
+                <h2>Analisis Pasar</h2>
+                <div class="chart-container">
+                    <canvas id="marketChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Volume Trading</h2>
+                <div class="chart-container">
+                    <canvas id="volumeChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- News and Sentimer Book -->
+        <div class="card">
+            <h2>Order Book</h2>
+            <table id="orderBook">
+                <thead>
+                    <tr>
+                        <th>Harga</th>
+                        <th>Volume</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Fungsi untuk mengupdate jam GMT+7
+        function updateClock() {
+            const jakartaTime = moment().tz('Asia/Jakarta');
+            document.getElementById('clock').textContent = jakartaTime.format('DD MMM YYYY HH:mm:ss [GMT+7]');
+        }
+        setInterval(updateClock, 1000);
+
+        // Fungsi untuk generate data random
+        function generateRandomData(min, max, count) {
+            return Array.from({length: count}, () => 
+                Math.floor(Math.random() * (max - min + 1)) + min
+            );
+        }
+
+        // Setup Market Chart
+        const marketCtx = document.getElementById('marketChart').getContext('2d');
+        const marketChart = new Chart(marketCtx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 24}, (_, i) => `${i}:00`),
+                datasets: [{
+                    label: 'EUR/USD',
+                    data: generateRandomData(1.0800 * 10000, 1.0900 * 10000, 24).map(x => x / 10000),
+                    borderColor: '#4c51bf',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        // Setup Volume Chart
+        const volumeCtx = document.getElementById('volumeChart').getContext('2d');
+        const volumeChart = new Chart(volumeCtx, {
+            type: 'bar',
+            data: {
+                labels: ['EUR/USD', 'GBP/USD', 'USD/JPY', 'XAU/USD'],
+                datasets: [{
+                    label: 'Volume (Lot)',
+                    data: generateRandomData(1000, 5000, 4),
+                    backgroundColor: '#4c51bf'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        // Update News
+        function updateNews() {
+            const news = [
+                {
+                    title: 'Fed Meeting Minutes Released',
+                    sentiment: 'bullish',
+                    time: '10:30'
+                },
+                {
+                    title: 'ECB Maintains Interest Rates',
+                    sentiment: 'neutral',
+                    time: '14:45'
+                },
+                {
+                    title: 'US Dollar Weakens Against Major Pairs',
+                    sentiment: 'bearish',
+                    time: '16:20'
+                }
+            ];
+
+            const newsContainer = document.getElementById('newsContainer');
+            newsContainer.innerHTML = news.map(item => `
+                <div class="news-item">
+                    <span class="sentiment ${item.sentiment}">${item.sentiment.toUpperCase()}</span>
+                    <span style="float: right">${item.time}</span>
+                    <p>${item.title}</p>
+                </div>
+            `).join('');
+        }
+
+        // Update Order Book
+        function updateOrderBook() {
+            const orders = Array.from({length: 10}, (_, i) => ({
+                price: (1.0850 + (i * 0.0001)).toFixed(4),
+                volume: Math.floor(Math.random() * 100),
+                total: Math.floor(Math.random() * 1000)
+            }));
+
+            const orderBookBody = document.querySelector('#orderBook tbody');
+            orderBookBody.innerHTML = orders.map(order => `
+                <tr>
+                    <td>${order.price}</td>
+                    <td>${order.volume}</td>
+                    <td>${order.total}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Update data setiap 5 detik
+        setInterval(() => {
+            marketChart.data.datasets[0].data = generateRandomData(1.0800 * 10000, 1.0900 * 10000, 24).map(x => x / 10000);
+            marketChart.update();
+            
+            volumeChart.data.datasets[0].data = generateRandomData(1000, 5000, 4);
+            volumeChart.update();
+            
+            updateNews();
+            updateOrderBook();
+        }, 5000);
+
+        // Initial updates
+        updateClock();
+        updateNews();
+        updateOrderBook();
+    </script>
+</body>
+                  </html>
