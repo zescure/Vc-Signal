@@ -346,22 +346,6 @@
             <h8>Insider kami tersebar di seluruh dunia, termasuk: Indonesia, Jepang, Rusia, Swiss, Jerman, Turki, Malaysia, USA, China, Australia</h8>
         </div>
     </div>
-</div>
-
-<script>
-    function showContent(id) {
-        // Sembunyikan semua konten
-        let contents = document.querySelectorAll('.content');
-        contents.forEach(content => content.style.display = 'none');
-
-        // Tampilkan konten yang dipilih
-        document.getElementById(id).style.display = 'block';
-    }
-
-    // Tampilkan tampilan awal (misalnya Home)
-    showContent('home');
-</script>
-
 
     <!-- Menu Game -->
     <div class="tab-container">
@@ -420,6 +404,19 @@
             <a href="#"><img src="https://cdn.dribbble.com/users/303272/screenshots/1073851/tutorial.gif" alt=""><br>video tutorial</a>
             
             <h4>© Zeetrading.id 2019</h4>
+            <script>
+    function showContent(id) {
+        // Sembunyikan semua konten
+        let contents = document.querySelectorAll('.content');
+        contents.forEach(content => content.style.display = 'none');
+
+        // Tampilkan konten yang dipilih
+        document.getElementById(id).style.display = 'block';
+    }
+
+    // Tampilkan tampilan awal (misalnya Home)
+    showContent('home');
+            </script>
         </div>
     </div>
 </div>
