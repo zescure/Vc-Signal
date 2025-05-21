@@ -422,53 +422,33 @@ body::before {
     height: auto;
     border-radius: 50%;
   }
-  /* Rating widget */
-  #rating-widget {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    background: rgba(255,255,255,0.9);
-    padding: 10px 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    font-family: sans-serif;
-    max-width: 250px;
-    z-index: 9999;
-  }
-  #rating-widget h4 {
-    margin: 0 0 8px 0;
-    font-size: 14px;
-  }
-  .review {
-    margin-bottom: 6px;
-    font-size: 13px;
-  }
-  .stars {
-    color: #f5a623;
-  }
-          /* Review popup fixed di kiri bawah */
-  #review-popup {
+  /* Reuse .tab-container style, override positioning */
+  .tab-container.rating-popup {
     position: fixed !important;
     bottom: 20px;
-    left: 20px;
-    background: rgba(255, 255, 255, 0.95);
-    padding: 12px 16px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    max-width: 260px;
+    right: 20px;
+    max-width: 200px;
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 12px;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     font-family: sans-serif;
+    text-align: center;
     z-index: 9999;
   }
-  #review-popup .user {
-    font-weight: bold;
+  .rating-popup .stars {
+    font-size: 18px;
+    line-height: 1;
+    color: #f5a623;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .rating-popup .user {
     font-size: 14px;
     margin-bottom: 4px;
     display: block;
-  }
-  #review-popup .stars {
-    font-size: 16px;
-    line-height: 1;
-    color: #f5a623;
+    color: #333;
   }
     </style>
 </head>
@@ -563,11 +543,10 @@ body::before {
 </div>
 
             <!-- Rating widget -->
-<div id="rating-widget">
-  <h4>Ulasan Terbaru</h4>
-  <div id="review-popup">
-  <span class="user">Loading...</span>
-  <span class="stars">☆☆☆☆☆</span>
+<!-- PRIORITAS: Info trading dinamis sebagai konten utama -->
+<div class="tab-container" id="dynamic-info">
+  <h3>Aktivitas Trader Hari Ini</h3>
+  <p id="info-text">Sedang memuat data…</p>
 </div>
             <h4>© Zeetrading.id 2019</h4>
             <script>
@@ -579,39 +558,31 @@ body::before {
         // Tampilkan konten yang dipilih
         document.getElementById(id).style.display = 'block';
     }
-  document.addEventListener('DOMContentLoaded', () => {
-    // generate fake username user + 9 random digits + 2025
-    function genUsername() {
-      let x = '';
-      for (let i = 0; i < 9; i++) {
-        x += Math.floor(Math.random() * 10);
-      }
-      return 'user' + x + '2025';
+    document.addEventListener('DOMContentLoaded', () => {
+    // generate username: user + 9 digit + 2025
+    function genUser() {
+      let s = '';
+      for (let i = 0; i < 9; i++) s += Math.floor(Math.random() * 10);
+      return 'user' + s + '2025';
+    }
+    // random integer between min…max
+    function randInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    // generate random star rating between 1–5
-    function genStars() {
-      const n = Math.floor(Math.random() * 5) + 1;
-      return '★'.repeat(n) + '☆'.repeat(5 - n);
+    const infoEl = document.getElementById('info-text');
+    function updateInfo() {
+      const user   = genUser();
+      const profit = randInt(1, 9999);
+      const loss   = randInt(1, 999);
+      infoEl.textContent =
+        `${user} telah mendapatkan keuntungan +USD${profit}  kerugian -USD${loss}`;
     }
 
-    // update the popup content
-    function updateReview() {
-      const userEl = document.querySelector('#review-popup .user');
-      const starsEl = document.querySelector('#review-popup .stars');
-      if (!userEl || !starsEl) {
-        console.error('Review popup elements not found');
-        return;
-      }
-      userEl.textContent = genUsername();
-      starsEl.textContent = genStars();
-    }
-
-    // initial render
-    updateReview();
-
-    // rotate every 5 detik (5000 ms)
-    setInterval(updateReview, 3000);
+    // render pertama
+    updateInfo();
+    // update setiap 3 detik (3000 ms)
+    setInterval(updateInfo, 3000);
   });
     // Tampilkan tampilan awal (misalnya Home)
     showContent('home');
