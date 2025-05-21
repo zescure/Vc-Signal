@@ -514,144 +514,133 @@ Dan itu, King Zezy, udah kita mulai dari LIONOR.`
     ];
 
     const chatContainer = document.getElementById("chat-container");
-    const userInput = document.getElementById("user-input");
+const userInput = document.getElementById("user-input");
 
-    function handleSend() {
-      const input = userInput.value.trim();
-      if (!input) return;
-
-      addUserMessage(input);
-      userInput.value = "";
-
-      showTypingAnimation();
-
-      const message = input.toLowerCase();
-      const matched = botKeywords.find(k => message.includes(k.keyword));
-
-      setTimeout(() => {
-        hideTypingAnimation();
-
-        if (matched) {
-          displayBotResponse(matched.response);
-        } else if (message.includes("buatkan foto")) {
-          // Dummy logic: kirim gambar dari link statis (bisa kamu ganti)
-          displayBotResponseImage("https://images.unsplash.com/photo-1549921296-3a6b52f4aa67");
-        } else {
-          displayBotResponse("Maaf, aku belum ngerti maksudmu 😅");
-        }
-        let lastMessage = "";
+// simpan pesan terakhir untuk cek duplikasi/kemiripan
+let lastMessage = "";
 let currentTopic = "";
 
-function handleUserMessage(message) {
-  const cleanMessage = message.trim().toLowerCase();
+function handleSend() {
+  const input = userInput.value.trim();
+  if (!input) return;
 
-  // Cek apakah mirip dengan pertanyaan sebelumnya
-  if (isSimilarToLast(cleanMessage)) {
-    addMessage("bot", "Sepertinya kamu udah nanya hal serupa tadi. Mau gue ulang jawabannya atau mau bahas dari sudut pandang lain?");
+  const message = input.toLowerCase();
+
+  // cek apakah mirip/duplikat dengan pertanyaan sebelumnya
+  if (lastMessage && stringSimilarityScore(message, lastMessage) >= 0.85) {
+    displayBotResponse("Sepertinya kamu sudah nanya hal serupa tadi. Mau aku ulangi jawabannya atau bahas sudut lain?");
     return;
   }
 
-  // Simpan message sekarang sebagai lastMessage
-  lastMessage = cleanMessage;
+  // simpan untuk cek berikutnya
+  lastMessage = message;
+  detectTopic(message);
 
-  // Deteksi topik (bisa dikembangkan)
-  detectTopic(cleanMessage);
+  // tampilkan ke layar
+  addUserMessage(input);
+  userInput.value = "";
 
-  // Lanjut ke pencocokan keyword seperti biasa
-  const keyword = botKeywords.find(entry => cleanMessage.includes(entry.keyword.toLowerCase()));
-  if (keyword) {
-    simulateBotTyping(keyword.response);
-  } else {
-    simulateBotTyping("Aku belum ngerti maksudmu, King Zezy 👑. Bisa ketik dengan cara lain?");
-  }
-}
+  showTypingAnimation();
 
-function isSimilarToLast(current) {
-  if (!lastMessage) return false;
-  const similarity = stringSimilarityScore(current, lastMessage);
-  return similarity >= 0.85; // threshold kemiripan
-}
+  setTimeout(() => {
+    hideTypingAnimation();
 
-// Fungsi pengecekan kemiripan (sederhana)
-function stringSimilarityScore(str1, str2) {
-  const common = str1.split(" ").filter(word => str2.includes(word));
-  return common.length / Math.max(str1.split(" ").length, str2.split(" ").length);
-}
-
-// Deteksi topik dasar (bisa dikembangkan)
-function detectTopic(msg) {
-  if (msg.includes("freelance") || msg.includes("upwork") || msg.includes("fiverr")) {
-    currentTopic = "freelance";
-  } else if (msg.includes("ai") || msg.includes("kecerdasan buatan")) {
-    currentTopic = "ai";
-  } else if (msg.includes("mobil") || msg.includes("otomotif")) {
-    currentTopic = "otomotif";
-  } else {
-    currentTopic = "";
-  }
-}
-      }, 1500);
+    // cek response gambar
+    if (message.includes("buatkan foto")) {
+      displayBotResponseImage("https://images.unsplash.com/photo-1549921296-3a6b52f4aa67");
+      return;
     }
 
-    function addUserMessage(text) {
-      const div = document.createElement("div");
-      div.className = "user-message";
-      div.innerText = text;
-      chatContainer.appendChild(div);
-      scrollToBottom();
+    // cek keyword biasa
+    const matched = botKeywords.find(k => message.includes(k.keyword));
+    if (matched) {
+      displayBotResponse(matched.response);
+    } else {
+      displayBotResponse("Maaf, aku belum ngerti maksudmu 😅");
     }
+  }, 1200);
+}
 
-    function displayBotResponse(text) {
+function addUserMessage(text) {
+  const div = document.createElement("div");
+  div.className = "user-message";
+  div.innerText = text;
+  chatContainer.appendChild(div);
+  scrollToBottom();
+}
+
+function displayBotResponse(text) {
   const div = document.createElement("div");
   div.className = "bot-message";
   chatContainer.appendChild(div);
   scrollToBottom();
 
   let i = 0;
-  function type() {
+  function typeWriter() {
     if (i < text.length) {
-      div.innerHTML += text.charAt(i);
-      i++;
+      div.innerHTML += text.charAt(i++);
       scrollToBottom();
-      setTimeout(type, 15); // kecepatan ketik, bisa disesuaikan
+      setTimeout(typeWriter, 15);
     }
   }
-  type();
+  typeWriter();
 }
 
-    function displayBotResponseImage(url) {
-      const div = document.createElement("div");
-      div.className = "bot-message";
-      const img = document.createElement("img");
-      img.src = url;
-      img.style.maxWidth = "100%";
-      img.style.borderRadius = "10px";
-      div.appendChild(img);
-      chatContainer.appendChild(div);
-      scrollToBottom();
-    }
+function displayBotResponseImage(url) {
+  const div = document.createElement("div");
+  div.className = "bot-message";
+  const img = document.createElement("img");
+  img.src = url;
+  img.style.maxWidth = "100%";
+  img.style.borderRadius = "10px";
+  div.appendChild(img);
+  chatContainer.appendChild(div);
+  scrollToBottom();
+}
 
-    function showTypingAnimation() {
-      const typing = document.createElement("div");
-      typing.className = "bot-message typing";
-      typing.id = "typing";
-      typing.innerText = "LIONOR AI sedang mengetik…";
-      chatContainer.appendChild(typing);
-      scrollToBottom();
-    }
+function showTypingAnimation() {
+  const typing = document.createElement("div");
+  typing.className = "bot-message typing";
+  typing.id = "typing";
+  typing.innerText = "LIONOR AI sedang mengetik…";
+  chatContainer.appendChild(typing);
+  scrollToBottom();
+}
 
-    function hideTypingAnimation() {
-      const typing = document.getElementById("typing");
-      if (typing) typing.remove();
-    }
+function hideTypingAnimation() {
+  const t = document.getElementById("typing");
+  if (t) t.remove();
+}
 
-    function scrollToBottom() {
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
+function scrollToBottom() {
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}
 
-    userInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") handleSend();
-    });
+// hitung kemiripan sederhana berdasar kata
+function stringSimilarityScore(str1, str2) {
+  const w1 = str1.split(" ");
+  const w2 = str2.split(" ");
+  const common = w1.filter(word => w2.includes(word)).length;
+  return common / Math.max(w1.length, w2.length);
+}
+
+// deteksi topik (opsional, bisa dipakai untuk branching lanjut)
+function detectTopic(msg) {
+  if (msg.includes("freelance") || msg.includes("kerja online")) {
+    currentTopic = "freelance";
+  } else if (msg.includes("ai") || msg.includes("kecerdasan buatan")) {
+    currentTopic = "ai";
+  } else if (msg.includes("otomotif") || msg.includes("mobil")) {
+    currentTopic = "otomotif";
+  } else {
+    currentTopic = "";
+  }
+}
+
+// trigger saat tekan Enter
+userInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") handleSend();
+});
   </script>
 </body>
 </html>
