@@ -468,6 +468,29 @@ body::before {
   .tab-container.rating .summary .count {
     color: #777;
   }
+          .tab-container.trade-modal {
+    position: fixed !important;
+    bottom: 20px;
+    left: 20px;
+    max-width: 300px;
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 12px 16px;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    font-family: sans-serif;
+    z-index: 9999;
+  }
+  .tab-container.trade-modal h4 {
+    margin: 0 0 8px;
+    font-size: 16px;
+  }
+  .tab-container.trade-modal p {
+    margin: 4px 0;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #333;
+  }
     </style>
 </head>
 <body>
@@ -572,6 +595,10 @@ body::before {
     <span class="count">(0 ulasan)</span>
   </div>
 </div>
+            <div class="tab-container trade-modal">
+  <h4>Aktivitas Trade Member</h4>
+  <p id="trade-activity">Memuat data…</p>
+</div>
             <h4>© Zeetrading.id 2019</h4>
             <script>
     function showContent(id) {
@@ -639,6 +666,43 @@ body::before {
     }
     updateSummary();
     setInterval(updateSummary, 10000);
+  });
+                  document.addEventListener('DOMContentLoaded', () => {
+    // daftar market yang di‑fokus
+    const markets = [
+      'XAU/USD', 'GBP/USD', 'USD/JPY', 'USD/CHF',
+      'CRUDE OIL', 'HANGSENG', 'US500', 'IDX'
+    ];
+    // random username: user + 9 digit + 2025
+    function genUser() {
+      let s = '';
+      for (let i = 0; i < 9; i++) s += Math.floor(Math.random() * 10);
+      return 'user' + s + '2025';
+    }
+    // random int antara min…max
+    function randInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    // pick random market dari array
+    function genMarket() {
+      return markets[Math.floor(Math.random() * markets.length)];
+    }
+
+    const el = document.getElementById('trade-activity');
+    function updateTrade() {
+      const user     = genUser();
+      const amount   = randInt(1, 9999);
+      const isProfit = Math.random() < 0.5;
+      const sign     = isProfit ? '+' : '-';
+      const label    = isProfit ? 'Keuntungan' : 'Kerugian';
+      const market   = genMarket();
+      el.textContent =
+        `${user} Telah Menutup ${label} (${sign}USD${amount}) ` +
+        `Market ${market}`;
+    }
+
+    updateTrade();                 // render pertama
+    setInterval(updateTrade, 3000); // update tiap 3 detik
   });
     // Tampilkan tampilan awal (misalnya Home)
     showContent('home');
