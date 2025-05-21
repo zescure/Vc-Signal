@@ -352,6 +352,50 @@ body::before {
     }
 }
 }
+          /* Live chat popup container */
+  #live-chat {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 9999;
+  }
+  #live-chat a {
+    width: 50px;
+    height: 50px;
+    display: block;
+  }
+  #live-chat img {
+    width: 100%;
+    height: auto;
+    border-radius: 50%;
+  }
+  /* Rating widget */
+  #rating-widget {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(255,255,255,0.9);
+    padding: 10px 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    font-family: sans-serif;
+    max-width: 250px;
+    z-index: 9999;
+  }
+  #rating-widget h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+  }
+  .review {
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+  .stars {
+    color: #f5a623;
+  }
     </style>
 </head>
 <body>
@@ -431,7 +475,18 @@ body::before {
             <a href="#"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTAuWA0reL7V2R2DxtOXm6eImjGoHmbAF8kng&s" alt=""><br>sejarah trading</a>
             <a href="https://docs.google.com/forms/d/e/1FAIpQLScoSegqOtJN5gSfmR4FQL5k4FNTbyWCziQCl_g_27V1fZVswQ/viewform?usp=sf_link"><img src="https://i.pinimg.com/originals/00/9d/d9/009dd94a954cb90091e310766e619a1a.gif" alt=""><br>Trading Tanpa Modal</a>
             <a href="#"><img src="https://cdn.dribbble.com/users/303272/screenshots/1073851/tutorial.gif" alt=""><br>video tutorial</a>
-            
+            <!-- Live chat buttons -->
+<div id="live-chat">
+  <a href="https://wa.me/6281234567890" target="_blank" title="Chat via WhatsApp">
+    <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="WhatsApp">
+  </a>
+  <a href="https://instagram.com/zeetrading.id" target="_blank" title="Chat via Instagram">
+    <img src="https://cdn-icons-png.flaticon.com/512/1384/1384063.png" alt="Instagram">
+  </a>
+  <a href="https://t.me/zeetrading_official" target="_blank" title="Chat via Telegram">
+    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" alt="Telegram">
+  </a>
+</div>
             <h4>© Zeetrading.id 2019</h4>
             <script>
     function showContent(id) {
@@ -445,6 +500,45 @@ body::before {
 
     // Tampilkan tampilan awal (misalnya Home)
     showContent('home');
+                // generate fake username like user123456782025
+  function genUsername() {
+    let x = '';
+    for (let i = 0; i < 9; i++) {
+      x += Math.floor(Math.random() * 10);
+    }
+    return 'user' + x + '2025';
+  }
+
+  // generate random rating stars (1–5)
+  function genStars() {
+    const n = Math.floor(Math.random() * 5) + 1;
+    return '★'.repeat(n) + '☆'.repeat(5 - n);
+  }
+
+  // create one review element
+  function genReview() {
+    const user = genUsername();
+    const stars = genStars();
+    const elt = document.createElement('div');
+    elt.className = 'review';
+    elt.innerHTML = `<strong>${user}</strong>: <span class="stars">${stars}</span>`;
+    return elt;
+  }
+
+  // render N reviews
+  function renderReviews(count = 5) {
+    const container = document.getElementById('reviews');
+    container.innerHTML = ''; // clear old
+    for (let i = 0; i < count; i++) {
+      container.appendChild(genReview());
+    }
+  }
+
+  // initial render
+  renderReviews();
+
+  // update every 5 menit (300.000 ms)
+  setInterval(renderReviews, 300000);
             </script>
         </div>
     </div>
