@@ -446,6 +446,30 @@ body::before {
   .stars {
     color: #f5a623;
   }
+          /* Review popup fixed di kiri bawah */
+  #review-popup {
+    position: fixed !important;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 12px 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    max-width: 260px;
+    font-family: sans-serif;
+    z-index: 9999;
+  }
+  #review-popup .user {
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 4px;
+    display: block;
+  }
+  #review-popup .stars {
+    font-size: 16px;
+    line-height: 1;
+    color: #f5a623;
+  }
     </style>
 </head>
 <body>
@@ -542,6 +566,8 @@ body::before {
 <div id="rating-widget">
   <h4>Ulasan Terbaru</h4>
   <div id="reviews"></div>
+  <span class="user">user0000000002025</span>
+  <span class="stars">★★★★★</span>
 </div>
             <h4>© Zeetrading.id 2019</h4>
             <script>
@@ -557,6 +583,7 @@ body::before {
     // Tampilkan tampilan awal (misalnya Home)
     showContent('home');
                 // generate fake username like user123456782025
+    // generate fake username user + 9 random digits + 2025
   function genUsername() {
     let x = '';
     for (let i = 0; i < 9; i++) {
@@ -565,36 +592,25 @@ body::before {
     return 'user' + x + '2025';
   }
 
-  // generate random rating stars (1–5)
+  // generate random star rating between 1–5
   function genStars() {
     const n = Math.floor(Math.random() * 5) + 1;
     return '★'.repeat(n) + '☆'.repeat(5 - n);
   }
 
-  // create one review element
-  function genReview() {
-    const user = genUsername();
-    const stars = genStars();
-    const elt = document.createElement('div');
-    elt.className = 'review';
-    elt.innerHTML = `<strong>${user}</strong>: <span class="stars">${stars}</span>`;
-    return elt;
+  // update the popup content
+  function updateReview() {
+    const userEl = document.querySelector('#review-popup .user');
+    const starsEl = document.querySelector('#review-popup .stars');
+    userEl.textContent = genUsername();
+    starsEl.textContent = genStars();
   }
 
-  // render N reviews
-  function renderReviews(count = 5) {
-    const container = document.getElementById('reviews');
-    container.innerHTML = ''; // clear old
-    for (let i = 0; i < count; i++) {
-      container.appendChild(genReview());
-    }
-  }
+  // first render
+  updateReview();
 
-  // initial render
-  renderReviews();
-
-  // update every 5 menit (300.000 ms)
-  setInterval(renderReviews, 300);
+  // rotate every 5 detik (5000 ms)
+  setInterval(updateReview, 5000);
             </script>
         </div>
     </div>
