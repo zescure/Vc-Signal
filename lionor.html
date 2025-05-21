@@ -117,21 +117,20 @@
     const chatBox = document.getElementById('chat-box');
     const userInput = document.getElementById('user-input');
 
-    const botResponses = {
-      "halo": "Hallo juga! Ada yang bisa gue bantu?",
-      "siapa kamu": "Gue adalah LIONOR AI Beta — versi ringan dari AI ChatGPT buatan manusia.",
-      "bantuin coding": "Boleh, mau bantuin bagian apa dulu nih?",
-      "makasih": "Sama-sama, King Zezy 👑",
-      "lagi ngapain": "Lagi standby nunggu kamu ngetik, hehe.",
-      "aku gabut": "Yuk ngobrol yang seru! Mau bahas hal lucu atau random?"
-    };
+    const botKeywords = [
+      { keyword: "halo", response: "Hallo juga! Ada yang bisa gue bantu?" },
+      { keyword: "siapa", response: "Gue adalah LIONOR AI Beta — versi ringan dari AI ChatGPT buatan manusia." },
+      { keyword: "coding", response: "Boleh, mau bantuin bagian apa dulu nih?" },
+      { keyword: "makasih", response: "Sama-sama, King Zezy 👑" },
+      { keyword: "ngapain", response: "Lagi standby nunggu kamu ngetik, hehe." },
+      { keyword: "gabut", response: "Yuk ngobrol yang seru! Mau bahas hal lucu atau random?" }
+    ];
 
     const imagePrompts = [
       {
         keyword: "astronot yang sedang memegang ponsel",
         imgUrl: "https://images.unsplash.com/photo-1600385482434-6d7b4b6b7e07?auto=format&fit=crop&w=800&q=80"
       }
-      // Tambahkan lagi kalau perlu
     ];
 
     function sendMessage() {
@@ -150,22 +149,31 @@
       setTimeout(() => {
         typingDiv.remove();
 
-        if (userText.toLowerCase().includes("buatkan foto")) {
-          const foundImage = imagePrompts.find(item =>
-            userText.toLowerCase().includes(item.keyword)
-          );
+        const lowerText = userText.toLowerCase();
 
-          if (foundImage) {
-            appendImage(foundImage.imgUrl);
-            return;
-          } else {
-            appendMessage('Bot', 'Maaf, gue belum punya gambar buat itu.');
-            return;
+        // Cek gambar dulu
+        const foundImage = imagePrompts.find(item =>
+          lowerText.includes(item.keyword)
+        );
+
+        if (lowerText.includes("buatkan foto") && foundImage) {
+          appendImage(foundImage.imgUrl);
+          return;
+        }
+
+        // Cek kata kunci bot
+        let matched = false;
+        for (const item of botKeywords) {
+          if (lowerText.includes(item.keyword)) {
+            appendMessage('Bot', item.response);
+            matched = true;
+            break;
           }
         }
 
-        const botText = botResponses[userText.toLowerCase()] || "Maaf, LIONOR belum ngerti itu. Coba ketik yang lain ya.";
-        appendMessage('Bot', botText);
+        if (!matched) {
+          appendMessage('Bot', "Maaf, LIONOR belum ngerti itu. Coba ketik yang lain ya.");
+        }
 
       }, 1000);
     }
