@@ -2,134 +2,170 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lionor2 AI Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LIONOR Chat</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #0b0f2e;
-      color: #eee;
-      margin: 0; padding: 0;
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #0e0f11;
+      color: #fff;
       display: flex;
       flex-direction: column;
       height: 100vh;
     }
+
     header {
-      background: #12183c;
-      padding: 1rem;
+      background: #1a1d24;
+      padding: 16px;
       text-align: center;
-      font-size: 1.5rem;
+      font-size: 1.4em;
+      color: #00ffe7;
       font-weight: bold;
-      letter-spacing: 2px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
     }
-    main {
+
+    #chat {
       flex: 1;
+      padding: 20px;
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
-      padding: 1rem;
-      overflow-y: auto;
+      gap: 15px;
     }
-    #chat {
-      flex-grow: 1;
-      overflow-y: auto;
-      margin-bottom: 1rem;
-    }
-    .message {
-      background: #22295e;
-      padding: 0.75rem 1rem;
-      border-radius: 10px;
-      margin-bottom: 0.5rem;
+
+    .msg {
       max-width: 80%;
-      word-wrap: break-word;
+      padding: 12px 16px;
+      border-radius: 12px;
+      line-height: 1.6;
+      white-space: pre-wrap;
     }
+
     .user {
-      background: #1f2a63;
       align-self: flex-end;
+      background: #00ffe7;
+      color: #10131a;
     }
-    .bot {
-      background: #2e397f;
+
+    .ai {
       align-self: flex-start;
+      background: #20242f;
     }
-    form {
+
+    #input-area {
       display: flex;
-      gap: 0.5rem;
+      padding: 15px;
+      background: #16181f;
+      border-top: 1px solid #333;
     }
+
     input[type="text"] {
       flex: 1;
-      padding: 0.75rem 1rem;
-      border-radius: 10px;
+      padding: 12px;
       border: none;
-      font-size: 1rem;
+      border-radius: 8px;
+      background: #252932;
+      color: #fff;
+      font-size: 1em;
     }
+
     button {
-      padding: 0 1.5rem;
-      border: none;
-      border-radius: 10px;
-      background: #5a5fff;
-      color: white;
+      margin-left: 10px;
+      padding: 12px 20px;
+      background-color: #00ffe7;
+      color: #10131a;
       font-weight: bold;
+      border: none;
+      border-radius: 8px;
       cursor: pointer;
-      transition: background-color 0.2s ease;
     }
+
     button:hover {
-      background: #7a7aff;
+      background-color: #00d1bf;
     }
   </style>
 </head>
+<!-- ... bagian <head> dan <style> tetap sama seperti sebelumnya -->
+
 <body>
+  <header>LIONOR AI Chat</header>
 
-  <header>Lionor AI Chat</header>
+  <div id="chat"></div>
 
-  <main>
-    <div id="chat"></div>
-    <form id="chat-form">
-      <input type="text" id="question" placeholder="Tanya apa saja..." autocomplete="off" required />
-      <button type="submit">Kirim</button>
-    </form>
-  </main>
+  <div id="input-area">
+    <input type="text" id="pertanyaan" placeholder="Tulis pesan..." />
+    <button onclick="kirimPertanyaan()">Kirim</button>
+  </div>
 
   <script>
-    const chat = document.getElementById('chat');
-    const form = document.getElementById('chat-form');
-    const input = document.getElementById('question');
+    const autoReply = (q) => {
+      const pertanyaan = q.toLowerCase().trim();
 
-    function appendMessage(text, sender) {
-      const div = document.createElement('div');
-      div.classList.add('message', sender);
-      div.textContent = text;
-      chat.appendChild(div);
+      // Tambahin daftar pertanyaan yang auto dijawab di sini
+      if (pertanyaan === "hallo lionor" || pertanyaan === "halo lionor") {
+        return "Hallo juga, King Zezy 👑! Ada yang mau lo tanyain hari ini?";
+      }
+
+      if (pertanyaan.includes("siapa kamu")) {
+        return "Aku Lionor AI Beta, asisten buatan King Zezy yang keren itu!";
+      }
+
+      if (pertanyaan.includes("makasih") || pertanyaan.includes("terima kasih")) {
+        return "Sama-sama yaa, aku seneng bisa bantu 😊";
+      }
+
+      return null; // Kalau gak ada match, balik ke backend
+    };
+
+    async function kirimPertanyaan() {
+      const input = document.getElementById('pertanyaan');
+      const chat = document.getElementById('chat');
+      const teks = input.value.trim();
+
+      if (!teks) return;
+
+      // Tampilkan pertanyaan user
+      const userMsg = document.createElement('div');
+      userMsg.className = 'msg user';
+      userMsg.textContent = teks;
+      chat.appendChild(userMsg);
+
+      input.value = '';
+      input.focus();
+
+      // Cek apakah pertanyaan bisa dijawab otomatis
+      const jawabanCepat = autoReply(teks);
+      const aiMsg = document.createElement('div');
+      aiMsg.className = 'msg ai';
+
+      if (jawabanCepat) {
+        aiMsg.textContent = jawabanCepat;
+        chat.appendChild(aiMsg);
+        chat.scrollTop = chat.scrollHeight;
+        return;
+      }
+
+      // Kalau bukan jawaban cepat, panggil backend
+      aiMsg.textContent = '⏳ Lionor mikir...';
+      chat.appendChild(aiMsg);
+      chat.scrollTop = chat.scrollHeight;
+
+      try {
+        const res = await fetch(`/.netlify/functions/ask?q=${encodeURIComponent(teks)}`);
+        const data = await res.json();
+        aiMsg.textContent = data.answer || "⚠️ Lionor gak ngerti. Coba tanya dengan cara lain ya.";
+      } catch (err) {
+        aiMsg.textContent = "⚠️ Gagal ambil jawaban. Cek koneksi atau backend-nya.";
+      }
+
       chat.scrollTop = chat.scrollHeight;
     }
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const question = input.value.trim();
-      if (!question) return;
-
-      appendMessage(question, 'user');
-      input.value = '';
-      appendMessage('Sedang mencari jawaban...', 'bot');
-
-      try {
-        const res = await fetch(`/api/ask?q=${encodeURIComponent(question)}`);
-        const data = await res.json();
-
-        // hapus pesan "Sedang mencari jawaban..."
-        const loadingMsg = chat.querySelector('.bot:last-child');
-        if (loadingMsg && loadingMsg.textContent === 'Sedang mencari jawaban...') {
-          chat.removeChild(loadingMsg);
-        }
-
-        if (data.answer) {
-          appendMessage(data.answer, 'bot');
-        } else {
-          appendMessage('Maaf, saya tidak menemukan jawaban.', 'bot');
-        }
-      } catch (err) {
-        appendMessage('Gagal ambil data dari server.', 'bot');
-      }
+    // Enter key support
+    document.getElementById('pertanyaan').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') kirimPertanyaan();
     });
   </script>
-
 </body>
 </html>
