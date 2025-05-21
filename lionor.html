@@ -18,14 +18,17 @@
       flex-direction: column;
     }
     header {
-      padding: 20px;
-      text-align: center;
-      background-color: rgba(0, 0, 0, 0.3);
-      font-weight: bold;
-      font-size: 1.5em;
-      letter-spacing: 1px;
-      color: #fff;
-    }
+  position: sticky;
+  top: 0;
+  background: #0d1117;
+  color: white;
+  padding: 15px 20px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 600;
+  z-index: 1000;
+  border-bottom: 1px solid #2a2a2a;
+}
     #chat-container {
       flex: 1;
       padding: 20px;
@@ -151,12 +154,22 @@ Mau lanjut bahas hal absurd lain yang bisa jadi obat gabut?`
     }
 
     function displayBotResponse(text) {
-      const div = document.createElement("div");
-      div.className = "bot-message";
-      div.innerText = text;
-      chatContainer.appendChild(div);
+  const div = document.createElement("div");
+  div.className = "bot-message";
+  chatContainer.appendChild(div);
+  scrollToBottom();
+
+  let i = 0;
+  function type() {
+    if (i < text.length) {
+      div.innerHTML += text.charAt(i);
+      i++;
       scrollToBottom();
+      setTimeout(type, 15); // kecepatan ketik, bisa disesuaikan
     }
+  }
+  type();
+}
 
     function displayBotResponseImage(url) {
       const div = document.createElement("div");
