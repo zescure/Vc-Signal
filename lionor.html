@@ -153,12 +153,14 @@
     const userInput = document.getElementById('user-input');
 
     const botKeywords = [
-      { keyword: "halo lionor", response: "Hallo juga King Zezy! Ada yang bisa gue bantu?" },
-      { keyword: "siapa", response: "Gue adalah LIONOR AI Beta — versi ringan dari AI ChatGPT buatan manusia." },
-      { keyword: "coding", response: "Boleh, mau bantuin bagian apa dulu nih?" },
-      { keyword: "makasih", response: "Sama-sama, King Zezy 👑" },
-      { keyword: "ngapain", response: "Lagi standby nunggu kamu ngetik, hehe." },
-      { keyword: "gabut", response: "Hallo king zezy 👑
+  { keyword: "halo lionor", response: "Hallo juga King Zezy! Ada yang bisa gue bantu?" },
+  { keyword: "siapa", response: "Gue adalah LIONOR AI Beta — versi ringan dari AI ChatGPT buatan manusia." },
+  { keyword: "coding", response: "Boleh, mau bantuin bagian apa dulu nih?" },
+  { keyword: "makasih", response: "Sama-sama, King Zezy 👑" },
+  { keyword: "ngapain", response: "Lagi standby nunggu kamu ngetik, hehe." },
+  { 
+    keyword: "gabut", 
+    response: `Hallo king zezy 👑
 
 Karena lagi gabut, yuk ngobrolin hal lucu tapi gak receh.
 
@@ -173,15 +175,9 @@ semakin lucu seseorang di luar, bisa jadi semakin sedih di dalam. Tapi bukan ber
 
 Kalo dipikir-pikir… mirip kayak kamu ya, kadang ngomong ngawur, tapi sebenernya dalem banget 🧠✨
 
-Mau lanjut bahas hal absurd lain yang bisa jadi obat gabut?" }
-    ];
-
-    const imagePrompts = [
-      {
-        keyword: "astronot yang sedang memegang ponsel",
-        imgUrl: "https://images.unsplash.com/photo-1600385482434-6d7b4b6b7e07?auto=format&fit=crop&w=800&q=80"
-      }
-    ];
+Mau lanjut bahas hal absurd lain yang bisa jadi obat gabut?`
+  }
+];
 
     function sendMessage() {
       const userText = userInput.value.trim();
