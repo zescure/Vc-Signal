@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LIONOR AI Beta</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7f7f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .chat-container {
+      width: 400px;
+      height: 600px;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .header {
+      background-color: #10a37f;
+      color: white;
+      padding: 12px;
+      font-weight: bold;
+      font-size: 18px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .chat-box {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .input-area {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #ddd;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      padding: 10px;
+      margin-left: 5px;
+      background-color: #10a37f;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .user-msg, .bot-msg, .bot-img {
+      margin: 8px 0;
+      padding: 8px 12px;
+      border-radius: 8px;
+      max-width: 80%;
+      line-height: 1.4;
+      word-wrap: break-word;
+    }
+
+    .user-msg {
+      background-color: #daf5ff;
+      align-self: flex-end;
+      text-align: right;
+    }
+
+    .bot-msg {
+      background-color: #f0f0f0;
+      align-self: flex-start;
+    }
+
+    .typing {
+      font-style: italic;
+      color: gray;
+      margin-left: 5px;
+    }
+
+    .bot-img {
+      align-self: flex-start;
+    }
+
+    .bot-img img {
+      max-width: 100%;
+      border-radius: 8px;
+      box-shadow: 0 0 4px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="header">🤖 LIONOR AI Beta</div>
+    <div id="chat-box" class="chat-box"></div>
+    <div class="input-area">
+      <input type="text" id="user-input" placeholder="Ketik sesuatu..." autocomplete="off"/>
+      <button onclick="sendMessage()">Kirim</button>
+    </div>
+  </div>
+
+  <script>
+    const chatBox = document.getElementById('chat-box');
+    const userInput = document.getElementById('user-input');
+
+    const botResponses = {
+      "halo": "Hallo juga! Ada yang bisa gue bantu?",
+      "siapa kamu": "Gue adalah LIONOR AI Beta — versi ringan dari AI ChatGPT buatan manusia.",
+      "bantuin coding": "Boleh, mau bantuin bagian apa dulu nih?",
+      "makasih": "Sama-sama, King Zezy 👑",
+      "lagi ngapain": "Lagi standby nunggu kamu ngetik, hehe.",
+      "aku gabut": "Yuk ngobrol yang seru! Mau bahas hal lucu atau random?"
+    };
+
+    const imagePrompts = [
+      {
+        keyword: "astronot yang sedang memegang ponsel",
+        imgUrl: "https://images.unsplash.com/photo-1600385482434-6d7b4b6b7e07?auto=format&fit=crop&w=800&q=80"
+      }
+      // Tambahkan lagi kalau perlu
+    ];
+
+    function sendMessage() {
+      const userText = userInput.value.trim();
+      if (userText === '') return;
+
+      appendMessage('User', userText);
+      userInput.value = '';
+
+      const typingDiv = document.createElement('div');
+      typingDiv.className = 'bot-msg typing';
+      typingDiv.innerText = 'LIONOR AI sedang mengetik...';
+      chatBox.appendChild(typingDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      setTimeout(() => {
+        typingDiv.remove();
+
+        if (userText.toLowerCase().includes("buatkan foto")) {
+          const foundImage = imagePrompts.find(item =>
+            userText.toLowerCase().includes(item.keyword)
+          );
+
+          if (foundImage) {
+            appendImage(foundImage.imgUrl);
+            return;
+          } else {
+            appendMessage('Bot', 'Maaf, gue belum punya gambar buat itu.');
+            return;
+          }
+        }
+
+        const botText = botResponses[userText.toLowerCase()] || "Maaf, LIONOR belum ngerti itu. Coba ketik yang lain ya.";
+        appendMessage('Bot', botText);
+
+      }, 1000);
+    }
+
+    function appendMessage(sender, text) {
+      const message = document.createElement('div');
+      message.className = sender === 'User' ? 'user-msg' : 'bot-msg';
+      message.innerText = text;
+      chatBox.appendChild(message);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function appendImage(url) {
+      const message = document.createElement('div');
+      message.className = 'bot-img';
+      const img = document.createElement('img');
+      img.src = url;
+      message.appendChild(img);
+      chatBox.appendChild(message);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    userInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+  </script>
+</body>
+</html>
