@@ -579,38 +579,44 @@ body::before {
         // Tampilkan konten yang dipilih
         document.getElementById(id).style.display = 'block';
     }
+  document.addEventListener('DOMContentLoaded', () => {
+    // generate fake username user + 9 random digits + 2025
+    function genUsername() {
+      let x = '';
+      for (let i = 0; i < 9; i++) {
+        x += Math.floor(Math.random() * 10);
+      }
+      return 'user' + x + '2025';
+    }
 
+    // generate random star rating between 1–5
+    function genStars() {
+      const n = Math.floor(Math.random() * 5) + 1;
+      return '★'.repeat(n) + '☆'.repeat(5 - n);
+    }
+
+    // update the popup content
+    function updateReview() {
+      const userEl = document.querySelector('#review-popup .user');
+      const starsEl = document.querySelector('#review-popup .stars');
+      if (!userEl || !starsEl) {
+        console.error('Review popup elements not found');
+        return;
+      }
+      userEl.textContent = genUsername();
+      starsEl.textContent = genStars();
+    }
+
+    // initial render
+    updateReview();
+
+    // rotate every 5 detik (5000 ms)
+    setInterval(updateReview, 5000);
+  });
     // Tampilkan tampilan awal (misalnya Home)
     showContent('home');
                 // generate fake username like user123456782025
-    // generate fake username user + 9 random digits + 2025
-  function genUsername() {
-    let x = '';
-    for (let i = 0; i < 9; i++) {
-      x += Math.floor(Math.random() * 10);
-    }
-    return 'user' + x + '2025';
-  }
-
-  // generate random star rating between 1–5
-  function genStars() {
-    const n = Math.floor(Math.random() * 5) + 1;
-    return '★'.repeat(n) + '☆'.repeat(5 - n);
-  }
-
-  // update the popup content
-  function updateReview() {
-    const userEl = document.querySelector('#review-popup .user');
-    const starsEl = document.querySelector('#review-popup .stars');
-    userEl.textContent = genUsername();
-    starsEl.textContent = genStars();
-  }
-
-  // first render
-  updateReview();
-
-  // rotate every 5 detik (5000 ms)
-  setInterval(updateReview, 5000);
+    // generate fake username user + 9 random digits + 
             </script>
         </div>
     </div>
