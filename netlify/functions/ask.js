@@ -8,7 +8,7 @@ export async function handler(event, context) {
   const part3 = "90e812c24d93c6ef75b97ffb03423da31933";  // ganti bagian akhir key lo
   const apiKey = part1 + part2 + part3;
 
-  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions"), {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${apiKey}`,
