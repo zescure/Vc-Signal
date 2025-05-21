@@ -517,114 +517,88 @@ Dan itu, King Zezy, udah kita mulai dari LIONOR.`
 const userInput = document.getElementById("user-input");
 
 // simpan pesan terakhir untuk cek duplikasi/kemiripan
+// === 1. Definisi botTopics: keyword cluster + response panjang ===
+const botTopics = [
+  {
+    keywords: ["freelance", "kerja online", "cara freelance", "cara kerja online"],
+    response: `Nice, lo pengen mulai freelance? Banyak jenisnya: desain, nulis, virtual assistant, editing video, dan masih banyak lagi.
+
+Mulai dari bikin portofolio mini (bisa fiktif), lalu tawarkan di platform lokal (Sribulancer, Projects.co.id) atau global (Fiverr, Upwork).
+
+Kuncinya: pilih satu skill, lalu konsisten promosi. Nanti klien pertama bakal jadi momentum snowball growth kamu.`
+  },
+  {
+    keywords: ["penghasilan pasif", "passive income", "cara pasif income"],
+    response: `Passive income itu awalnya kerja keras:
+
+- Bikin e‑book atau template, sekali produksi bisa dijual berkali-kali  
+- Kelas online di Udemy atau Skillshare  
+- YouTube channel yang sudah monetized  
+
+Setelah sistem jalan—otomatisasi pembayaran, hosting—kamu tinggal panen hasilnya. Ibarat nanem pohon: awalnya nyangkul & nyiram, nanti tinggal petik buahnya.`
+  },
+  {
+    keywords: ["skill online", "skill cepat diuangkan", "skill uang"],
+    response: `Skill yang cepat diuangkan biasanya langsung jawab kebutuhan pasar:
+
+- Desain grafis & content sosial media  
+- Copywriting & translate  
+- Pembuatan website/landing page  
+- Editing video TikTok & YouTube  
+
+Manfaatkan AI tools (ChatGPT, Canva, CapCut) buat percepat. Jangan lupa, belajar “cara jualan” sama pentingnya.`
+  }
+  // … kamu bisa tambah topic lainnya di sini …
+];
+
+// === 2. State untuk deteksi duplikat & topik aktif ===
 let lastMessage = "";
 let currentTopic = "";
 
+// === 3. Fungsi utama kirim pesan ===
 function handleSend() {
-  const input = userInput.value.trim();
-  if (!input) return;
+  const raw = userInput.value.trim();
+  if (!raw) return;
 
-  const message = input.toLowerCase();
+  const msg = raw.toLowerCase();
 
-  // cek apakah mirip/duplikat dengan pertanyaan sebelumnya
-  if (lastMessage && stringSimilarityScore(message, lastMessage) >= 0.85) {
-    displayBotResponse("Sepertinya kamu sudah nanya hal serupa tadi. Mau aku ulangi jawabannya atau bahas sudut lain?");
+  // 3a. Cek duplikat / kemiripan
+  if (lastMessage && stringSimilarityScore(msg, lastMessage) >= 0.85) {
+    displayBotResponse("Sepertinya kamu sudah nanya itu tadi. Mau aku ulangi atau bahas sudut lain?");
     return;
   }
+  lastMessage = msg;
+  detectTopic(msg);
 
-  // simpan untuk cek berikutnya
-  lastMessage = message;
-  detectTopic(message);
-
-  // tampilkan ke layar
-  addUserMessage(input);
+  // tampilkan pesan user
+  addUserMessage(raw);
   userInput.value = "";
-
   showTypingAnimation();
 
   setTimeout(() => {
     hideTypingAnimation();
 
-    // cek response gambar
-    if (message.includes("buatkan foto")) {
+    // 3b. Cek topic match
+    const topic = botTopics.find(t =>
+      t.keywords.some(k => msg.includes(k))
+    );
+    if (topic) {
+      displayBotResponse(topic.response);
+      return;
+    }
+
+    // 3c. Cek request gambar
+    if (msg.includes("buatkan foto")) {
       displayBotResponseImage("https://images.unsplash.com/photo-1549921296-3a6b52f4aa67");
       return;
     }
 
-    // cek keyword biasa
-    const matched = botKeywords.find(k => message.includes(k.keyword));
-    if (matched) {
-      displayBotResponse(matched.response);
-    } else {
-      displayBotResponse("Maaf, aku belum ngerti maksudmu 😅");
-    }
+    // 3d. Fallback
+    displayBotResponse("Maaf, aku belum ngerti maksudmu 😅");
   }, 1200);
 }
 
-function addUserMessage(text) {
-  const div = document.createElement("div");
-  div.className = "user-message";
-  div.innerText = text;
-  chatContainer.appendChild(div);
-  scrollToBottom();
-}
-
-function displayBotResponse(text) {
-  const div = document.createElement("div");
-  div.className = "bot-message";
-  chatContainer.appendChild(div);
-  scrollToBottom();
-
-  let i = 0;
-  function typeWriter() {
-    if (i < text.length) {
-      div.innerHTML += text.charAt(i++);
-      scrollToBottom();
-      setTimeout(typeWriter, 15);
-    }
-  }
-  typeWriter();
-}
-
-function displayBotResponseImage(url) {
-  const div = document.createElement("div");
-  div.className = "bot-message";
-  const img = document.createElement("img");
-  img.src = url;
-  img.style.maxWidth = "100%";
-  img.style.borderRadius = "10px";
-  div.appendChild(img);
-  chatContainer.appendChild(div);
-  scrollToBottom();
-}
-
-function showTypingAnimation() {
-  const typing = document.createElement("div");
-  typing.className = "bot-message typing";
-  typing.id = "typing";
-  typing.innerText = "LIONOR AI sedang mengetik…";
-  chatContainer.appendChild(typing);
-  scrollToBottom();
-}
-
-function hideTypingAnimation() {
-  const t = document.getElementById("typing");
-  if (t) t.remove();
-}
-
-function scrollToBottom() {
-  chatContainer.scrollTop = chatContainer.scrollHeight;
-}
-
-// hitung kemiripan sederhana berdasar kata
-function stringSimilarityScore(str1, str2) {
-  const w1 = str1.split(" ");
-  const w2 = str2.split(" ");
-  const common = w1.filter(word => w2.includes(word)).length;
-  return common / Math.max(w1.length, w2.length);
-}
-
-// deteksi topik (opsional, bisa dipakai untuk branching lanjut)
+// === 4. Deteksi topik ringan (optional) ===
 function detectTopic(msg) {
   if (msg.includes("freelance") || msg.includes("kerja online")) {
     currentTopic = "freelance";
@@ -637,7 +611,15 @@ function detectTopic(msg) {
   }
 }
 
-// trigger saat tekan Enter
+// === 5. Utility: cek kemiripan teks sederhana ===
+function stringSimilarityScore(str1, str2) {
+  const a = str1.split(" ");
+  const b = str2.split(" ");
+  const common = a.filter(w => b.includes(w)).length;
+  return common / Math.max(a.length, b.length);
+}
+
+// === 6. Hook up Enter key ===
 userInput.addEventListener("keydown", e => {
   if (e.key === "Enter") handleSend();
 });
