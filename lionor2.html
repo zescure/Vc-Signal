@@ -97,24 +97,29 @@
 
   <script>
     async function askLIONOR() {
-      const query = document.getElementById("question").value;
-      if (!query.trim()) {
-        document.getElementById("answer").innerText = "Masukkan pertanyaan dulu ya 👽";
-        return;
-      }
+  const query = document.getElementById("question").value;
+  if (!query.trim()) {
+    document.getElementById("answer").innerText = "Masukkan pertanyaan dulu ya 👽";
+    return;
+  }
 
-      document.getElementById("answer").innerText = "⏳ Mencari jawaban dari luar angkasa...";
+  document.getElementById("answer").innerText = "⏳ Mencari jawaban dari luar angkasa...";
 
-      try {
-        const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json`);
-        const data = await response.json();
+  try {
+    const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://api.duckduckgo.com/?q=' + encodeURIComponent(query) + '&format=json')}`);
+    const dataWrapped = await response.json();
+    const data = JSON.parse(dataWrapped.contents);
 
-        const hasil = data.AbstractText || data.Heading || "Maaf, belum ketemu jawaban dari jagat maya.";
-        document.getElementById("answer").innerText = `🛰️ ${hasil}`;
-      } catch (error) {
-        document.getElementById("answer").innerText = "⚠️ Gagal ambil data. Coba lagi nanti.";
-      }
+    let hasil = data.AbstractText;
+    if (!hasil || hasil.trim() === "") {
+      hasil = `Tidak ditemukan jawaban pasti untuk: "${query}". Coba tanya topik yang lebih spesifik atau populer.`;
     }
+
+    document.getElementById("answer").innerText = `🛰️ ${hasil}`;
+  } catch (error) {
+    document.getElementById("answer").innerText = "⚠️ Gagal ambil data. Coba lagi nanti.";
+  }
+}
   </script>
 
 </body>
