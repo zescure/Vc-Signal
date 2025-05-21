@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -7,160 +7,94 @@
   <style>
     * {
       box-sizing: border-box;
-    }
-
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      width: 100%;
-      background-color: #0f0f10;
       font-family: 'Segoe UI', sans-serif;
+    }
+    body {
+      margin: 0;
+      background: linear-gradient(to right, #0f0c29, #302b63, #24243e);
+      color: white;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      padding: 20px;
+      text-align: center;
+      background-color: rgba(0, 0, 0, 0.3);
+      font-weight: bold;
+      font-size: 1.5em;
+      letter-spacing: 1px;
       color: #fff;
     }
-
-    .chat-container {
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      width: 100vw;
-    }
-
-    .header {
-      background: linear-gradient(90deg, #10a37f, #29b3aa);
-      padding: 16px;
-      font-size: 20px;
-      font-weight: bold;
-      text-align: center;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-      color: white;
-    }
-
-    .chat-box {
+    #chat-container {
       flex: 1;
-      overflow-y: auto;
       padding: 20px;
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      background-color: #121314;
+      gap: 10px;
     }
-
-    .input-area {
-      display: flex;
-      padding: 16px;
-      background-color: #1e1e20;
-      border-top: 1px solid #333;
-    }
-
-    input[type="text"] {
-      flex: 1;
-      padding: 12px;
-      background-color: #2a2a2e;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      color: white;
-    }
-
-    button {
-      margin-left: 10px;
-      background: #10a37f;
-      border: none;
-      padding: 12px 16px;
-      color: white;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-
-    button:hover {
-      background: #0e8c6e;
-    }
-
-    .user-msg, .bot-msg, .bot-img {
+    .user-message, .bot-message, .typing {
       max-width: 80%;
       padding: 12px 16px;
-      border-radius: 18px;
-      font-size: 15px;
+      border-radius: 12px;
+      white-space: pre-wrap;
       line-height: 1.5;
-      animation: fadeIn 0.3s ease;
     }
-
-    .user-msg {
-      background: #1a5cff;
+    .user-message {
       align-self: flex-end;
-      text-align: right;
-      color: white;
-      box-shadow: 0 0 8px rgba(26, 92, 255, 0.3);
+      background-color: #3a3a5f;
     }
-
-    .bot-msg {
-      background: #252525;
+    .bot-message {
       align-self: flex-start;
-      box-shadow: 0 0 8px rgba(255, 255, 255, 0.05);
+      background-color: #1e1e2f;
     }
-
-    .bot-img {
-      align-self: flex-start;
-    }
-
-    .bot-img img {
-      max-width: 100%;
-      border-radius: 10px;
-      box-shadow: 0 0 8px rgba(255,255,255,0.1);
-    }
-
     .typing {
       font-style: italic;
-      color: #aaa;
+      opacity: 0.7;
     }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    #input-container {
+      display: flex;
+      border-top: 1px solid #444;
     }
-
-    @media (max-width: 600px) {
-      .chat-box {
-        padding: 12px;
-      }
-
-      input[type="text"] {
-        font-size: 14px;
-      }
-
-      button {
-        padding: 10px 14px;
-        font-size: 14px;
-      }
+    input {
+      flex: 1;
+      padding: 16px;
+      border: none;
+      outline: none;
+      font-size: 1em;
+      background-color: #111;
+      color: #fff;
+    }
+    button {
+      padding: 0 20px;
+      background-color: #444;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #666;
     }
   </style>
 </head>
 <body>
-  <div class="chat-container">
-    <div class="header"> LIONOR AI Beta</div>
-    <div id="chat-box" class="chat-box"></div>
-    <div class="input-area">
-      <input type="text" id="user-input" placeholder="Ketik sesuatu..." autocomplete="off"/>
-      <button onclick="sendMessage()">Kirim</button>
-    </div>
+  <header>LIONOR AI Beta</header>
+  <div id="chat-container"></div>
+  <div id="input-container">
+    <input id="user-input" type="text" placeholder="Tulis sesuatu..." />
+    <button onclick="handleSend()">Kirim</button>
   </div>
 
   <script>
-    const chatBox = document.getElementById('chat-box');
-    const userInput = document.getElementById('user-input');
-
     const botKeywords = [
-  { keyword: "halo lionor", response: "Hallo juga King Zezy! Ada yang bisa gue bantu?" },
-  { keyword: "siapa", response: "Gue adalah LIONOR AI Beta — versi ringan dari AI ChatGPT buatan manusia." },
-  { keyword: "coding", response: "Boleh, mau bantuin bagian apa dulu nih?" },
-  { keyword: "makasih", response: "Sama-sama, King Zezy 👑" },
-  { keyword: "ngapain", response: "Lagi standby nunggu kamu ngetik, hehe." },
-  { 
-    keyword: "gabut", 
-    response: `Hallo king zezy 👑
+      { keyword: "halo lionor", response: "Hallo juga King Zezy! Ada yang bisa gue bantu?" },
+      { keyword: "siapa", response: "Gue adalah LIONOR AI Beta — versi ringan dari AI ChatGPT buatan manusia." },
+      { keyword: "coding", response: "Boleh, mau bantuin bagian apa dulu nih?" },
+      { keyword: "makasih", response: "Sama-sama, King Zezy 👑" },
+      { keyword: "ngapain", response: "Lagi standby nunggu kamu ngetik, hehe." },
+      {
+        keyword: "gabut", response: `Hallo king zezy 👑
 
 Karena lagi gabut, yuk ngobrolin hal lucu tapi gak receh.
 
@@ -176,74 +110,86 @@ semakin lucu seseorang di luar, bisa jadi semakin sedih di dalam. Tapi bukan ber
 Kalo dipikir-pikir… mirip kayak kamu ya, kadang ngomong ngawur, tapi sebenernya dalem banget 🧠✨
 
 Mau lanjut bahas hal absurd lain yang bisa jadi obat gabut?`
-  }
-];
+      }
+    ];
 
-    function sendMessage() {
-      const userText = userInput.value.trim();
-      if (userText === '') return;
+    const chatContainer = document.getElementById("chat-container");
+    const userInput = document.getElementById("user-input");
 
-      appendMessage('User', userText);
-      userInput.value = '';
+    function handleSend() {
+      const input = userInput.value.trim();
+      if (!input) return;
 
-      const typingDiv = document.createElement('div');
-      typingDiv.className = 'bot-msg typing';
-      typingDiv.innerText = 'LIONOR AI sedang mengetik...';
-      chatBox.appendChild(typingDiv);
-      chatBox.scrollTop = chatBox.scrollHeight;
+      addUserMessage(input);
+      userInput.value = "";
+
+      showTypingAnimation();
+
+      const message = input.toLowerCase();
+      const matched = botKeywords.find(k => message.includes(k.keyword));
 
       setTimeout(() => {
-        typingDiv.remove();
+        hideTypingAnimation();
 
-        const lowerText = userText.toLowerCase();
-
-        const foundImage = imagePrompts.find(item =>
-          lowerText.includes(item.keyword)
-        );
-
-        if (lowerText.includes("buatkan foto") && foundImage) {
-          appendImage(foundImage.imgUrl);
-          return;
+        if (matched) {
+          displayBotResponse(matched.response);
+        } else if (message.includes("buatkan foto")) {
+          // Dummy logic: kirim gambar dari link statis (bisa kamu ganti)
+          displayBotResponseImage("https://images.unsplash.com/photo-1549921296-3a6b52f4aa67");
+        } else {
+          displayBotResponse("Maaf, aku belum ngerti maksudmu 😅");
         }
-
-        let matched = false;
-        for (const item of botKeywords) {
-          if (lowerText.includes(item.keyword)) {
-            appendMessage('Bot', item.response);
-            matched = true;
-            break;
-          }
-        }
-
-        if (!matched) {
-          appendMessage('Bot', "Maaf, LIONOR belum ngerti itu. Coba ketik yang lain ya.");
-        }
-
-      }, 800);
+      }, 1500);
     }
 
-    function appendMessage(sender, text) {
-      const message = document.createElement('div');
-      message.className = sender === 'User' ? 'user-msg' : 'bot-msg';
-      message.innerText = text;
-      chatBox.appendChild(message);
-      chatBox.scrollTop = chatBox.scrollHeight;
+    function addUserMessage(text) {
+      const div = document.createElement("div");
+      div.className = "user-message";
+      div.innerText = text;
+      chatContainer.appendChild(div);
+      scrollToBottom();
     }
 
-    function appendImage(url) {
-      const message = document.createElement('div');
-      message.className = 'bot-img';
-      const img = document.createElement('img');
+    function displayBotResponse(text) {
+      const div = document.createElement("div");
+      div.className = "bot-message";
+      div.innerText = text;
+      chatContainer.appendChild(div);
+      scrollToBottom();
+    }
+
+    function displayBotResponseImage(url) {
+      const div = document.createElement("div");
+      div.className = "bot-message";
+      const img = document.createElement("img");
       img.src = url;
-      message.appendChild(img);
-      chatBox.appendChild(message);
-      chatBox.scrollTop = chatBox.scrollHeight;
+      img.style.maxWidth = "100%";
+      img.style.borderRadius = "10px";
+      div.appendChild(img);
+      chatContainer.appendChild(div);
+      scrollToBottom();
     }
 
-    userInput.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') {
-        sendMessage();
-      }
+    function showTypingAnimation() {
+      const typing = document.createElement("div");
+      typing.className = "bot-message typing";
+      typing.id = "typing";
+      typing.innerText = "LIONOR AI sedang mengetik…";
+      chatContainer.appendChild(typing);
+      scrollToBottom();
+    }
+
+    function hideTypingAnimation() {
+      const typing = document.getElementById("typing");
+      if (typing) typing.remove();
+    }
+
+    function scrollToBottom() {
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    userInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") handleSend();
     });
   </script>
 </body>
