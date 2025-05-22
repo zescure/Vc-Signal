@@ -16,6 +16,9 @@
     }
 
     header {
+      position: fixed;
+      top: 0;
+      width: 100%;
       background: #1a1d24;
       padding: 16px;
       text-align: center;
@@ -23,11 +26,12 @@
       color: #00ffe7;
       font-weight: bold;
       box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+      z-index: 10;
     }
 
     #chat {
       flex: 1;
-      padding: 20px;
+      padding: 90px 20px 100px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
@@ -54,10 +58,14 @@
     }
 
     #input-area {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
       display: flex;
       padding: 15px;
       background: #16181f;
       border-top: 1px solid #333;
+      z-index: 10;
     }
 
     input[type="text"] {
@@ -86,8 +94,6 @@
     }
   </style>
 </head>
-<!-- ... bagian <head> dan <style> tetap sama seperti sebelumnya -->
-
 <body>
   <header>LIONOR3 AI Chat</header>
 
@@ -102,7 +108,6 @@
     const autoReply = (q) => {
       const pertanyaan = q.toLowerCase().trim();
 
-      // Tambahin daftar pertanyaan yang auto dijawab di sini
       if (pertanyaan === "hallo lionor" || pertanyaan === "halo lionor") {
         return "Hallo juga, King Zezy 👑! Ada yang mau lo tanyain hari ini?";
       }
@@ -115,8 +120,21 @@
         return "Sama-sama yaa, aku seneng bisa bantu 😊";
       }
 
-      return null; // Kalau gak ada match, balik ke backend
+      return null;
     };
+
+    function ketikEfek(element, text, delay = 20) {
+      let i = 0;
+      element.textContent = '';
+      function ketik() {
+        if (i < text.length) {
+          element.textContent += text.charAt(i);
+          i++;
+          setTimeout(ketik, delay);
+        }
+      }
+      ketik();
+    }
 
     async function kirimPertanyaan() {
       const input = document.getElementById('pertanyaan');
@@ -125,7 +143,6 @@
 
       if (!teks) return;
 
-      // Tampilkan pertanyaan user
       const userMsg = document.createElement('div');
       userMsg.className = 'msg user';
       userMsg.textContent = teks;
@@ -134,35 +151,30 @@
       input.value = '';
       input.focus();
 
-      // Cek apakah pertanyaan bisa dijawab otomatis
       const jawabanCepat = autoReply(teks);
       const aiMsg = document.createElement('div');
       aiMsg.className = 'msg ai';
+      chat.appendChild(aiMsg);
+      chat.scrollTop = chat.scrollHeight;
 
       if (jawabanCepat) {
-        aiMsg.textContent = jawabanCepat;
-        chat.appendChild(aiMsg);
-        chat.scrollTop = chat.scrollHeight;
+        ketikEfek(aiMsg, jawabanCepat);
         return;
       }
 
-      // Kalau bukan jawaban cepat, panggil backend
-      aiMsg.textContent = '⏳ Lionor mikir...';
-      chat.appendChild(aiMsg);
-      chat.scrollTop = chat.scrollHeight;
+      ketikEfek(aiMsg, '⏳ Lionor mikir...');
 
       try {
         const res = await fetch(`/.netlify/functions/ask?q=${encodeURIComponent(teks)}`);
         const data = await res.json();
-        aiMsg.textContent = data.answer || "⚠️ Lionor gak ngerti. Coba tanya dengan cara lain ya.";
+        ketikEfek(aiMsg, data.answer || "⚠️ Lionor gak ngerti. Coba tanya dengan cara lain ya.");
       } catch (err) {
-        aiMsg.textContent = "⚠️ Gagal ambil jawaban. Cek koneksi atau backend-nya.";
+        ketikEfek(aiMsg, "⚠️ Gagal ambil jawaban. Cek koneksi atau backend-nya.");
       }
 
       chat.scrollTop = chat.scrollHeight;
     }
 
-    // Enter key support
     document.getElementById('pertanyaan').addEventListener('keydown', function (e) {
       if (e.key === 'Enter') kirimPertanyaan();
     });
