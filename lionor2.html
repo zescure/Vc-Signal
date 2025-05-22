@@ -92,82 +92,11 @@
     button:hover {
       background-color: #00d1bf;
     }
-    #menuBtn {
-  position: fixed;
-  top: 15px;
-  left: 15px;
-  z-index: 1001;
-  background: #1e1f22;
-  color: white;
-  border: none;
-  font-size: 28px;
-  padding: 12px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-#sideMenu {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 250px;
-  background: #1e1f22;
-  color: white;
-  box-shadow: 3px 0 10px rgba(0, 0, 0, 0.5);
-  transform: translateX(-100%);
-  transition: transform 0.3s ease;
-  z-index: 1000;
-  padding-top: 60px;
-}
-
-#sideMenu ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-#sideMenu li {
-  padding: 15px 20px;
-  border-bottom: 1px solid #444;
-  cursor: pointer;
-}
-
-#sideMenu li:hover {
-  background: #333;
-}
-
-#sideMenu.show {
-  transform: translateX(0);
-}
-
-.menu-header {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  background: #2a2b2f;
-  padding: 15px 20px;
-  font-size: 18px;
-  font-weight: bold;
-  border-bottom: 1px solid #444;
-}
   </style>
 </head>
 <body>
   <header>LIONOR3 AI Beta</header>
-<div id="mobileMenu">
-  <button id="menuBtn">☰</button>
-  <div id="sideMenu" class="hidden">
-    <div class="menu-header">Lionor AI</div>
-    <ul>
-      <li onclick="alert('👤 Pemilik Lionor: Zezy, trader & developer AI lokal.')">Profil Pemilik</li>
-      <li onclick="alert('🛰️ Tentang kami: Lionor AI adalah asisten AI lokal yang terus berkembang.')">Tentang Kami</li>
-      <li onclick="alert('🔐 Privasi: Kami tidak menyimpan pertanyaan secara permanen.')">Kebijakan Privasi</li>
-      <li onclick="alert('🇮🇩 Terima kasih telah mendukung AI lokal buatan anak negeri.')">Support AI Lokal</li>
-    </ul>
-  </div>
-</div>
+
   <div id="chat"></div>
 
   <div id="input-area">
@@ -402,19 +331,6 @@ input.addEventListener('keydown', function (e) {
     kirimPertanyaan();
   }
 });
-    const menuBtn = document.getElementById('menuBtn');
-  const sideMenu = document.getElementById('sideMenu');
-
-  menuBtn.addEventListener('click', () => {
-    sideMenu.classList.toggle('show');
-  });
-
-  // Tutup menu kalau klik di luar
-  document.addEventListener('click', (e) => {
-    if (!sideMenu.contains(e.target) && e.target !== menuBtn) {
-      sideMenu.classList.remove('show');
-    }
-  });
 </script>
 </body>
 </html>
