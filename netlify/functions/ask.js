@@ -1,5 +1,6 @@
 const fetch = require("node-fetch");
 
+// Taruh API key langsung di sini
 const OPENROUTER_API_KEY = "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";
 
 exports.handler = async function (event) {
@@ -18,14 +19,11 @@ exports.handler = async function (event) {
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-        "HTTP-Referer": "https://vc-signalforex.netlify.app/", // Pastikan domain kamu ini terdaftar di OpenRouter dashboard!
+        "HTTP-Referer": "https://vc-signalforex.netlify.app/", // penting agar lolos validasi OpenRouter
       },
       body: JSON.stringify({
         model: "openai/gpt-3.5-turbo",
-        messages: [
-          { role: "system", content: "You are Lionor AI, a helpful assistant." },
-          { role: "user", content: q },
-        ],
+        messages: [{ role: "user", content: q }],
       }),
     });
 
@@ -40,17 +38,15 @@ exports.handler = async function (event) {
       };
     }
 
-    const answer = data.choices[0].message.content;
-
     return {
       statusCode: 200,
-      body: JSON.stringify({ answer }),
+      body: JSON.stringify({ answer: data.choices[0].message.content }),
     };
   } catch (error) {
     return {
       statusCode: 500,
       body: JSON.stringify({
-        answer: `⚠️ Terjadi kesalahan:\n${error.message}`,
+        answer: `⚠️ Gagal menghubungi OpenRouter: ${error.message}`,
       }),
     };
   }
