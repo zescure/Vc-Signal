@@ -92,11 +92,67 @@
     button:hover {
       background-color: #00d1bf;
     }
+    #menuToggle {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  z-index: 1000;
+}
+
+#menuBtn {
+  background: #1e1f22;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  font-size: 18px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#menuBox {
+  margin-top: 10px;
+  background: #2a2b2f;
+  color: white;
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.4);
+  overflow: hidden;
+  width: 200px;
+}
+
+#menuBox ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#menuBox li {
+  padding: 12px 15px;
+  border-bottom: 1px solid #444;
+  cursor: pointer;
+}
+
+#menuBox li:hover {
+  background: #333;
+}
+
+.hidden {
+  display: none;
+}
   </style>
 </head>
 <body>
   <header>LIONOR3 AI Beta</header>
-
+<div id="menuToggle">
+  <button id="menuBtn">☰</button>
+  <div id="menuBox" class="hidden">
+    <ul>
+      <li onclick="alert('👤 Pemilik Lionor: Zezy, trader & developer AI lokal.')" >Profil Pemilik</li>
+      <li onclick="alert('🛰️ Tentang kami: Lionor AI adalah asisten AI lokal yang terus berkembang.')" >Tentang Kami</li>
+      <li onclick="alert('🔐 Privasi: Kami tidak menyimpan pertanyaan secara permanen.')" >Kebijakan Privasi</li>
+      <li onclick="alert('🇮🇩 Terima kasih telah mendukung AI lokal buatan anak negeri.')" >Support AI Lokal</li>
+    </ul>
+  </div>
+</div>
   <div id="chat"></div>
 
   <div id="input-area">
@@ -331,6 +387,18 @@ input.addEventListener('keydown', function (e) {
     kirimPertanyaan();
   }
 });
+    const menuBtn = document.getElementById('menuBtn');
+  const menuBox = document.getElementById('menuBox');
+
+  menuBtn.addEventListener('click', () => {
+    menuBox.classList.toggle('hidden');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!menuBox.contains(e.target) && e.target !== menuBtn) {
+      menuBox.classList.add('hidden');
+    }
+  });
 </script>
 </body>
 </html>
