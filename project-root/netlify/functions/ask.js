@@ -20,13 +20,13 @@ exports.handler = async (event) => {
       },
       body: JSON.stringify({
         model: 'mistralai/mistral-7b-instruct',
-        messages: [
-          { role: 'user', content: pertanyaan }
-        ]
+        messages: [{ role: 'user', content: pertanyaan }],
       })
     });
 
-    const data = await response.json();
+    const text = await response.text();
+    console.log("API Response Raw:", text); // log ke Netlify
+    const data = JSON.parse(text);
 
     return {
       statusCode: 200,
@@ -35,6 +35,7 @@ exports.handler = async (event) => {
       }),
     };
   } catch (error) {
+    console.log("Fetch error:", error); // log error
     return {
       statusCode: 500,
       body: JSON.stringify({ error: 'Gagal ambil jawaban dari AI' }),
