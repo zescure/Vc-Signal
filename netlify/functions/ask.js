@@ -1,6 +1,6 @@
 const fetch = require("node-fetch");
 
-const OPENROUTER_API_KEY = "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"; // ganti dengan key kamu yang aktif
+const OPENROUTER_API_KEY = "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"; // ganti dengan key kamu yang aktif
 
 exports.handler = async function (event, context) {
   const q = event.queryStringParameters.q || "";
