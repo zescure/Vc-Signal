@@ -34,6 +34,7 @@ exports.handler = async function (event, context) {
     });
 
     const data = await response.json();
+console.log("RESPON OPENROUTER:", JSON.stringify(data));
 
     // Cek isi respon model
     const jawaban =
