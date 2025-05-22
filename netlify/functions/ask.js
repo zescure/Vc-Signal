@@ -18,6 +18,7 @@ exports.handler = async function (event) {
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+        "HTTP-Referer": "https://vc-signalforex.netlify.app/", // Pastikan domain kamu ini terdaftar di OpenRouter dashboard!
       },
       body: JSON.stringify({
         model: "openai/gpt-3.5-turbo",
@@ -30,18 +31,12 @@ exports.handler = async function (event) {
 
     const data = await response.json();
 
-    // Kalau response bukan 200, kembalikan error lengkap
     if (!response.ok) {
       return {
         statusCode: response.status,
-        body: JSON.stringify({ answer: `⚠️ Error dari API: ${data.error || JSON.stringify(data)}` }),
-      };
-    }
-
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ answer: "⚠️ Gagal dapet respon dari model." }),
+        body: JSON.stringify({
+          answer: `⚠️ Error dari API:\n${JSON.stringify(data, null, 2)}`,
+        }),
       };
     }
 
@@ -54,7 +49,9 @@ exports.handler = async function (event) {
   } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ answer: `⚠️ Terjadi kesalahan: ${error.message}` }),
+      body: JSON.stringify({
+        answer: `⚠️ Terjadi kesalahan:\n${error.message}`,
+      }),
     };
   }
 };
