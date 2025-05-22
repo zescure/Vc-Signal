@@ -157,6 +157,25 @@
     return null;
   };
 
+async function kirimPertanyaan() {
+  const input = document.getElementById('pertanyaan');
+  const chat = document.getElementById('chat');
+  const teks = input.value.trim();
+
+  if (!teks) return;
+
+  jumlahPertanyaan++;
+  localStorage.setItem('jumlahPertanyaan', jumlahPertanyaan);
+
+  if (jumlahPertanyaan > LIMIT_HARIAN) {
+    const aiMsg = document.createElement('div');
+    aiMsg.className = 'msg ai';
+    chat.appendChild(aiMsg);
+    ketikEfek(aiMsg, "⚠️ Anda telah melebihi batas harian. Silakan upgrade ke Lionor AI Premium.");
+    tampilkanPopupPembayaran();
+    return;
+  }
+    
 // === BATAS PERTANYAAN HARIAN ===
 let jumlahPertanyaan = parseInt(localStorage.getItem('jumlahPertanyaan') || '0');
 const LIMIT_HARIAN = 7;
@@ -238,25 +257,7 @@ function prosesPembayaran() {
   window.open(url, '_blank');
 }
 
-// === KIRIM PERTANYAAN KE CHATBOX ===
-async function kirimPertanyaan() {
-  const input = document.getElementById('pertanyaan');
-  const chat = document.getElementById('chat');
-  const teks = input.value.trim();
 
-  if (!teks) return;
-
-  if (jumlahPertanyaan >= LIMIT_HARIAN) {
-    const aiMsg = document.createElement('div');
-    aiMsg.className = 'msg ai';
-    chat.appendChild(aiMsg);
-    ketikEfek(aiMsg, "⚠️ Anda telah melebihi batas harian. Silakan upgrade ke Lionor AI Premium.");
-    tampilkanPopupPembayaran();
-    return;
-  }
-
-  jumlahPertanyaan++;
-  localStorage.setItem('jumlahPertanyaan', jumlahPertanyaan);
 
     const userMsg = document.createElement('div');
     userMsg.className = 'msg user';
