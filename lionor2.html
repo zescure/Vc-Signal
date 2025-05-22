@@ -105,97 +105,160 @@
   </div>
 
   <script>
-    const autoReply = (q) => {
-  const pertanyaan = q.toLowerCase().trim();
+  // === AUTO REPLY MANUAL ===
+  const autoReply = (q) => {
+    const pertanyaan = q.toLowerCase().trim();
 
-  // Jawaban manual spesifik dan rinci tapi tetap alami dan netral
-  if (pertanyaan === "siapa pemilik lionor ai") {
-    return "Lionor AI adalah produk hasil karya seorang kreator dan programmer yang berdedikasi untuk menghadirkan asisten digital yang cerdas dan membantu banyak orang dalam berbagai kebutuhan sehari-hari.";
-  }
-
-  if (pertanyaan === "lionor ai dari mana") {
-    return "Lionor AI dikembangkan di Indonesia dengan tujuan menciptakan teknologi yang mudah diakses dan bermanfaat bagi pengguna di seluruh dunia, terutama yang menggunakan bahasa Indonesia.";
-  }
-
-  if (pertanyaan === "apa visi misi lionor ai") {
-    return "Visi Lionor AI adalah menjadi asisten pintar yang dapat diandalkan kapan saja, dengan misi menyediakan pengalaman berinteraksi yang menyenangkan, berguna, dan mudah diakses oleh semua kalangan.";
-  }
-
-  if (pertanyaan === "siapa zezy") {
-    return "Zezy adalah sosok kreatif dan programmer yang berada di balik pengembangan Lionor AI, dengan semangat tinggi untuk membuat teknologi yang tidak hanya canggih tetapi juga ramah dan membantu banyak orang.";
-  }
-
-  // Jawaban manual yang basic tetap dipertahankan, tapi tanpa sebutan 'king zezy'
-  if (pertanyaan === "hallo lionor" || pertanyaan === "halo lionor") {
-    return "Hallo juga! Ada yang mau kamu tanyain hari ini?";
-  }
-
-  if (pertanyaan.includes("siapa kamu")) {
-    return "Aku Lionor AI Beta, asisten digital yang siap membantu kamu kapan saja!";
-  }
-
-  if (pertanyaan.includes("makasih") || pertanyaan.includes("terima kasih")) {
-    return "Sama-sama yaa, aku senang bisa bantu 😊";
-  }
-
-  return null;
-};
-
-    function ketikEfek(element, text, delay = 20) {
-      let i = 0;
-      element.textContent = '';
-      function ketik() {
-        if (i < text.length) {
-          element.textContent += text.charAt(i);
-          i++;
-          setTimeout(ketik, delay);
-        }
-      }
-      ketik();
+    if (pertanyaan === "siapa pemilik lionor ai") {
+      return "Lionor AI adalah produk hasil karya seorang kreator dan programmer yang berdedikasi untuk menghadirkan asisten digital yang cerdas dan membantu banyak orang dalam berbagai kebutuhan sehari-hari.";
     }
 
-    async function kirimPertanyaan() {
-      const input = document.getElementById('pertanyaan');
-      const chat = document.getElementById('chat');
-      const teks = input.value.trim();
+    if (pertanyaan === "lionor ai dari mana") {
+      return "Lionor AI dikembangkan di Indonesia dengan tujuan menciptakan teknologi yang mudah diakses dan bermanfaat bagi pengguna di seluruh dunia, terutama yang menggunakan bahasa Indonesia.";
+    }
 
-      if (!teks) return;
+    if (pertanyaan === "apa visi misi lionor ai") {
+      return "Visi Lionor AI adalah menjadi asisten pintar yang dapat diandalkan kapan saja, dengan misi menyediakan pengalaman berinteraksi yang menyenangkan, berguna, dan mudah diakses oleh semua kalangan.";
+    }
 
-      const userMsg = document.createElement('div');
-      userMsg.className = 'msg user';
-      userMsg.textContent = teks;
-      chat.appendChild(userMsg);
+    if (pertanyaan === "siapa zezy") {
+      return "Zezy adalah sosok kreatif dan programmer yang berada di balik pengembangan Lionor AI, dengan semangat tinggi untuk membuat teknologi yang tidak hanya canggih tetapi juga ramah dan membantu banyak orang.";
+    }
 
-      input.value = '';
-      input.focus();
+    if (pertanyaan === "hallo lionor" || pertanyaan === "halo lionor") {
+      return "Hallo juga! Ada yang mau kamu tanyain hari ini?";
+    }
 
-      const jawabanCepat = autoReply(teks);
+    if (pertanyaan.includes("siapa kamu")) {
+      return "Aku Lionor AI Beta, asisten digital yang siap membantu kamu kapan saja!";
+    }
+
+    if (pertanyaan.includes("makasih") || pertanyaan.includes("terima kasih")) {
+      return "Sama-sama yaa, aku senang bisa bantu 😊";
+    }
+
+    return null;
+  };
+
+  // === BATAS PERTANYAAN HARIAN ===
+  let jumlahPertanyaan = parseInt(localStorage.getItem('jumlahPertanyaan') || '0');
+  const LIMIT_HARIAN = 7;
+
+  // === EFEK KETIK ===
+  function ketikEfek(element, text, delay = 20) {
+    let i = 0;
+    element.textContent = '';
+    function ketik() {
+      if (i < text.length) {
+        element.textContent += text.charAt(i);
+        i++;
+        setTimeout(ketik, delay);
+      }
+    }
+    ketik();
+  }
+
+  // === POPUP PREMIUM ===
+  function tampilkanPopupPembayaran() {
+    const popup = document.createElement('div');
+    popup.style.position = 'fixed';
+    popup.style.top = '0';
+    popup.style.left = '0';
+    popup.style.width = '100vw';
+    popup.style.height = '100vh';
+    popup.style.background = 'rgba(0,0,0,0.8)';
+    popup.style.display = 'flex';
+    popup.style.justifyContent = 'center';
+    popup.style.alignItems = 'center';
+    popup.style.zIndex = '9999';
+
+    popup.innerHTML = `
+      <div style="background:#1e1f22;padding:25px;border-radius:10px;color:white;width:300px;max-width:90%;">
+        <h3 style="margin-top:0;margin-bottom:15px;">🚀 Lionor AI Premium</h3>
+        <p>✅ 100 pertanyaan per hari<br>✅ Akses dari 3 website:<br>- Zestore.id<br>- VCSignalTrading.id<br>- Zeetrading.id<br>✅ Dapat update fitur lebih awal</p>
+        <p><strong>Harga:</strong> Rp151.500 (QRIS Dana + 1% admin)</p>
+        <input id="namaUser" placeholder="Nama Lengkap" style="width:100%;margin-bottom:8px;padding:8px;" />
+        <input id="emailUser" placeholder="Email" style="width:100%;margin-bottom:8px;padding:8px;" />
+        <input id="waUser" placeholder="Nomor WhatsApp" style="width:100%;margin-bottom:10px;padding:8px;" />
+        <button onclick="prosesPembayaran()" style="width:100%;padding:10px;background:#00ffe7;color:#10131a;font-weight:bold;border:none;border-radius:5px;">✅ Sudah Bayar</button>
+      </div>
+    `;
+    document.body.appendChild(popup);
+  }
+
+  function prosesPembayaran() {
+    const nama = document.getElementById('namaUser').value;
+    const email = document.getElementById('emailUser').value;
+    const wa = document.getElementById('waUser').value;
+
+    if (!nama || !email || !wa) {
+      alert("Lengkapi semua data dulu ya.");
+      return;
+    }
+
+    const teks = `Halo admin Lionor AI, saya sudah bayar.\n\nNama: ${nama}\nEmail: ${email}\nWhatsApp: ${wa}\n\nMohon aktifkan Lionor Premium.`;
+    const url = `https://wa.me/62XXXXXXXXXX?text=${encodeURIComponent(teks)}`;
+
+    localStorage.setItem('jumlahPertanyaan', 0); // Reset
+    window.location.href = url;
+  }
+
+  // === KIRIM PERTANYAAN KE CHATBOX ===
+  async function kirimPertanyaan() {
+    const input = document.getElementById('pertanyaan');
+    const chat = document.getElementById('chat');
+    const teks = input.value.trim();
+
+    if (!teks) return;
+
+    if (jumlahPertanyaan >= LIMIT_HARIAN) {
       const aiMsg = document.createElement('div');
       aiMsg.className = 'msg ai';
       chat.appendChild(aiMsg);
-      chat.scrollTop = chat.scrollHeight;
-
-      if (jawabanCepat) {
-        ketikEfek(aiMsg, jawabanCepat);
-        return;
-      }
-
-      ketikEfek(aiMsg, '⏳ Lionor mikir...');
-
-      try {
-        const res = await fetch(`/.netlify/functions/ask?q=${encodeURIComponent(teks)}`);
-        const data = await res.json();
-        ketikEfek(aiMsg, data.answer || "⚠️ Lionor gak ngerti. Coba tanya dengan cara lain ya.");
-      } catch (err) {
-        ketikEfek(aiMsg, "⚠️ Gagal ambil jawaban. Cek koneksi atau backend-nya.");
-      }
-
-      chat.scrollTop = chat.scrollHeight;
+      ketikEfek(aiMsg, "⚠️ Anda telah melebihi batas harian. Silakan upgrade ke Lionor AI Premium.");
+      tampilkanPopupPembayaran();
+      return;
     }
 
-    document.getElementById('pertanyaan').addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') kirimPertanyaan();
-    });
-  </script>
+    jumlahPertanyaan++;
+    localStorage.setItem('jumlahPertanyaan', jumlahPertanyaan);
+
+    const userMsg = document.createElement('div');
+    userMsg.className = 'msg user';
+    userMsg.textContent = teks;
+    chat.appendChild(userMsg);
+
+    input.value = '';
+    input.focus();
+
+    const jawabanCepat = autoReply(teks);
+    const aiMsg = document.createElement('div');
+    aiMsg.className = 'msg ai';
+    chat.appendChild(aiMsg);
+    chat.scrollTop = chat.scrollHeight;
+
+    if (jawabanCepat) {
+      ketikEfek(aiMsg, jawabanCepat);
+      return;
+    }
+
+    ketikEfek(aiMsg, '⏳ Lionor mikir...');
+
+    try {
+      const res = await fetch(`/.netlify/functions/ask?q=${encodeURIComponent(teks)}`);
+      const data = await res.json();
+      ketikEfek(aiMsg, data.answer || "⚠️ Lionor gak ngerti. Coba tanya dengan cara lain ya.");
+    } catch (err) {
+      ketikEfek(aiMsg, "⚠️ Gagal ambil jawaban. Cek koneksi atau backend-nya.");
+    }
+
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  // === ENTER KEY LISTENER ===
+  document.getElementById('pertanyaan').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') kirimPertanyaan();
+  });
+</script>
 </body>
 </html>
