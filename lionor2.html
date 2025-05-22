@@ -191,10 +191,10 @@
 
     popup.innerHTML = `
       <div style="background:#1e1f22;padding:25px;border-radius:10px;color:white;width:300px;max-width:90%;text-align:center;">
-        <h3 style="margin-top:0;margin-bottom:15px;">🚀 Lionor AI Premium</h3>
-        <p>✅ 100 pertanyaan per hari<br>✅ Akses dari 3 website:<br>- Zestore.id<br>- VCSignalTrading.id<br>- Zeetrading.id<br>✅ Dapat update fitur lebih awal</p>
-        <img src="https://your-qris-url.com/qris.jpg" alt="QRIS Dana" style="width:100%;max-width:200px;border-radius:8px;margin:10px auto;">
-        <p><strong>Harga:</strong> Rp151.500 (QRIS Dana + 1% admin)</p>
+        <h3>🚀 Lionor AI Premium</h3>
+        <p>✅ 100 pertanyaan/hari<br>✅ Akses dari 3 website<br>✅ Dapat update fitur lebih awal</p>
+        <img src="https://your-qris-url.com/qris.jpg" alt="QRIS" style="width:100%;max-width:200px;margin:10px auto;border-radius:8px;">
+        <p><strong>Harga:</strong> Rp151.500</p>
         <input id="namaUser" placeholder="Nama Lengkap" style="width:100%;margin-bottom:8px;padding:8px;" />
         <input id="emailUser" placeholder="Email" style="width:100%;margin-bottom:8px;padding:8px;" />
         <input id="waUser" placeholder="Nomor WhatsApp" style="width:100%;margin-bottom:10px;padding:8px;" />
@@ -203,7 +203,6 @@
     `;
     document.body.appendChild(popup);
 
-    // Cooldown tombol
     const btn = document.getElementById('btnSudahBayar');
     let countdown = 15;
     const interval = setInterval(() => {
@@ -233,25 +232,22 @@
 
     const teks = `Halo admin Lionor AI, saya sudah bayar.\n\nNama: ${nama}\nEmail: ${email}\nWhatsApp: ${wa}\n\nMohon aktifkan Lionor Premium.`;
     const url = `https://wa.me/62XXXXXXXXXX?text=${encodeURIComponent(teks)}`;
-
-    localStorage.setItem('jumlahPertanyaan', 0); // Reset
+    localStorage.setItem('jumlahPertanyaan', 0);
     window.open(url, '_blank');
   }
 
-  // === JAWABAN CEPAT ===
   function autoReply(teks) {
     const lower = teks.toLowerCase();
     if (lower.includes("halo") || lower.includes("hai")) return "Halo juga! 👋";
-    if (lower.includes("siapa kamu")) return "Aku Lionor AI, teman diskusi dan penjawab cerdas kamu!";
+    if (lower.includes("siapa kamu")) return "Aku Lionor AI, teman diskusi kamu.";
     return null;
   }
 
-  // === FUNGSI KIRIM PERTANYAAN ===
+  // === KIRIM PERTANYAAN ===
   async function kirimPertanyaan() {
     const input = document.getElementById('pertanyaan');
     const chat = document.getElementById('chat');
     const teks = input.value.trim();
-
     if (!teks) return;
 
     jumlahPertanyaan++;
@@ -298,7 +294,7 @@
     chat.scrollTop = chat.scrollHeight;
   }
 
-  // === ENTER UNTUK SUBMIT ===
+  // === ENTER UNTUK KIRIM ===
   document.getElementById('pertanyaan').addEventListener('keydown', function (e) {
     if (e.key === 'Enter') kirimPertanyaan();
   });
