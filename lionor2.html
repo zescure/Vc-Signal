@@ -106,22 +106,40 @@
 
   <script>
     const autoReply = (q) => {
-      const pertanyaan = q.toLowerCase().trim();
+  const pertanyaan = q.toLowerCase().trim();
 
-      if (pertanyaan === "hallo lionor" || pertanyaan === "halo lionor") {
-        return "Hallo juga, King Zezy 👑! Ada yang mau lo tanyain hari ini?";
-      }
+  // Jawaban manual spesifik untuk pertanyaan lu
+  if (pertanyaan === "siapa pemilik lionor ai") {
+    return "Lionor AI dimiliki dan dikembangkan oleh King Zezy, seorang kreator dan programmer berbakat asal Indonesia.";
+  }
 
-      if (pertanyaan.includes("siapa kamu")) {
-        return "Aku Lionor AI Beta, asisten buatan King Zezy yang keren itu!";
-      }
+  if (pertanyaan === "lionor ai dari mana") {
+    return "Lionor AI dikembangkan oleh King Zezy di Indonesia, dengan tujuan membantu dan memberikan solusi pintar bagi penggunanya.";
+  }
 
-      if (pertanyaan.includes("makasih") || pertanyaan.includes("terima kasih")) {
-        return "Sama-sama yaa, aku seneng bisa bantu 😊";
-      }
+  if (pertanyaan === "apa visi misi lionor ai") {
+    return "Visi Lionor AI adalah menjadi asisten pintar yang dapat diandalkan dan selalu berkembang, sedangkan misinya adalah membantu pengguna dengan cara yang mudah, cepat, dan personal.";
+  }
 
-      return null;
-    };
+  if (pertanyaan === "siapa zezy") {
+    return "Zezy adalah King Zezy, sosok kreator di balik Lionor AI yang ahli di bidang coding, trading, dan teknologi.";
+  }
+
+  // Jawaban manual lainnya yang sudah ada
+  if (pertanyaan === "hallo lionor" || pertanyaan === "halo lionor") {
+    return "Hallo juga, King Zezy 👑! Ada yang mau lo tanyain hari ini?";
+  }
+
+  if (pertanyaan.includes("siapa kamu")) {
+    return "Aku Lionor AI Beta, asisten buatan King Zezy yang keren itu!";
+  }
+
+  if (pertanyaan.includes("makasih") || pertanyaan.includes("terima kasih")) {
+    return "Sama-sama yaa, aku seneng bisa bantu 😊";
+  }
+
+  return null;
+};
 
     function ketikEfek(element, text, delay = 20) {
       let i = 0;
