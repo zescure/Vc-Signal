@@ -159,7 +159,7 @@
 
 // === BATAS PERTANYAAN HARIAN ===
 let jumlahPertanyaan = parseInt(localStorage.getItem('jumlahPertanyaan') || '0');
-const LIMIT_HARIAN = 7;
+const LIMIT_HARIAN = 10;
 
 // === EFEK KETIK ===
 function ketikEfek(element, text, delay = 20) {
@@ -233,7 +233,7 @@ function prosesPembayaran() {
   const teks = `Halo admin Lionor AI, saya sudah bayar.\n\nNama: ${nama}\nEmail: ${email}\nWhatsApp: ${wa}\n\nMohon aktifkan Lionor Premium.`;
   const url = `https://wa.me/62XXXXXXXXXX?text=${encodeURIComponent(teks)}`;
 
-  localStorage.setItem('jumlahPertanyaan', 0); // Reset ke 0
+  localStorage.setItem('jumlahPertanyaan', 0); // Reset
   window.open(url, '_blank');
 }
 
@@ -245,6 +245,7 @@ async function kirimPertanyaan() {
 
   if (!teks) return;
 
+  // Ambil jumlah terbaru sebelum dicek
   jumlahPertanyaan = parseInt(localStorage.getItem('jumlahPertanyaan') || '0');
 
   if (jumlahPertanyaan >= LIMIT_HARIAN) {
@@ -256,6 +257,7 @@ async function kirimPertanyaan() {
     return;
   }
 
+  // Tambah jumlah pertanyaan setelah lolos cek
   jumlahPertanyaan++;
   localStorage.setItem('jumlahPertanyaan', jumlahPertanyaan);
 
