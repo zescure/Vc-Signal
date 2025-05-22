@@ -20,9 +20,19 @@ exports.handler = async function (event, context) {
         Authorization: `Bearer ${GROQ_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "llama3-8b-8192", // model yang cepat dan gratis
-        messages: [{ role: "user", content: q }],
-      }),
+  model: "llama3-8b-8192",
+  messages: [
+    {
+      role: "system",
+      content:
+        "Kamu adalah Lionor AI, asisten digital yang ramah dan pintar dari Indonesia. Jawablah semua pertanyaan dalam bahasa Indonesia yang jelas, sopan, dan mudah dipahami. Jangan gunakan bahasa Inggris kecuali diminta oleh user.",
+    },
+    {
+      role: "user",
+      content: q,
+    },
+  ],
+}),
     });
 
     const data = await response.json();
