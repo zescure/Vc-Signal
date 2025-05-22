@@ -157,107 +157,114 @@
     return null;
   };
 
-async function kirimPertanyaan() {
-  const input = document.getElementById('pertanyaan');
-  const chat = document.getElementById('chat');
-  const teks = input.value.trim();
-
-  if (!teks) return;
-
-  jumlahPertanyaan++;
-  localStorage.setItem('jumlahPertanyaan', jumlahPertanyaan);
-
-  if (jumlahPertanyaan > LIMIT_HARIAN) {
-    const aiMsg = document.createElement('div');
-    aiMsg.className = 'msg ai';
-    chat.appendChild(aiMsg);
-    ketikEfek(aiMsg, "⚠️ Anda telah melebihi batas harian. Silakan upgrade ke Lionor AI Premium.");
-    tampilkanPopupPembayaran();
-    return;
-  }
-    
 // === BATAS PERTANYAAN HARIAN ===
-let jumlahPertanyaan = parseInt(localStorage.getItem('jumlahPertanyaan') || '0');
-const LIMIT_HARIAN = 7;
+  let jumlahPertanyaan = parseInt(localStorage.getItem('jumlahPertanyaan') || '0');
+  const LIMIT_HARIAN = 7;
 
-// === EFEK KETIK ===
-function ketikEfek(element, text, delay = 20) {
-  let i = 0;
-  element.textContent = '';
-  function ketik() {
-    if (i < text.length) {
-      element.textContent += text.charAt(i);
-      i++;
-      setTimeout(ketik, delay);
+  // === EFEK KETIK ===
+  function ketikEfek(element, text, delay = 20) {
+    let i = 0;
+    element.textContent = '';
+    function ketik() {
+      if (i < text.length) {
+        element.textContent += text.charAt(i);
+        i++;
+        setTimeout(ketik, delay);
+      }
     }
-  }
-  ketik();
-}
-
-// === POPUP PREMIUM ===
-function tampilkanPopupPembayaran() {
-  const popup = document.createElement('div');
-  popup.style.position = 'fixed';
-  popup.style.top = '0';
-  popup.style.left = '0';
-  popup.style.width = '100vw';
-  popup.style.height = '100vh';
-  popup.style.background = 'rgba(0,0,0,0.8)';
-  popup.style.display = 'flex';
-  popup.style.justifyContent = 'center';
-  popup.style.alignItems = 'center';
-  popup.style.zIndex = '9999';
-
-  popup.innerHTML = `
-    <div style="background:#1e1f22;padding:25px;border-radius:10px;color:white;width:300px;max-width:90%;text-align:center;">
-      <h3 style="margin-top:0;margin-bottom:15px;">🚀 Lionor AI Premium</h3>
-      <p>✅ 100 pertanyaan per hari<br>✅ Akses dari 3 website:<br>- Zestore.id<br>- VCSignalTrading.id<br>- Zeetrading.id<br>✅ Dapat update fitur lebih awal</p>
-      <img src="https://your-qris-url.com/qris.jpg" alt="QRIS Dana" style="width:100%;max-width:200px;border-radius:8px;margin:10px auto;">
-      <p><strong>Harga:</strong> Rp151.500 (QRIS Dana + 1% admin)</p>
-      <input id="namaUser" placeholder="Nama Lengkap" style="width:100%;margin-bottom:8px;padding:8px;" />
-      <input id="emailUser" placeholder="Email" style="width:100%;margin-bottom:8px;padding:8px;" />
-      <input id="waUser" placeholder="Nomor WhatsApp" style="width:100%;margin-bottom:10px;padding:8px;" />
-      <button id="btnSudahBayar" disabled style="width:100%;padding:10px;background:#555;color:#aaa;border:none;border-radius:5px;">Tunggu 15 detik...</button>
-    </div>
-  `;
-  document.body.appendChild(popup);
-
-  // Cooldown tombol
-  const btn = document.getElementById('btnSudahBayar');
-  let countdown = 15;
-  const interval = setInterval(() => {
-    countdown--;
-    if (countdown > 0) {
-      btn.textContent = `Tunggu ${countdown} detik...`;
-    } else {
-      clearInterval(interval);
-      btn.disabled = false;
-      btn.style.background = '#00ffe7';
-      btn.style.color = '#10131a';
-      btn.textContent = '✅ Sudah Bayar';
-      btn.onclick = prosesPembayaran;
-    }
-  }, 1000);
-}
-
-function prosesPembayaran() {
-  const nama = document.getElementById('namaUser').value;
-  const email = document.getElementById('emailUser').value;
-  const wa = document.getElementById('waUser').value;
-
-  if (!nama || !email || !wa) {
-    alert("Lengkapi semua data dulu ya.");
-    return;
+    ketik();
   }
 
-  const teks = `Halo admin Lionor AI, saya sudah bayar.\n\nNama: ${nama}\nEmail: ${email}\nWhatsApp: ${wa}\n\nMohon aktifkan Lionor Premium.`;
-  const url = `https://wa.me/62XXXXXXXXXX?text=${encodeURIComponent(teks)}`;
+  // === POPUP PREMIUM ===
+  function tampilkanPopupPembayaran() {
+    const popup = document.createElement('div');
+    popup.style.position = 'fixed';
+    popup.style.top = '0';
+    popup.style.left = '0';
+    popup.style.width = '100vw';
+    popup.style.height = '100vh';
+    popup.style.background = 'rgba(0,0,0,0.8)';
+    popup.style.display = 'flex';
+    popup.style.justifyContent = 'center';
+    popup.style.alignItems = 'center';
+    popup.style.zIndex = '9999';
 
-  localStorage.setItem('jumlahPertanyaan', 0); // Reset
-  window.open(url, '_blank');
-}
+    popup.innerHTML = `
+      <div style="background:#1e1f22;padding:25px;border-radius:10px;color:white;width:300px;max-width:90%;text-align:center;">
+        <h3 style="margin-top:0;margin-bottom:15px;">🚀 Lionor AI Premium</h3>
+        <p>✅ 100 pertanyaan per hari<br>✅ Akses dari 3 website:<br>- Zestore.id<br>- VCSignalTrading.id<br>- Zeetrading.id<br>✅ Dapat update fitur lebih awal</p>
+        <img src="https://your-qris-url.com/qris.jpg" alt="QRIS Dana" style="width:100%;max-width:200px;border-radius:8px;margin:10px auto;">
+        <p><strong>Harga:</strong> Rp151.500 (QRIS Dana + 1% admin)</p>
+        <input id="namaUser" placeholder="Nama Lengkap" style="width:100%;margin-bottom:8px;padding:8px;" />
+        <input id="emailUser" placeholder="Email" style="width:100%;margin-bottom:8px;padding:8px;" />
+        <input id="waUser" placeholder="Nomor WhatsApp" style="width:100%;margin-bottom:10px;padding:8px;" />
+        <button id="btnSudahBayar" disabled style="width:100%;padding:10px;background:#555;color:#aaa;border:none;border-radius:5px;">Tunggu 15 detik...</button>
+      </div>
+    `;
+    document.body.appendChild(popup);
 
+    // Cooldown tombol
+    const btn = document.getElementById('btnSudahBayar');
+    let countdown = 15;
+    const interval = setInterval(() => {
+      countdown--;
+      if (countdown > 0) {
+        btn.textContent = `Tunggu ${countdown} detik...`;
+      } else {
+        clearInterval(interval);
+        btn.disabled = false;
+        btn.style.background = '#00ffe7';
+        btn.style.color = '#10131a';
+        btn.textContent = '✅ Sudah Bayar';
+        btn.onclick = prosesPembayaran;
+      }
+    }, 1000);
+  }
 
+  function prosesPembayaran() {
+    const nama = document.getElementById('namaUser').value;
+    const email = document.getElementById('emailUser').value;
+    const wa = document.getElementById('waUser').value;
+
+    if (!nama || !email || !wa) {
+      alert("Lengkapi semua data dulu ya.");
+      return;
+    }
+
+    const teks = `Halo admin Lionor AI, saya sudah bayar.\n\nNama: ${nama}\nEmail: ${email}\nWhatsApp: ${wa}\n\nMohon aktifkan Lionor Premium.`;
+    const url = `https://wa.me/62XXXXXXXXXX?text=${encodeURIComponent(teks)}`;
+
+    localStorage.setItem('jumlahPertanyaan', 0); // Reset
+    window.open(url, '_blank');
+  }
+
+  // === JAWABAN CEPAT ===
+  function autoReply(teks) {
+    const lower = teks.toLowerCase();
+    if (lower.includes("halo") || lower.includes("hai")) return "Halo juga! 👋";
+    if (lower.includes("siapa kamu")) return "Aku Lionor AI, teman diskusi dan penjawab cerdas kamu!";
+    return null;
+  }
+
+  // === FUNGSI KIRIM PERTANYAAN ===
+  async function kirimPertanyaan() {
+    const input = document.getElementById('pertanyaan');
+    const chat = document.getElementById('chat');
+    const teks = input.value.trim();
+
+    if (!teks) return;
+
+    jumlahPertanyaan++;
+    localStorage.setItem('jumlahPertanyaan', jumlahPertanyaan);
+
+    if (jumlahPertanyaan > LIMIT_HARIAN) {
+      const aiMsg = document.createElement('div');
+      aiMsg.className = 'msg ai';
+      chat.appendChild(aiMsg);
+      ketikEfek(aiMsg, "⚠️ Anda telah melebihi batas harian. Silakan upgrade ke Lionor AI Premium.");
+      tampilkanPopupPembayaran();
+      return;
+    }
 
     const userMsg = document.createElement('div');
     userMsg.className = 'msg user';
@@ -291,7 +298,7 @@ function prosesPembayaran() {
     chat.scrollTop = chat.scrollHeight;
   }
 
-  // === ENTER KEY LISTENER ===
+  // === ENTER UNTUK SUBMIT ===
   document.getElementById('pertanyaan').addEventListener('keydown', function (e) {
     if (e.key === 'Enter') kirimPertanyaan();
   });
