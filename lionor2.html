@@ -94,32 +94,45 @@
     }
     /* Tombol menu di dalam header */
 #menuBtn {
-  position: absolute;
-  top: 12px;              /* Jarak dari atas */
-  left: 12px;             /* Jarak dari kiri */
+  position: fixed;
+  top: 16px;
+  left: 16px;
   background: none;
   color: #00ffe7;
   border: none;
-  font-size: 28px;        /* Ukuran pas buat icon garis tiga */
+  font-size: 28px;
   cursor: pointer;
   padding: 8px 10px;
-  z-index: 20;
+  z-index: 999;
 }
 
-/* Side menu */
 #sideMenu {
   position: fixed;
   top: 0;
-  left: 0;
-  height: 100%;
+  left: -260px;
   width: 240px;
-  background: #1e1f22;
-  color: white;
-  box-shadow: 3px 0 10px rgba(0, 0, 0, 0.5);
-  transform: translateX(-100%);
-  transition: transform 0.3s ease;
-  z-index: 100;
-  padding-top: 70px;
+  height: 100%;
+  background: #1a1d24;
+  color: #fff;
+  padding: 20px;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.4);
+  transition: left 0.3s ease;
+  z-index: 998;
+}
+
+#sideMenu.open {
+  left: 0;
+}
+
+#closeMenuBtn {
+  background: none;
+  border: none;
+  color: #00ffe7;
+  font-size: 24px;
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  cursor: pointer;
 }
 
 /* Saat menu muncul */
@@ -164,6 +177,7 @@
  
   <div id="sideMenu" class="hidden">
   <div class="menu-header">Lionor AI</div>
+     <button id="closeMenuBtn">✕</button>
   <ul>
     <li onclick="alert('👤 Pemilik Lionor: Zezy, trader & developer AI lokal.')">Profil Pemilik</li>
     <li onclick="alert('🛰️ Tentang kami: Lionor AI adalah asisten AI lokal yang terus berkembang.')">Tentang Kami</li>
@@ -406,17 +420,16 @@ input.addEventListener('keydown', function (e) {
   }
 });
     const menuBtn = document.getElementById('menuBtn');
-const sideMenu = document.getElementById('sideMenu');
+  const sideMenu = document.getElementById('sideMenu');
+  const closeMenuBtn = document.getElementById('closeMenuBtn');
 
-menuBtn.addEventListener('click', () => {
-  sideMenu.classList.toggle('show');
-});
+  menuBtn.onclick = () => {
+    sideMenu.classList.add('open');
+  };
 
-document.addEventListener('click', (e) => {
-  if (!sideMenu.contains(e.target) && e.target !== menuBtn) {
-    sideMenu.classList.remove('show');
-  }
-});
+  closeMenuBtn.onclick = () => {
+    sideMenu.classList.remove('open');
+  };
 </script>
 </body>
 </html>
