@@ -339,7 +339,7 @@ chat.addEventListener('scroll', () => {
 });
 
 // Ubah ketikEfek jadi async biar bisa await tiap karakter
-async function ketikEfek(element, text, delay = 20) {
+async function ketikEfek(element, text, delay = 50) {
   element.textContent = '';
   for (let i = 0; i < text.length; i++) {
     element.textContent += text.charAt(i);
