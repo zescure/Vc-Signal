@@ -186,18 +186,28 @@ Ia percaya bahwa ilmu tidak harus datang dari gelar, dan inovasi tidak menunggu 
 let jumlahPertanyaan = parseInt(localStorage.getItem('jumlahPertanyaan') || '0');
 const LIMIT_HARIAN = 100;
 
-// === EFEK KETIK ===
-function ketikEfek(element, text, delay = 20) {
-  let i = 0;
+const chat = document.getElementById('chat');
+const input = document.getElementById('pertanyaan');
+
+let autoScroll = true;
+
+// Cek scroll, set autoScroll sesuai posisi scroll user
+chat.addEventListener('scroll', () => {
+  const threshold = 50; // px dari bawah dianggap scroll bottom
+  const atBottom = chat.scrollHeight - chat.scrollTop - chat.clientHeight < threshold;
+  autoScroll = atBottom;
+});
+
+// Ubah ketikEfek jadi async biar bisa await tiap karakter
+async function ketikEfek(element, text, delay = 20) {
   element.textContent = '';
-  function ketik() {
-    if (i < text.length) {
-      element.textContent += text.charAt(i);
-      i++;
-      setTimeout(ketik, delay);
+  for (let i = 0; i < text.length; i++) {
+    element.textContent += text.charAt(i);
+    if (autoScroll) {
+      chat.scrollTop = chat.scrollHeight;
     }
+    await new Promise(r => setTimeout(r, delay));
   }
-  ketik();
 }
 
 // === POPUP PREMIUM ===
@@ -264,25 +274,20 @@ function prosesPembayaran() {
 
 // === KIRIM PERTANYAAN KE CHATBOX ===
 async function kirimPertanyaan() {
-  const input = document.getElementById('pertanyaan');
-  const chat = document.getElementById('chat');
   const teks = input.value.trim();
-
   if (!teks) return;
 
-  // Ambil jumlah terbaru sebelum dicek
   jumlahPertanyaan = parseInt(localStorage.getItem('jumlahPertanyaan') || '0');
 
   if (jumlahPertanyaan >= LIMIT_HARIAN) {
     const aiMsg = document.createElement('div');
     aiMsg.className = 'msg ai';
     chat.appendChild(aiMsg);
-    ketikEfek(aiMsg, "⚠️ Anda telah melebihi batas harian. Silakan upgrade ke Lionor AI Premium.");
+    await ketikEfek(aiMsg, "⚠️ Anda telah melebihi batas harian. Silakan upgrade ke Lionor AI Premium.");
     tampilkanPopupPembayaran();
     return;
   }
 
-  // Tambah jumlah pertanyaan setelah lolos cek
   jumlahPertanyaan++;
   localStorage.setItem('jumlahPertanyaan', jumlahPertanyaan);
 
@@ -294,33 +299,37 @@ async function kirimPertanyaan() {
   input.value = '';
   input.focus();
 
-  const jawabanCepat = autoReply(teks);
+  const jawabanCepat = autoReply ? autoReply(teks) : null;
   const aiMsg = document.createElement('div');
   aiMsg.className = 'msg ai';
   chat.appendChild(aiMsg);
-  chat.scrollTop = chat.scrollHeight;
+
+  if (autoScroll) chat.scrollTop = chat.scrollHeight;
 
   if (jawabanCepat) {
-    ketikEfek(aiMsg, jawabanCepat);
+    await ketikEfek(aiMsg, jawabanCepat);
     return;
   }
 
-  ketikEfek(aiMsg, '⏳ Lionor mikir...');
+  await ketikEfek(aiMsg, '⏳ Lionor mikir...');
 
   try {
     const res = await fetch(`/.netlify/functions/ask?q=${encodeURIComponent(teks)}`);
     const data = await res.json();
-    ketikEfek(aiMsg, data.answer || "⚠️ Lionor gak ngerti. Coba tanya dengan cara lain ya.");
+    await ketikEfek(aiMsg, data.answer || "⚠️ Lionor gak ngerti. Coba tanya dengan cara lain ya.");
   } catch (err) {
-    ketikEfek(aiMsg, "⚠️ Gagal ambil jawaban. Cek koneksi atau backend-nya.");
+    await ketikEfek(aiMsg, "⚠️ Gagal ambil jawaban. Cek koneksi atau backend-nya.");
   }
 
-  chat.scrollTop = chat.scrollHeight;
+  if (autoScroll) chat.scrollTop = chat.scrollHeight;
 }
 
-// === ENTER KEY LISTENER ===
-document.getElementById('pertanyaan').addEventListener('keydown', function (e) {
-  if (e.key === 'Enter') kirimPertanyaan();
+// Listener enter key
+input.addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    kirimPertanyaan();
+  }
 });
 </script>
 </body>
