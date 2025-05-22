@@ -325,7 +325,9 @@ const LIMIT_HARIAN = 100;
 
 const chat = document.getElementById('chat');
 const input = document.getElementById('pertanyaan');
-
+const wibDate = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
+console.log('WIB:', wibDate);
+    
 let autoScroll = true;
 
 // Cek scroll, set autoScroll sesuai posisi scroll user
