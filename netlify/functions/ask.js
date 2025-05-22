@@ -1,29 +1,28 @@
-export async function handler(event) {
+const fetch = require('node-fetch');
+
+exports.handler = async function(event, context) {
+  const params = new URLSearchParams(event.queryStringParameters);
+  const pertanyaan = params.get('q');
+
+  if (!pertanyaan) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: 'Pertanyaan kosong!' })
+    };
+  }
+
   try {
-    const question = event.queryStringParameters?.q || "";
-
-    if (!question) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ answer: "Pertanyaan kosong!" })
-      };
-    }
-
-    const part1 = "sk-or-v1-78bf96bede";
-    const part2 = "eb5d66bcf2a86dae26";
-    const part3 = "90e812c24d93c6ef75b97ffb03423da31933";
-    const apiKey = part1 + part2 + part3;
-
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
       headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
+        'Authorization': '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',
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: "openrouter/cinematika-7b",
-        messages: [{ role: "user", content: question }],
-        temperature: 0.7
+        model: 'mistralai/mistral-7b-instruct',
+        messages: [
+          { role: 'user', content: pertanyaan }
+        ]
       })
     });
 
@@ -31,21 +30,14 @@ export async function handler(event) {
 
     return {
       statusCode: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "application/json"
-      },
       body: JSON.stringify({
-        answer: data.choices?.[0]?.message?.content || "Gagal dapetin jawaban dari AI."
+        answer: data.choices?.[0]?.message?.content || 'Jawaban tidak tersedia.'
       })
     };
-
-  } catch (err) {
+  } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({
-        answer: "Error: " + err.message
-      })
+      body: JSON.stringify({ error: 'Gagal ambil jawaban dari AI' })
     };
   }
-}
+};
