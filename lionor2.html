@@ -439,6 +439,7 @@ async function kirimPertanyaan() {
   input.focus();
 
   const jawabanCepat = autoReply ? autoReply(teks) : null;
+  const jawabanCepat = autoReply(teks) || jawabJamSekarang(teks);
   const aiMsg = document.createElement('div');
   aiMsg.className = 'msg ai';
   chat.appendChild(aiMsg);
@@ -481,6 +482,16 @@ input.addEventListener('keydown', function (e) {
   closeMenuBtn.onclick = () => {
     sideMenu.classList.remove('open');
   };
+  function jawabJamSekarang(teks) {
+  const kataKunci = ['jam berapa', 'waktu sekarang', 'sekarang jam'];
+  for (const kata of kataKunci) {
+    if (teks.toLowerCase().includes(kata)) {
+      const wibDate = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', hour12: false });
+      return `Sekarang pukul ${wibDate}`;
+    }
+  }
+  return null;
+}
 </script>
 </body>
 </html>
