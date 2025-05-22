@@ -95,16 +95,15 @@
     /* Tombol menu di dalam header */
 #menuBtn {
   position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 12px;              /* Jarak dari atas */
+  left: 12px;             /* Jarak dari kiri */
   background: none;
   color: #00ffe7;
   border: none;
-  font-size: 24px;
+  font-size: 28px;        /* Ukuran pas buat icon garis tiga */
   cursor: pointer;
-  padding: 6px 12px;
-  z-index: 11;
+  padding: 8px 10px;
+  z-index: 20;
 }
 
 /* Side menu */
@@ -161,7 +160,9 @@
 </head>
 <body>
   <header>LIONOR3 AI Beta</header>
-<div id="sideMenu" class="hidden">
+<button id="menuBtn">☰</button>
+ 
+  <div id="sideMenu" class="hidden">
   <div class="menu-header">Lionor AI</div>
   <ul>
     <li onclick="alert('👤 Pemilik Lionor: Zezy, trader & developer AI lokal.')">Profil Pemilik</li>
