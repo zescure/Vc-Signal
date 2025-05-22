@@ -93,19 +93,25 @@
       background-color: #00d1bf;
     }
     /* Tombol menu di dalam header */
+
 #menuBtn {
   position: fixed;
-  top: 16px;
-  left: 16px;
+  top: 8px;      /* Dekat pojok atas */
+  left: 8px;     /* Dekat pojok kiri */
+  width: 48px;   /* Ukuran kotak tombol */
+  height: 48px;  /* Ukuran kotak tombol */
   background: none;
-  color: #00ffe7;
   border: none;
-  font-size: 28px;
   cursor: pointer;
-  padding: 8px 10px;
-  z-index: 999;
+  color: #00ffe7;
+  font-size: 32px; /* Ukuran ikon garis tiga */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 0;
 }
-
+    
 #sideMenu {
   position: fixed;
   top: 0;
