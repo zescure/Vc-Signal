@@ -439,7 +439,6 @@ async function kirimPertanyaan() {
   input.focus();
 
   const jawabanCepat = autoReply ? autoReply(teks) : null;
-  const jawabanCepat = autoReply(teks) || jawabJamSekarang(teks);
   const aiMsg = document.createElement('div');
   aiMsg.className = 'msg ai';
   chat.appendChild(aiMsg);
