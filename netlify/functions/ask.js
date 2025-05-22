@@ -21,7 +21,7 @@ exports.handler = async function (event, context) {
         "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "mistralai/mistral-7b-instruct",
+        model: "openai/gpt-3.5-turbo",
         messages: [{ role: "user", content: q }],
       }),
     });
