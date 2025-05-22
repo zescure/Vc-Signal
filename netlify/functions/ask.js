@@ -1,7 +1,7 @@
 const fetch = require("node-fetch");
 
 // Ganti ini dengan API key dari OpenRouter lo
-const OPENROUTER_API_KEY = "sk-or-xxxxxxxxxxxxxxxxxxxxx";
+const OPENROUTER_API_KEY = "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";
 
 exports.handler = async function (event, context) {
   const q = event.queryStringParameters.q || "";
