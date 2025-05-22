@@ -158,7 +158,7 @@
   };
 
 // === BATAS PERTANYAAN HARIAN ===
-let jumlahPertanyaan = parseInt(localStorage.getItem('jumlahPertanyaan') || '1');
+let jumlahPertanyaan = parseInt(localStorage.getItem('jumlahPertanyaan') || '0');
 const LIMIT_HARIAN = 7;
 
 // === EFEK KETIK ===
@@ -203,7 +203,6 @@ function tampilkanPopupPembayaran() {
   `;
   document.body.appendChild(popup);
 
-  // Cooldown tombol
   const btn = document.getElementById('btnSudahBayar');
   let countdown = 15;
   const interval = setInterval(() => {
@@ -234,7 +233,7 @@ function prosesPembayaran() {
   const teks = `Halo admin Lionor AI, saya sudah bayar.\n\nNama: ${nama}\nEmail: ${email}\nWhatsApp: ${wa}\n\nMohon aktifkan Lionor Premium.`;
   const url = `https://wa.me/62XXXXXXXXXX?text=${encodeURIComponent(teks)}`;
 
-  localStorage.setItem('jumlahPertanyaan', 0); // Reset
+  localStorage.setItem('jumlahPertanyaan', 0); // Reset ke 0
   window.open(url, '_blank');
 }
 
@@ -245,6 +244,8 @@ async function kirimPertanyaan() {
   const teks = input.value.trim();
 
   if (!teks) return;
+
+  jumlahPertanyaan = parseInt(localStorage.getItem('jumlahPertanyaan') || '0');
 
   if (jumlahPertanyaan >= LIMIT_HARIAN) {
     const aiMsg = document.createElement('div');
@@ -258,42 +259,42 @@ async function kirimPertanyaan() {
   jumlahPertanyaan++;
   localStorage.setItem('jumlahPertanyaan', jumlahPertanyaan);
 
-    const userMsg = document.createElement('div');
-    userMsg.className = 'msg user';
-    userMsg.textContent = teks;
-    chat.appendChild(userMsg);
+  const userMsg = document.createElement('div');
+  userMsg.className = 'msg user';
+  userMsg.textContent = teks;
+  chat.appendChild(userMsg);
 
-    input.value = '';
-    input.focus();
+  input.value = '';
+  input.focus();
 
-    const jawabanCepat = autoReply(teks);
-    const aiMsg = document.createElement('div');
-    aiMsg.className = 'msg ai';
-    chat.appendChild(aiMsg);
-    chat.scrollTop = chat.scrollHeight;
+  const jawabanCepat = autoReply(teks);
+  const aiMsg = document.createElement('div');
+  aiMsg.className = 'msg ai';
+  chat.appendChild(aiMsg);
+  chat.scrollTop = chat.scrollHeight;
 
-    if (jawabanCepat) {
-      ketikEfek(aiMsg, jawabanCepat);
-      return;
-    }
-
-    ketikEfek(aiMsg, '⏳ Lionor mikir...');
-
-    try {
-      const res = await fetch(`/.netlify/functions/ask?q=${encodeURIComponent(teks)}`);
-      const data = await res.json();
-      ketikEfek(aiMsg, data.answer || "⚠️ Lionor gak ngerti. Coba tanya dengan cara lain ya.");
-    } catch (err) {
-      ketikEfek(aiMsg, "⚠️ Gagal ambil jawaban. Cek koneksi atau backend-nya.");
-    }
-
-    chat.scrollTop = chat.scrollHeight;
+  if (jawabanCepat) {
+    ketikEfek(aiMsg, jawabanCepat);
+    return;
   }
 
-  // === ENTER KEY LISTENER ===
-  document.getElementById('pertanyaan').addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') kirimPertanyaan();
-  });
+  ketikEfek(aiMsg, '⏳ Lionor mikir...');
+
+  try {
+    const res = await fetch(`/.netlify/functions/ask?q=${encodeURIComponent(teks)}`);
+    const data = await res.json();
+    ketikEfek(aiMsg, data.answer || "⚠️ Lionor gak ngerti. Coba tanya dengan cara lain ya.");
+  } catch (err) {
+    ketikEfek(aiMsg, "⚠️ Gagal ambil jawaban. Cek koneksi atau backend-nya.");
+  }
+
+  chat.scrollTop = chat.scrollHeight;
+}
+
+// === ENTER KEY LISTENER ===
+document.getElementById('pertanyaan').addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') kirimPertanyaan();
+});
 </script>
 </body>
 </html>
