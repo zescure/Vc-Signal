@@ -18,36 +18,34 @@ exports.handler = async function (event, context) {
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-        "HTTP-Referer": "https://vc-signalforex.netlify.app/lionor2",
+        "HTTP-Referer": "https://vc-signalforex.netlify.app/",
         "X-Title": "LionorAI",
       },
       body: JSON.stringify({
         model: "anthropic/claude-3-haiku:free",
         messages: [
-          { role: "system", content: "Kamu adalah Lionor AI, asisten pribadi yang ramah dan informatif untuk King Zezy." },
+          {
+            role: "system",
+            content: "Kamu adalah Lionor AI, asisten pribadi yang ramah dan informatif untuk King Zezy."
+          },
           { role: "user", content: q }
         ],
       }),
     });
 
     const data = await response.json();
-    console.log("📦 Response dari OpenRouter:", JSON.stringify(data, null, 2));
 
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ answer: "⚠️ Gagal dapet respon dari model." }),
-      };
-    }
-
-    const answer = data.choices[0].message.content;
+    // Cek isi respon model
+    const jawaban =
+      data?.choices?.[0]?.message?.content ||
+      data?.message ||
+      "⚠️ Gagal dapet respon dari model.";
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ answer }),
+      body: JSON.stringify({ answer: jawaban }),
     };
   } catch (error) {
-    console.error("❌ ERROR:", error);
     return {
       statusCode: 500,
       body: JSON.stringify({ answer: `⚠️ Error backend: ${error.message}` }),
