@@ -42,9 +42,10 @@ exports.handler = async function (event, context) {
       body: JSON.stringify({ answer }),
     };
   } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ answer: "⚠️ Terjadi kesalahan saat menghubungi API." }),
-    };
-  }
+  console.error("Error detail:", error);
+  return {
+    statusCode: 500,
+    body: JSON.stringify({ answer: "⚠️ Terjadi kesalahan saat menghubungi API: " + error.message }),
+  };
+}
 };
