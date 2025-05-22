@@ -1,8 +1,9 @@
 const fetch = require("node-fetch");
 
-const OPENROUTER_API_KEY = "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"; // Ganti dengan API key lo
+// API Key langsung ditulis di sini (Anyscale)
+const API_KEY = "aph0_CkgwRgIhAODq57ckcQu2omaNY6bLqQ2jo3p3rBD3mppXJ4_LtAUjAiEAhGd3XlOOBOCkJL5Qi4daB7voPIkE8Hn6uKWtm5rnJWsSYxIgEnVpXp1GkCXEAx1FeZvUWxQdHBaA979aufpvo-dlBs4YASIedXNyX3dxeWJ5cnE0NmNla3R6YzFiemt0eW5wN3hmOgwIh42coRIQoIqRxwNCDAjbzrvBBhCgipHHA_IBAA";
 
-exports.handler = async function (event) {
+exports.handler = async function (event, context) {
   const q = event.queryStringParameters.q || "";
 
   if (!q) {
@@ -13,30 +14,28 @@ exports.handler = async function (event) {
   }
 
   try {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const response = await fetch("https://api.endpoints.anyscale.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-        "HTTP-Referer": "https://vc-signalforex.netlify.app/",
-        "X-Title": "VC SignalForex Bot"
+        "Authorization": `Bearer ${API_KEY}`,
       },
       body: JSON.stringify({
-        model: "mistralai/mistral-7b-instruct",
+        model: "meta-llama/llama-3-8b-instruct",
         messages: [{ role: "user", content: q }],
       }),
     });
 
     const data = await response.json();
 
-    if (data.error) {
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
       return {
         statusCode: 500,
-        body: JSON.stringify({ answer: `⚠️ Error dari API:\n${JSON.stringify(data.error, null, 2)}` }),
+        body: JSON.stringify({ answer: "⚠️ Gagal dapet respon dari model." }),
       };
     }
 
-    const answer = data?.choices?.[0]?.message?.content || "❌ Gagal dapet respon dari model.";
+    const answer = data.choices[0].message.content;
 
     return {
       statusCode: 200,
@@ -45,7 +44,7 @@ exports.handler = async function (event) {
   } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ answer: `⚠️ Gagal kirim ke model:\n${error.message}` }),
+      body: JSON.stringify({ answer: "⚠️ Terjadi kesalahan saat menghubungi API." }),
     };
   }
 };
