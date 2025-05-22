@@ -1,9 +1,16 @@
 const fetch = require("node-fetch");
 
-const OPENROUTER_API_KEY = "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"; // Ganti dgn key aktif
+const OPENROUTER_API_KEY = "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"; // key yang udah lo pake
 
-exports.handler = async function (event) {
-  const q = event.queryStringParameters.q || "Halo";
+exports.handler = async function (event, context) {
+  const q = event.queryStringParameters.q || "";
+
+  if (!q) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ answer: "❌ Pertanyaan kosong." }),
+    };
+  }
 
   try {
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -13,21 +20,23 @@ exports.handler = async function (event) {
         "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "openai/gpt-3.5-turbo",
+        model: "mistralai/mistral-7b-instruct", // model GRATIS
         messages: [{ role: "user", content: q }],
       }),
     });
 
     const data = await response.json();
 
+    const answer = data?.choices?.[0]?.message?.content || "❌ Gagal dapet respon dari model.";
+
     return {
       statusCode: 200,
-      body: JSON.stringify({ answer: data.choices?.[0]?.message?.content || "❌ Gagal dapet respon." }),
+      body: JSON.stringify({ answer }),
     };
-  } catch (e) {
+  } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ answer: "⚠️ Error dari server: " + e.message }),
+      body: JSON.stringify({ answer: `⚠️ Error: ${error.message}` }),
     };
   }
 };
