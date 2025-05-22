@@ -18,11 +18,11 @@ exports.handler = async function (event, context) {
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-        "HTTP-Referer": "https://vc-signalforex.netlify.app/lionor2", // Ganti ke domain kamu kalau beda
+        "HTTP-Referer": "https://vc-signalforex.netlify.app/",
         "X-Title": "LionorAI",
       },
       body: JSON.stringify({
-        model: "openai/gpt-3.5-turbo",
+        model: "anthropic/claude-3-haiku:free",
         messages: [
           { role: "system", content: "Kamu adalah Lionor AI, asisten pribadi yang ramah dan informatif untuk King Zezy." },
           { role: "user", content: q }
