@@ -1,52 +1,66 @@
 const fetch = require("node-fetch");
 
-const OPENROUTER_API_KEY = "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";
+// Masukin semua API key yang lo punya di sini
+const OPENROUTER_API_KEYS = [
+  "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",
+  "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",
+  // tambahin lagi kalau ada
+];
 
-exports.handler = async function (event) {
-  const q = event.queryStringParameters.q || "";
+// Fungsi buat nge-try request pakai satu key
+async function tryKey(query, apiKey) {
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: "openai/gpt-3.5-turbo",
+      messages: [{ role: "user", content: query }],
+    }),
+  });
 
-  if (!q) {
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(`API error: ${err.error?.message || response.statusText}`);
+  }
+
+  const data = await response.json();
+  if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+    throw new Error("No valid response from model");
+  }
+
+  return data.choices[0].message.content;
+}
+
+exports.handler = async function (event, context) {
+  const q = event.queryStringParameters?.q || "";
+
+  if (!q.trim()) {
     return {
       statusCode: 400,
       body: JSON.stringify({ answer: "❌ Pertanyaan kosong." }),
     };
   }
 
-  try {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "OpenRouter-Api-Key": OPENROUTER_API_KEY, // ✅ ganti ini!
-        "HTTP-Referer": "https://vc-signalforex.netlify.app/",
-      },
-      body: JSON.stringify({
-        model: "openai/gpt-3.5-turbo",
-        messages: [{ role: "user", content: q }],
-      }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
+  // Coba satu-satu key sampai berhasil
+  for (const key of OPENROUTER_API_KEYS) {
+    try {
+      const answer = await tryKey(q, key);
       return {
-        statusCode: response.status,
-        body: JSON.stringify({
-          answer: `⚠️ Error dari API:\n${JSON.stringify(data, null, 2)}`,
-        }),
+        statusCode: 200,
+        body: JSON.stringify({ answer }),
       };
+    } catch (error) {
+      // kalau error coba key berikutnya
+      console.warn("API key gagal:", error.message);
     }
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ answer: data.choices[0].message.content }),
-    };
-  } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        answer: `⚠️ Gagal menghubungi OpenRouter: ${error.message}`,
-      }),
-    };
   }
+
+  // Kalau semua key gagal
+  return {
+    statusCode: 500,
+    body: JSON.stringify({ answer: "⚠️ Gagal dapet respon dari semua API key." }),
+  };
 };
