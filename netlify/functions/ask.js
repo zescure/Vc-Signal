@@ -1,6 +1,5 @@
 const fetch = require("node-fetch");
 
-// API Key langsung ditulis di sini (Anyscale)
 const API_KEY = "aph0_CkgwRgIhAODq57ckcQu2omaNY6bLqQ2jo3p3rBD3mppXJ4_LtAUjAiEAhGd3XlOOBOCkJL5Qi4daB7voPIkE8Hn6uKWtm5rnJWsSYxIgEnVpXp1GkCXEAx1FeZvUWxQdHBaA979aufpvo-dlBs4YASIedXNyX3dxeWJ5cnE0NmNla3R6YzFiemt0eW5wN3hmOgwIh42coRIQoIqRxwNCDAjbzrvBBhCgipHHA_IBAA";
 
 exports.handler = async function (event, context) {
@@ -21,8 +20,13 @@ exports.handler = async function (event, context) {
         "Authorization": `Bearer ${API_KEY}`,
       },
       body: JSON.stringify({
-        model: "meta-llama/llama-3-8b-instruct",
-        messages: [{ role: "user", content: q }],
+        model: "openai/gpt-3.5-turbo", // ganti sesuai model kamu
+        messages: [
+          {
+            role: "user",
+            content: q,
+          },
+        ],
       }),
     });
 
@@ -35,17 +39,14 @@ exports.handler = async function (event, context) {
       };
     }
 
-    const answer = data.choices[0].message.content;
-
     return {
       statusCode: 200,
-      body: JSON.stringify({ answer }),
+      body: JSON.stringify({ answer: data.choices[0].message.content }),
     };
   } catch (error) {
-  console.error("Error detail:", error);
-  return {
-    statusCode: 500,
-    body: JSON.stringify({ answer: "⚠️ Terjadi kesalahan saat menghubungi API: " + error.message }),
-  };
-}
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ answer: "⚠️ Terjadi kesalahan saat menghubungi API: " + error.message }),
+    };
+  }
 };
