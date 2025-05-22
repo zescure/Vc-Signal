@@ -317,6 +317,24 @@ async function kirimPertanyaan() {
 
   chat.scrollTop = chat.scrollHeight;
 }
+// contoh ide:
+let autoScroll = true;
+
+const container = document.getElementById('chat-container');
+
+container.addEventListener('scroll', () => {
+  // cek apakah user sudah scroll ke bawah hampir sampai akhir
+  const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 50;
+  autoScroll = isAtBottom; // kalau user di bottom, autoScroll true, kalau scroll ke atas false
+});
+
+// saat append teks baru:
+function appendText(newText) {
+  container.innerHTML += newText;
+  if(autoScroll) {
+    container.scrollTop = container.scrollHeight; // scroll ke bawah otomatis
+  }
+}
 
 // === ENTER KEY LISTENER ===
 document.getElementById('pertanyaan').addEventListener('keydown', function (e) {
