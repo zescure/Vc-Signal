@@ -1,6 +1,5 @@
 const fetch = require("node-fetch");
 
-// Taruh API key langsung di sini
 const OPENROUTER_API_KEY = "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";
 
 exports.handler = async function (event) {
@@ -18,8 +17,8 @@ exports.handler = async function (event) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-        "HTTP-Referer": "https://vc-signalforex.netlify.app/", // penting agar lolos validasi OpenRouter
+        "OpenRouter-Api-Key": OPENROUTER_API_KEY, // ✅ ganti ini!
+        "HTTP-Referer": "https://vc-signalforex.netlify.app/",
       },
       body: JSON.stringify({
         model: "openai/gpt-3.5-turbo",
