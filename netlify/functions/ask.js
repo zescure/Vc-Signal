@@ -1,6 +1,5 @@
 const fetch = require("node-fetch");
 
-// Ganti ini dengan API key dari OpenRouter lo
 const OPENROUTER_API_KEY = "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";
 
 exports.handler = async function (event, context) {
@@ -19,14 +18,20 @@ exports.handler = async function (event, context) {
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+        "HTTP-Referer": "https://vc-signalforex.netlify.app/lionor2", // Ganti ke domain kamu kalau beda
+        "X-Title": "LionorAI",
       },
       body: JSON.stringify({
         model: "openai/gpt-3.5-turbo",
-        messages: [{ role: "user", content: q }],
+        messages: [
+          { role: "system", content: "Kamu adalah Lionor AI, asisten pribadi yang ramah dan informatif untuk King Zezy." },
+          { role: "user", content: q }
+        ],
       }),
     });
 
     const data = await response.json();
+    console.log("📦 Response dari OpenRouter:", JSON.stringify(data, null, 2));
 
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
       return {
@@ -42,9 +47,10 @@ exports.handler = async function (event, context) {
       body: JSON.stringify({ answer }),
     };
   } catch (error) {
+    console.error("❌ ERROR:", error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ answer: "⚠️ Terjadi kesalahan saat menghubungi OpenRouter." }),
+      body: JSON.stringify({ answer: `⚠️ Error backend: ${error.message}` }),
     };
   }
 };
