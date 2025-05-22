@@ -283,27 +283,9 @@ async function kirimPertanyaan() {
   }
 
   // Tambah jumlah pertanyaan setelah lolos cek
-  const chat = document.getElementById('chat');
-const input = document.getElementById('pertanyaan');
-
-let autoScroll = true;
-let jumlahPertanyaan = parseInt(localStorage.getItem('jumlahPertanyaan')) || 0;
-
-chat.addEventListener('scroll', () => {
-  const threshold = 50; // px jarak dari bawah agar dianggap di bawah
-  const atBottom = chat.scrollHeight - chat.scrollTop - chat.clientHeight < threshold;
-  autoScroll = atBottom;
-});
-
-async function kirimPertanyaan() {
-  const teks = input.value.trim();
-  if (!teks) return;
-
-  // Tambah jumlah pertanyaan dan simpan di localStorage
   jumlahPertanyaan++;
   localStorage.setItem('jumlahPertanyaan', jumlahPertanyaan);
 
-  // Buat elemen pesan user
   const userMsg = document.createElement('div');
   userMsg.className = 'msg user';
   userMsg.textContent = teks;
@@ -316,43 +298,29 @@ async function kirimPertanyaan() {
   const aiMsg = document.createElement('div');
   aiMsg.className = 'msg ai';
   chat.appendChild(aiMsg);
-
-  if (autoScroll) chat.scrollTop = chat.scrollHeight;
+  chat.scrollTop = chat.scrollHeight;
 
   if (jawabanCepat) {
-    await ketikEfek(aiMsg, jawabanCepat);
+    ketikEfek(aiMsg, jawabanCepat);
     return;
   }
 
-  await ketikEfek(aiMsg, '⏳ Lionor mikir...');
+  ketikEfek(aiMsg, '⏳ Lionor mikir...');
 
   try {
     const res = await fetch(`/.netlify/functions/ask?q=${encodeURIComponent(teks)}`);
     const data = await res.json();
-    await ketikEfek(aiMsg, data.answer || "⚠️ Lionor gak ngerti. Coba tanya dengan cara lain ya.");
+    ketikEfek(aiMsg, data.answer || "⚠️ Lionor gak ngerti. Coba tanya dengan cara lain ya.");
   } catch (err) {
-    await ketikEfek(aiMsg, "⚠️ Gagal ambil jawaban. Cek koneksi atau backend-nya.");
+    ketikEfek(aiMsg, "⚠️ Gagal ambil jawaban. Cek koneksi atau backend-nya.");
   }
 
-  if (autoScroll) chat.scrollTop = chat.scrollHeight;
+  chat.scrollTop = chat.scrollHeight;
 }
 
-async function ketikEfek(elemen, teks) {
-  elemen.textContent = '';
-  for (let i = 0; i < teks.length; i++) {
-    elemen.textContent += teks.charAt(i);
-    if (autoScroll) {
-      chat.scrollTop = chat.scrollHeight;
-    }
-    await new Promise(r => setTimeout(r, 20)); // delay ketik, sesuaikan
-  }
-}
-
-input.addEventListener('keydown', function (e) {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    kirimPertanyaan();
-  }
+// === ENTER KEY LISTENER ===
+document.getElementById('pertanyaan').addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') kirimPertanyaan();
 });
 </script>
 </body>
