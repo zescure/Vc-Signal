@@ -1,8 +1,8 @@
 const fetch = require("node-fetch");
 
-const OPENROUTER_API_KEY = "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"; // ganti dengan key kamu yang aktif
+const OPENROUTER_API_KEY = "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"; // Ganti dengan API key lo
 
-exports.handler = async function (event, context) {
+exports.handler = async function (event) {
   const q = event.queryStringParameters.q || "";
 
   if (!q) {
@@ -18,7 +18,7 @@ exports.handler = async function (event, context) {
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-        "HTTP-Referer": "https://vc-signalforex.netlify.app/", // wajib buat openrouter
+        "HTTP-Referer": "https://vc-signalforex.netlify.app/",
         "X-Title": "VC SignalForex Bot"
       },
       body: JSON.stringify({
