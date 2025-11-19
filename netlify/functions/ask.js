@@ -1,6 +1,6 @@
 const fetch = require("node-fetch");
 
-const GROQ_API_KEY = "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";
+const GROQ_API_KEY = "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";
 
 exports.handler = async function (event, context) {
   const q = event.queryStringParameters.q || "";
