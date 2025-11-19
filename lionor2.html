@@ -29,7 +29,7 @@
     }
     #chat {
       flex: 1;
-      padding: 90px 20px 100px;
+      padding: 120px 20px 100px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
@@ -105,7 +105,7 @@
       position: fixed;
       top: 0;
       left: -100%;
-      width: 240px;
+      width: 320px;
       height: 100vh;
       background: #1a1d24;
       overflow-y: auto;
@@ -123,7 +123,7 @@
       right: 16px;
       cursor: pointer;
     }
-    #sideMenu ul { list-style: none; padding: 0; margin: 0; padding-top: 60px; }
+    #sideMenu ul { list-style: none; padding: 0; margin: 0; padding-top: 120px; }
     #sideMenu li { padding: 15px 20px; border-bottom: 1px solid #444; cursor: pointer; }
     #sideMenu li:hover { background: #333; }
     .menu-header {
@@ -139,32 +139,88 @@
       color: #00ffe7;
       text-align: center;
     }
+
+    /* mode & model controls */
+    .control-row {
+      display: flex;
+      gap: 10px;
+      padding: 12px 16px;
+      align-items: center;
+      background: #111216;
+      border-bottom: 1px solid #222;
+    }
+    .control-row label { font-size: 13px; color: #9fffe7; width: 90px; }
+    .control-row select {
+      flex: 1;
+      padding: 8px;
+      border-radius: 6px;
+      border: none;
+      background: #252932;
+      color: #fff;
+    }
+    .small {
+      font-size: 12px;
+      color: #a9fef0;
+      padding: 8px 16px;
+    }
+    .mode-indicator {
+      margin: 12px 16px;
+      font-size: 13px;
+      color: #c7ffee;
+    }
+
   </style>
 </head>
 <body>
-  <header>LIONOR2 AI Beta</header>
+  <header>LIONOR3 AI Beta</header>
   <button id="menuBtn">☰</button>
 
   <div id="sideMenu" class="hidden">
     <div class="menu-header">Lionor AI</div>
     <button id="closeMenuBtn">✕</button>
+
+    <!-- Mode & Model controls -->
+    <div class="control-row" style="margin-top:72px;">
+      <label for="modeSelect">Mode</label>
+      <select id="modeSelect" title="Pilih mode Lionor">
+        <option value="normal">Normal</option>
+        <option value="deep">Deep Research</option>
+        <option value="analisis">Analisis</option>
+        <option value="tothepoint">To The Point</option>
+      </select>
+    </div>
+
+    <div class="control-row">
+      <label for="modelSelect">Model</label>
+      <select id="modelSelect" title="Pilih model backend">
+        <option value="llama-3.3-70b">llama-3.3-70b</option>
+        <option value="llama-3-small">llama-3-small</option>
+        <option value="gpt-style">gpt-style</option>
+      </select>
+    </div>
+
+    <div style="padding:12px 16px;">
+      <div class="mode-indicator">Mode aktif: <span id="activeMode">Normal</span></div>
+      <div class="mode-indicator">Model aktif: <span id="activeModel">llama-3.3-70b</span></div>
+    </div>
+
     <ul>
-  <li onclick="alert('👤 Pemilik Lionor: Zezy — developer & trader muda yang membangun AI ini dari nol, mulai dari konsep, UI, hingga logic core.')">
-    Profil Pemilik
-  </li>
+      <li onclick="alert('👤 Pemilik Lionor: Zezy — developer & trader muda yang membangun AI ini dari nol, mulai dari konsep, UI, hingga logic core.')">
+        Profil Pemilik
+      </li>
 
-  <li onclick="alert('🛰️ Tentang Lionor: Lionor AI adalah asisten AI lokal yang terus berkembang. Meski dirancang dan dibangun sendiri oleh Zezy, Lionor memanfaatkan kekuatan model besar dari Groq, Anthropic, dan OpenAI untuk memberikan respon cepat dan akurat.')">
-    Tentang Kami
-  </li>
+      <li onclick="alert('🛰️ Tentang Lionor: Lionor AI adalah asisten AI lokal yang terus berkembang. Meski dirancang dan dibangun sendiri oleh Zezy, Lionor memanfaatkan kekuatan model besar dari Groq, Anthropic, dan OpenAI untuk memberikan respon cepat dan akurat.')">
+        Tentang Kami
+      </li>
 
-  <li onclick="alert('🔐 Privasi: Pertanyaan tidak disimpan secara permanen. Data hanya diproses oleh server untuk memberikan jawaban, tanpa pelacakan jangka panjang.')">
-    Kebijakan Privasi
-  </li>
+      <li onclick="alert('🔐 Privasi: Pertanyaan tidak disimpan secara permanen. Data hanya diproses oleh server untuk memberikan jawaban, tanpa pelacakan jangka panjang.')">
+        Kebijakan Privasi
+      </li>
 
-  <li onclick="alert('🇮🇩 Dukungan: Terima kasih telah mendukung pengembangan AI lokal buatan anak negeri. Lionor terus diperbarui dan ditingkatkan seiring waktu.')">
-    Support AI Lokal
-  </li>
-</ul>
+      <li onclick="alert('🇮🇩 Dukungan: Terima kasih telah mendukung pengembangan AI lokal buatan anak negeri. Lionor terus diperbarui dan ditingkatkan seiring waktu.')">
+        Support AI Lokal
+      </li>
+    </ul>
   </div>
 
   <div id="chat"></div>
@@ -248,7 +304,6 @@ Ia bukan bagian dari korporasi besar atau institusi resmi manapun. Zezy membangu
 
   // Helper: format error/response jadi teks
   function buildAnswerFromResponse(res, parsed, rawText) {
-    // prioritas: parsed.answer -> parsed.error.message -> parsed.message -> parsed.choices -> rawText -> statusText
     if (parsed) {
       if (parsed.answer) return parsed.answer;
       if (parsed.error && parsed.error.message) {
@@ -256,7 +311,6 @@ Ia bukan bagian dari korporasi besar atau institusi resmi manapun. Zezy membangu
         return `⚠️ API error${code}: ${parsed.error.message}`;
       }
       if (parsed.message) return `⚠️ ${parsed.message}`;
-      // choices (OpenAI-style)
       try {
         const ch = parsed.choices;
         if (Array.isArray(ch) && ch.length > 0) {
@@ -264,19 +318,38 @@ Ia bukan bagian dari korporasi besar atau institusi resmi manapun. Zezy membangu
           if (m) return m;
         }
       } catch (e) {}
-      // fallback show small JSON summary
       return `⚠️ Response (json): ${JSON.stringify(parsed).slice(0, 300)}`;
     }
 
-    // not JSON
     if (rawText) {
-      // if raw text short, show it, else truncate
       return rawText.length < 1000 ? rawText : rawText.slice(0, 1000) + '...';
     }
 
-    // last resort
     return `⚠️ Server error ${res.status}: ${res.statusText || 'Unknown'}`;
   }
+
+  // === MODE & MODEL PERSISTENCE ===
+  const modeSelect = document.getElementById('modeSelect');
+  const modelSelect = document.getElementById('modelSelect');
+  const activeMode = document.getElementById('activeMode');
+  const activeModel = document.getElementById('activeModel');
+
+  // init from localStorage
+  const savedMode = localStorage.getItem('lionor_mode') || 'normal';
+  const savedModel = localStorage.getItem('lionor_model') || 'llama-3.3-70b';
+  modeSelect.value = savedMode;
+  modelSelect.value = savedModel;
+  activeMode.textContent = modeSelect.options[modeSelect.selectedIndex].text;
+  activeModel.textContent = modelSelect.value;
+
+  modeSelect.addEventListener('change', () => {
+    localStorage.setItem('lionor_mode', modeSelect.value);
+    activeMode.textContent = modeSelect.options[modeSelect.selectedIndex].text;
+  });
+  modelSelect.addEventListener('change', () => {
+    localStorage.setItem('lionor_model', modelSelect.value);
+    activeModel.textContent = modelSelect.value;
+  });
 
   // === KIRIM PERTANYAAN KE CHATBOX ===
   async function kirimPertanyaan() {
@@ -290,7 +363,6 @@ Ia bukan bagian dari korporasi besar atau institusi resmi manapun. Zezy membangu
       aiMsg.className = 'msg ai';
       chat.appendChild(aiMsg);
       await ketikEfek(aiMsg, "⚠️ Anda telah melebihi batas harian. Silakan upgrade ke Lionor AI Premium.");
-      // tampilkanPopupPembayaran(); // optional
       return;
     }
 
@@ -328,10 +400,15 @@ Ia bukan bagian dari korporasi besar atau institusi resmi manapun. Zezy membangu
     try {
       // timeout helper (so user can get message instead of hanging)
       const controller = new AbortController();
-      const timeoutMs = 15000; // 15s
+      const timeoutMs = 30000; // 30s untuk respons lebih panjang (deep research)
       const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
-      const res = await fetch(`/.netlify/functions/ask?q=${encodeURIComponent(teks)}`, { signal: controller.signal });
+      // kirim mode & model ke fungsi server
+      const mode = encodeURIComponent(localStorage.getItem('lionor_mode') || 'normal');
+      const model = encodeURIComponent(localStorage.getItem('lionor_model') || 'llama-3.3-70b');
+      const url = `/.netlify/functions/ask?q=${encodeURIComponent(teks)}&mode=${mode}&model=${model}`;
+
+      const res = await fetch(url, { signal: controller.signal });
 
       clearTimeout(timeout);
 
@@ -352,9 +429,7 @@ Ia bukan bagian dari korporasi besar atau institusi resmi manapun. Zezy membangu
 
       await ketikEfek(aiMsg, answerText || "⚠️ Lionor gak ngerti. Coba tanya dengan cara lain ya.");
     } catch (err) {
-      // network / timeout / abort / other error
       let errMsg = err && err.name === 'AbortError' ? '⚠️ Permintaan timeout (terlalu lama).' : (`⚠️ Gagal ambil jawaban: ${err.message || err}`);
-      // tampilkan alasan langsung
       await ketikEfek(aiMsg, errMsg);
     }
 
