@@ -5,455 +5,493 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>LIONOR Chat</title>
   <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #0e0f11;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
+    :root{
+      --bg: #0e0f11;
+      --panel: #1a1d24;
+      --accent: #00ffe7;
+      --muted: #20242f;
+      --card: #252932;
+      --text: #ffffff;
     }
+    html,body{height:100%;margin:0;font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text)}
+    /* Header with controls */
     header {
       position: fixed;
       top: 0;
-      width: 96%;
-      background: #1a1d24;
-      padding: 16px;
-      text-align: center;
-      font-size: 1.4em;
-      color: #00ffe7;
-      font-weight: bold;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-      z-index: 10;
-    }
-    #chat {
-      flex: 1;
-      padding: 120px 20px 100px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-    .msg {
-      max-width: 80%;
-      padding: 12px 16px;
-      border-radius: 12px;
-      line-height: 1.6;
-      white-space: pre-wrap;
-    }
-    .user {
-      align-self: flex-end;
-      background: #00ffe7;
-      color: black;
-      font-weight: bold;
-    }
-    .ai {
-      align-self: flex-start;
-      background: #20242f;
-    }
-    #input-area {
-      position: fixed;
-      bottom: 0;
-      width: 96%;
-      display: flex;
-      padding: 15px;
-      background: #16181f;
-      border-top: 1px solid #333;
-      z-index: 10;
-    }
-    input[type="text"] {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      background: #252932;
-      color: #fff;
-      font-size: 1em;
-    }
-    button {
-      margin-left: 10px;
-      padding: 12px 20px;
-      background-color: #00ffe7;
-      color: #10131a;
-      font-weight: bold;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    button:hover { background-color: #00d1bf; }
-
-    /* menu */
-    #menuBtn {
-      position: fixed;
-      top: 8px;
-      left: 8px;
-      width: 48px;
-      height: 48px;
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: #00ffe7;
-      font-size: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1100;
-      padding: 0;
-    }
-    #sideMenu {
-      position: fixed;
-      top: 0;
-      left: -100%;
-      width: 320px;
-      height: 100vh;
-      background: #1a1d24;
-      overflow-y: auto;
-      z-index: 998;
-      transition: left 0.3s ease;
-    }
-    #sideMenu.open { left: 0; }
-    #closeMenuBtn {
-      background: none;
-      border: none;
-      color: #00ffe7;
-      font-size: 24px;
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      cursor: pointer;
-    }
-    #sideMenu ul { list-style: none; padding: 0; margin: 0; padding-top: 120px; }
-    #sideMenu li { padding: 15px 20px; border-bottom: 1px solid #444; cursor: pointer; }
-    #sideMenu li:hover { background: #333; }
-    .menu-header {
-      position: absolute;
-      top: 0;
       left: 0;
-      width: 100%;
-      background: #2a2b2f;
-      padding: 16px;
-      font-size: 18px;
-      font-weight: bold;
-      border-bottom: 1px solid #444;
-      color: #00ffe7;
-      text-align: center;
-    }
-
-    /* mode & model controls */
-    .control-row {
+      right: 0;
+      height: 84px;
+      background: linear-gradient(180deg, rgba(26,29,36,0.98) 0%, rgba(20,22,28,0.98) 100%);
       display: flex;
-      gap: 10px;
-      padding: 12px 16px;
       align-items: center;
-      background: #111216;
-      border-bottom: 1px solid #222;
+      gap: 12px;
+      padding: 12px 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      z-index: 1200;
     }
-    .control-row label { font-size: 13px; color: #9fffe7; width: 90px; }
-    .control-row select {
-      flex: 1;
-      padding: 8px;
-      border-radius: 6px;
+    .brand {
+      color: var(--accent);
+      font-weight: 800;
+      font-size: 1.15rem;
+      margin-right: 8px;
+      white-space: nowrap;
+    }
+    .controls {
+      display:flex;
+      gap:10px;
+      align-items:center;
+      margin-left: 8px;
+      flex:1;
+    }
+    .control {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      background: var(--panel);
+      padding:8px;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,0.03);
+    }
+    .control label { font-size:12px;color:#9fffe7; min-width:66px; }
+    select {
+      background: var(--card);
+      color: var(--text);
       border: none;
-      background: #252932;
-      color: #fff;
+      padding:6px 8px;
+      border-radius:6px;
+      font-size:13px;
+      min-width:160px;
     }
     .small {
-      font-size: 12px;
-      color: #a9fef0;
-      padding: 8px 16px;
+      font-size:12px;color:#c7ffee;margin-left:auto;
     }
-    .mode-indicator {
-      margin: 12px 16px;
-      font-size: 13px;
-      color: #c7ffee;
+    /* Chat area */
+    #chat {
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      padding: 110px 20px 110px;
+      height: calc(100vh - 110px);
+      overflow-y:auto;
+      box-sizing:border-box;
     }
-
+    .msg {
+      max-width:80%;
+      padding:12px 16px;
+      border-radius:12px;
+      line-height:1.6;
+      white-space:pre-wrap;
+      word-break:break-word;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.02) inset;
+    }
+    .user {
+      align-self:flex-end;
+      background: var(--accent);
+      color: #0b0d0f;
+      font-weight:700;
+    }
+    .ai {
+      align-self:flex-start;
+      background: var(--muted);
+      color: #dcecff;
+    }
+    /* Input area */
+    #input-area {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display:flex;
+      gap:12px;
+      padding:14px 16px;
+      background: linear-gradient(0deg, rgba(20,22,28,0.96) 0%, rgba(26,29,36,0.96) 100%);
+      border-top:1px solid rgba(255,255,255,0.03);
+      align-items:center;
+      z-index:1100;
+    }
+    input[type="text"]{
+      flex:1;
+      padding:12px;
+      border-radius:8px;
+      border:none;
+      background:var(--card);
+      color:var(--text);
+      font-size:15px;
+    }
+    button {
+      padding:10px 14px;
+      border-radius:8px;
+      border:none;
+      background:var(--accent);
+      color:#081014;
+      font-weight:700;
+      cursor:pointer;
+    }
+    button:active{transform:translateY(1px)}
+    /* Arrow-to-bottom floating button */
+    #jumpBtn {
+      position: fixed;
+      right: 18px;
+      bottom: 86px; /* above input area */
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #00ffe7, #00d1bf);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.45);
+      z-index:1300;
+      cursor:pointer;
+      border: none;
+      opacity:0;
+      transform: translateY(8px);
+      transition: opacity 200ms ease, transform 180ms ease;
+      font-size:20px;
+      color:#041018;
+    }
+    #jumpBtn.show { opacity:1; transform: translateY(0); }
+    /* small helper text when hovering */
+    #jumpBtnTitle {
+      position: fixed;
+      right: 84px;
+      bottom: 98px;
+      background: rgba(10,12,15,0.8);
+      color: #bfffee;
+      padding:6px 10px;
+      border-radius:8px;
+      font-size:12px;
+      z-index:1301;
+      opacity:0;
+      transition: opacity 120ms;
+      pointer-events:none;
+    }
+    #jumpBtn:hover + #jumpBtnTitle { opacity:1; }
+    /* responsive tweaks */
+    @media (max-width:640px){
+      header{height:106px;flex-wrap:wrap;padding:12px}
+      .control label{min-width:54px}
+      select{min-width:120px}
+      #jumpBtn{right:12px;bottom:100px}
+      #jumpBtnTitle{right:74px;bottom:112px}
+      #chat{padding: 140px 12px 140px}
+    }
   </style>
 </head>
 <body>
-  <header>LIONOR3 AI Beta</header>
-  <button id="menuBtn">☰</button>
+  <!-- HEADER: brand + mode/model controls moved to front -->
+  <header>
+    <div class="brand">LIONOR2 AI Beta</div>
 
-  <div id="sideMenu" class="hidden">
-    <div class="menu-header">Lionor AI</div>
-    <button id="closeMenuBtn">✕</button>
+    <div class="controls">
+      <div class="control">
+        <label for="modeSelect">Mode</label>
+        <select id="modeSelect" title="Pilih mode Lionor">
+          <option value="normal">Normal</option>
+          <option value="deep">Deep Research</option>
+          <option value="analisis">Analisis</option>
+          <option value="tothepoint">To The Point</option>
+        </select>
+      </div>
 
-    <!-- Mode & Model controls -->
-    <div class="control-row" style="margin-top:72px;">
-      <label for="modeSelect">Mode</label>
-      <select id="modeSelect" title="Pilih mode Lionor">
-        <option value="normal">Normal</option>
-        <option value="deep">Deep Research</option>
-        <option value="analisis">Analisis</option>
-        <option value="tothepoint">To The Point</option>
-      </select>
+      <div class="control">
+        <label for="modelSelect">Model</label>
+        <select id="modelSelect" title="Pilih model backend">
+          <option value="llama-3.3-70b">llama-3.3-70b</option>
+          <option value="llama-3-small">llama-3-small</option>
+          <option value="gpt-style">gpt-style</option>
+        </select>
+      </div>
+
+      <div class="small">Mode: <span id="activeModeText">Normal</span> • Model: <span id="activeModelText">llama-3.3-70b</span></div>
     </div>
+  </header>
 
-    <div class="control-row">
-      <label for="modelSelect">Model</label>
-      <select id="modelSelect" title="Pilih model backend">
-        <option value="llama-3.3-70b">llama-3.3-70b</option>
-        <option value="llama-3-small">llama-3-small</option>
-        <option value="gpt-style">gpt-style</option>
-      </select>
-    </div>
+  <!-- Chat container -->
+  <div id="chat" aria-live="polite"></div>
 
-    <div style="padding:12px 16px;">
-      <div class="mode-indicator">Mode aktif: <span id="activeMode">Normal</span></div>
-      <div class="mode-indicator">Model aktif: <span id="activeModel">llama-3.3-70b</span></div>
-    </div>
-
-    <ul>
-      <li onclick="alert('👤 Pemilik Lionor: Zezy — developer & trader muda yang membangun AI ini dari nol, mulai dari konsep, UI, hingga logic core.')">
-        Profil Pemilik
-      </li>
-
-      <li onclick="alert('🛰️ Tentang Lionor: Lionor AI adalah asisten AI lokal yang terus berkembang. Meski dirancang dan dibangun sendiri oleh Zezy, Lionor memanfaatkan kekuatan model besar dari Groq, Anthropic, dan OpenAI untuk memberikan respon cepat dan akurat.')">
-        Tentang Kami
-      </li>
-
-      <li onclick="alert('🔐 Privasi: Pertanyaan tidak disimpan secara permanen. Data hanya diproses oleh server untuk memberikan jawaban, tanpa pelacakan jangka panjang.')">
-        Kebijakan Privasi
-      </li>
-
-      <li onclick="alert('🇮🇩 Dukungan: Terima kasih telah mendukung pengembangan AI lokal buatan anak negeri. Lionor terus diperbarui dan ditingkatkan seiring waktu.')">
-        Support AI Lokal
-      </li>
-    </ul>
-  </div>
-
-  <div id="chat"></div>
-
+  <!-- Input -->
   <div id="input-area">
-    <input type="text" id="pertanyaan" placeholder="Tulis pesan..." />
-    <button onclick="kirimPertanyaan()">Kirim</button>
+    <input type="text" id="pertanyaan" placeholder="Tulis pesan..." autocomplete="off" />
+    <button id="sendBtn">Kirim</button>
   </div>
+
+  <!-- Jump to current typing message button -->
+  <button id="jumpBtn" title="Lompat ke jawaban yang sedang dimuat">⬇</button>
+  <div id="jumpBtnTitle">Lompat ke jawaban</div>
 
   <script>
-  // === AUTO REPLY MANUAL ===
-  const autoReply = (q) => {
-    const pertanyaan = q.toLowerCase().trim();
-    if (pertanyaan === "siapa pemilik lionor ai" || pertanyaan === "siapa pemilik lionor" || pertanyaan === "lionor ai punya siapa" || pertanyaan === "lionor ai milik siapa" || pertanyaan === "punya siapa lionor ai") {
-      return `LIONOR AI Beta adalah karya dari seorang kreator independen bernama Zezy.
+    // greeting (UI echo) sesuai permintaan awal
+    console.log("hallo king zezy 👑");
+
+    // shortcuts to DOM
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('pertanyaan');
+    const sendBtn = document.getElementById('sendBtn');
+    const jumpBtn = document.getElementById('jumpBtn');
+    const jumpBtnTitle = document.getElementById('jumpBtnTitle');
+
+    const modeSelect = document.getElementById('modeSelect');
+    const modelSelect = document.getElementById('modelSelect');
+    const activeModeText = document.getElementById('activeModeText');
+    const activeModelText = document.getElementById('activeModelText');
+
+    // init mode/model from localStorage
+    const savedMode = localStorage.getItem('lionor_mode') || 'normal';
+    const savedModel = localStorage.getItem('lionor_model') || 'llama-3.3-70b';
+    modeSelect.value = savedMode;
+    modelSelect.value = savedModel;
+    activeModeText.textContent = modeSelect.options[modeSelect.selectedIndex].text;
+    activeModelText.textContent = modelSelect.value;
+
+    modeSelect.addEventListener('change', () => {
+      localStorage.setItem('lionor_mode', modeSelect.value);
+      activeModeText.textContent = modeSelect.options[modeSelect.selectedIndex].text;
+    });
+    modelSelect.addEventListener('change', () => {
+      localStorage.setItem('lionor_model', modelSelect.value);
+      activeModelText.textContent = modelSelect.value;
+    });
+
+    // auto-reply logic kept same as before (minimal)
+    const autoReply = (q) => {
+      const pertanyaan = q.toLowerCase().trim();
+      if (pertanyaan === "siapa pemilik lionor ai" || pertanyaan === "siapa pemilik lionor" || pertanyaan === "lionor ai punya siapa" || pertanyaan === "lionor ai milik siapa" || pertanyaan === "punya siapa lionor ai") {
+        return `LIONOR AI Beta adalah karya dari seorang kreator independen bernama Zezy.
 
 Ia bukan bagian dari korporasi besar atau institusi resmi manapun. Zezy membangun Lionor AI dengan semangat keterbukaan, pendidikan mandiri, dan idealisme.`;
-    }
+      }
+      if (pertanyaan === "lionor ai dari mana") {
+        return `Lionor AI berasal dari Indonesia—dibangun dengan semangat lokal yang kental namun tetap ingin punya kualitas global.`;
+      }
+      if (pertanyaan === "apa visi misi lionor ai") {
+        return `Visi Lionor AI: menyederhanakan yang rumit dan membuka akses teknologi.`;
+      }
+      if (pertanyaan === "siapa zezy") {
+        return `Zezy adalah pengembang di balik Lionor: trader, developer, autodidak.`;
+      }
+      if (pertanyaan === "hallo lionor" || pertanyaan === "halo lionor") {
+        return "Hallo juga! aku LIONOR AI Milik Zezy! Ada yang mau kamu tanyain hari ini?";
+      }
+      if (pertanyaan.includes("siapa kamu")) {
+        return "Aku Lionor AI Beta, asisten digital yang siap membantu kamu kapan saja!";
+      }
+      if (pertanyaan.includes("makasih") || pertanyaan.includes("terima kasih")) {
+        return "Sama-sama yaa, aku senang bisa bantu 😊";
+      }
+      return null;
+    };
 
-    if (pertanyaan === "lionor ai dari mana") {
-      return `Lionor AI berasal dari Indonesia—dibangun dengan semangat lokal yang kental namun tetap ingin punya kualitas global.`;
-    }
+    // daily limit (kept)
+    let jumlahPertanyaan = parseInt(localStorage.getItem('jumlahPertanyaan') || '0');
+    const LIMIT_HARIAN = 100;
 
-    if (pertanyaan === "apa visi misi lionor ai") {
-      return `Visi Lionor AI: menyederhanakan yang rumit dan membuka akses teknologi.`;
-    }
+    // autoscroll logic
+    let autoScroll = true;
+    chat.addEventListener('scroll', () => {
+      const threshold = 50;
+      const atBottom = chat.scrollHeight - chat.scrollTop - chat.clientHeight < threshold;
+      autoScroll = atBottom;
+      // if user scrolled up while AI typing, we keep jumpBtn visible if there's typing
+    });
 
-    if (pertanyaan === "siapa zezy") {
-      return `Zezy adalah pengembang di balik Lionor: trader, developer, autodidak.`;
-    }
-
-    if (pertanyaan === "hallo lionor" || pertanyaan === "halo lionor") {
-      return "Hallo juga! aku LIONOR AI Milik Zezy! Ada yang mau kamu tanyain hari ini?";
-    }
-
-    if (pertanyaan.includes("siapa kamu")) {
-      return "Aku Lionor AI Beta, asisten digital yang siap membantu kamu kapan saja!";
-    }
-
-    if (pertanyaan.includes("makasih") || pertanyaan.includes("terima kasih")) {
-      return "Sama-sama yaa, aku senang bisa bantu 😊";
-    }
-
-    return null;
-  };
-
-  // === BATAS PERTANYAAN HARIAN ===
-  let jumlahPertanyaan = parseInt(localStorage.getItem('jumlahPertanyaan') || '0');
-  const LIMIT_HARIAN = 100;
-
-  const chat = document.getElementById('chat');
-  const input = document.getElementById('pertanyaan');
-
-  let autoScroll = true;
-  chat.addEventListener('scroll', () => {
-    const threshold = 50;
-    const atBottom = chat.scrollHeight - chat.scrollTop - chat.clientHeight < threshold;
-    autoScroll = atBottom;
-  });
-
-  async function ketikEfek(element, text, delay = 4) {
-    element.textContent = '';
-    for (let i = 0; i < text.length; i++) {
-      element.textContent += text.charAt(i);
-      if (autoScroll) chat.scrollTop = chat.scrollHeight;
-      await new Promise(r => setTimeout(r, delay));
-    }
-  }
-
-  // jawaban jam sekarang (dipakai sebelum fetch)
-  function jawabJamSekarang(teks) {
-    const kataKunci = ['jam berapa', 'waktu sekarang', 'sekarang jam', 'berapa jam'];
-    for (const kata of kataKunci) {
-      if (teks.toLowerCase().includes(kata)) {
-        const wibDate = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', hour12: false });
-        return `Sekarang pukul ${wibDate}`;
+    // typing effect function: shows one char at a time
+    async function ketikEfek(element, text, delay = 4, onProgress = null) {
+      element.textContent = '';
+      for (let i = 0; i < text.length; i++) {
+        element.textContent += text.charAt(i);
+        if (autoScroll) chat.scrollTop = chat.scrollHeight;
+        if (onProgress && (i % 8 === 0)) onProgress(i, text.length);
+        await new Promise(r => setTimeout(r, delay));
       }
     }
-    return null;
-  }
 
-  // Helper: format error/response jadi teks
-  function buildAnswerFromResponse(res, parsed, rawText) {
-    if (parsed) {
-      if (parsed.answer) return parsed.answer;
-      if (parsed.error && parsed.error.message) {
-        const code = parsed.error.code ? ` (${parsed.error.code})` : '';
-        return `⚠️ API error${code}: ${parsed.error.message}`;
+    // detect if text considered "panjang"
+    function isLongText(text) {
+      return text && text.length >= 220;
+    }
+
+    // show/hide jump button
+    function showJump() {
+      jumpBtn.classList.add('show');
+    }
+    function hideJump() {
+      jumpBtn.classList.remove('show');
+    }
+
+    // helper: scroll to a specific element smoothly
+    function scrollToEl(el) {
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const chatRect = chat.getBoundingClientRect();
+      // compute scroll offset inside chat
+      const offset = el.offsetTop - (chat.clientHeight * 0.35);
+      chat.scrollTo({ top: offset, behavior: 'smooth' });
+    }
+
+    // when user clicks jumpBtn, jump to currently typing AI message if available
+    jumpBtn.addEventListener('click', () => {
+      // find last .msg.ai that has data-typing="true" or the last AI message
+      const typingMsg = chat.querySelector('.msg.ai[data-typing="true"]');
+      const target = typingMsg || chat.querySelector('.msg.ai:last-of-type');
+      if (target) {
+        scrollToEl(target);
+        autoScroll = true;
+        hideJump();
       }
-      if (parsed.message) return `⚠️ ${parsed.message}`;
-      try {
-        const ch = parsed.choices;
-        if (Array.isArray(ch) && ch.length > 0) {
-          const m = ch[0].message?.content || ch[0].text;
-          if (m) return m;
+    });
+
+    // helper: build answer from server-like response (kept similar to prior)
+    function buildAnswerFromResponse(parsed, rawText, resStatusText) {
+      if (parsed) {
+        if (parsed.answer) return parsed.answer;
+        if (parsed.error && parsed.error.message) {
+          const code = parsed.error.code ? ` (${parsed.error.code})` : '';
+          return `⚠️ API error${code}: ${parsed.error.message}`;
         }
-      } catch (e) {}
-      return `⚠️ Response (json): ${JSON.stringify(parsed).slice(0, 300)}`;
+        if (parsed.message) return `⚠️ ${parsed.message}`;
+        try {
+          const ch = parsed.choices;
+          if (Array.isArray(ch) && ch.length > 0) {
+            const m = ch[0].message?.content || ch[0].text;
+            if (m) return m;
+          }
+        } catch (e) {}
+        return `⚠️ Response (json): ${JSON.stringify(parsed).slice(0,300)}`;
+      }
+      if (rawText) return rawText.length < 1000 ? rawText : rawText.slice(0,1000)+'...';
+      return `⚠️ Server error: ${resStatusText || 'Unknown'}`;
     }
 
-    if (rawText) {
-      return rawText.length < 1000 ? rawText : rawText.slice(0, 1000) + '...';
-    }
+    // main function to send question
+    async function kirimPertanyaan() {
+      const teks = input.value.trim();
+      if (!teks) return;
 
-    return `⚠️ Server error ${res.status}: ${res.statusText || 'Unknown'}`;
-  }
+      jumlahPertanyaan = parseInt(localStorage.getItem('jumlahPertanyaan') || '0');
 
-  // === MODE & MODEL PERSISTENCE ===
-  const modeSelect = document.getElementById('modeSelect');
-  const modelSelect = document.getElementById('modelSelect');
-  const activeMode = document.getElementById('activeMode');
-  const activeModel = document.getElementById('activeModel');
+      if (jumlahPertanyaan >= LIMIT_HARIAN) {
+        const aiMsg = document.createElement('div');
+        aiMsg.className = 'msg ai';
+        chat.appendChild(aiMsg);
+        await ketikEfek(aiMsg, "⚠️ Anda telah melebihi batas harian. Silakan upgrade ke Lionor AI Premium.");
+        return;
+      }
 
-  // init from localStorage
-  const savedMode = localStorage.getItem('lionor_mode') || 'normal';
-  const savedModel = localStorage.getItem('lionor_model') || 'llama-3.3-70b';
-  modeSelect.value = savedMode;
-  modelSelect.value = savedModel;
-  activeMode.textContent = modeSelect.options[modeSelect.selectedIndex].text;
-  activeModel.textContent = modelSelect.value;
+      jumlahPertanyaan++;
+      localStorage.setItem('jumlahPertanyaan', jumlahPertanyaan);
 
-  modeSelect.addEventListener('change', () => {
-    localStorage.setItem('lionor_mode', modeSelect.value);
-    activeMode.textContent = modeSelect.options[modeSelect.selectedIndex].text;
-  });
-  modelSelect.addEventListener('change', () => {
-    localStorage.setItem('lionor_model', modelSelect.value);
-    activeModel.textContent = modelSelect.value;
-  });
+      // append user message
+      const userMsg = document.createElement('div');
+      userMsg.className = 'msg user';
+      userMsg.textContent = teks;
+      chat.appendChild(userMsg);
 
-  // === KIRIM PERTANYAAN KE CHATBOX ===
-  async function kirimPertanyaan() {
-    const teks = input.value.trim();
-    if (!teks) return;
+      // clear input
+      input.value = '';
+      input.focus();
 
-    jumlahPertanyaan = parseInt(localStorage.getItem('jumlahPertanyaan') || '0');
+      // local auto-reply check
+      const jawabanCepat = autoReply ? autoReply(teks) : null;
+      const kataKunciJam = ['jam berapa','waktu sekarang','sekarang jam','berapa jam'];
+      let jamNow = null;
+      for (const kata of kataKunciJam) {
+        if (teks.toLowerCase().includes(kata)) {
+          const wibDate = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', hour12: false });
+          jamNow = `Sekarang pukul ${wibDate}`;
+        }
+      }
 
-    if (jumlahPertanyaan >= LIMIT_HARIAN) {
+      // create AI placeholder
       const aiMsg = document.createElement('div');
       aiMsg.className = 'msg ai';
+      aiMsg.setAttribute('data-typing', 'false'); // toggled later
       chat.appendChild(aiMsg);
-      await ketikEfek(aiMsg, "⚠️ Anda telah melebihi batas harian. Silakan upgrade ke Lionor AI Premium.");
-      return;
-    }
 
-    jumlahPertanyaan++;
-    localStorage.setItem('jumlahPertanyaan', jumlahPertanyaan);
+      if (autoScroll) chat.scrollTop = chat.scrollHeight;
 
-    const userMsg = document.createElement('div');
-    userMsg.className = 'msg user';
-    userMsg.textContent = teks;
-    chat.appendChild(userMsg);
-
-    input.value = '';
-    input.focus();
-
-    // cek auto-reply lokal dulu
-    const jawabanCepat = autoReply ? autoReply(teks) : null;
-    const jamNow = jawabJamSekarang(teks);
-    const aiMsg = document.createElement('div');
-    aiMsg.className = 'msg ai';
-    chat.appendChild(aiMsg);
-
-    if (autoScroll) chat.scrollTop = chat.scrollHeight;
-
-    if (jawabanCepat) {
-      await ketikEfek(aiMsg, jawabanCepat);
-      return;
-    }
-    if (jamNow) {
-      await ketikEfek(aiMsg, jamNow);
-      return;
-    }
-
-    await ketikEfek(aiMsg, '⏳ Lionor mikir...');
-
-    try {
-      // timeout helper (so user can get message instead of hanging)
-      const controller = new AbortController();
-      const timeoutMs = 30000; // 30s untuk respons lebih panjang (deep research)
-      const timeout = setTimeout(() => controller.abort(), timeoutMs);
-
-      // kirim mode & model ke fungsi server
-      const mode = encodeURIComponent(localStorage.getItem('lionor_mode') || 'normal');
-      const model = encodeURIComponent(localStorage.getItem('lionor_model') || 'llama-3.3-70b');
-      const url = `/.netlify/functions/ask?q=${encodeURIComponent(teks)}&mode=${mode}&model=${model}`;
-
-      const res = await fetch(url, { signal: controller.signal });
-
-      clearTimeout(timeout);
-
-      // always try to read as text first (to support non-json error bodies)
-      let rawText = null;
-      try {
-        rawText = await res.text();
-      } catch (e) {
-        rawText = null;
+      if (jawabanCepat) {
+        await ketikEfek(aiMsg, jawabanCepat);
+        return;
+      }
+      if (jamNow) {
+        await ketikEfek(aiMsg, jamNow);
+        return;
       }
 
-      // try parse JSON
-      let parsed = null;
-      try { parsed = rawText ? JSON.parse(rawText) : null; } catch (e) { parsed = null; }
+      // show interim typing
+      await ketikEfek(aiMsg, '⏳ Lionor mikir...');
 
-      // Build user-friendly answer string
-      const answerText = buildAnswerFromResponse(res, parsed, rawText);
+      try {
+        // prepare fetch with mode & model from localStorage
+        const mode = encodeURIComponent(localStorage.getItem('lionor_mode') || 'normal');
+        const model = encodeURIComponent(localStorage.getItem('lionor_model') || 'llama-3.3-70b');
+        const controller = new AbortController();
+        const timeoutMs = 30000;
+        const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
-      await ketikEfek(aiMsg, answerText || "⚠️ Lionor gak ngerti. Coba tanya dengan cara lain ya.");
-    } catch (err) {
-      let errMsg = err && err.name === 'AbortError' ? '⚠️ Permintaan timeout (terlalu lama).' : (`⚠️ Gagal ambil jawaban: ${err.message || err}`);
-      await ketikEfek(aiMsg, errMsg);
+        const res = await fetch(`/.netlify/functions/ask?q=${encodeURIComponent(teks)}&mode=${mode}&model=${model}`, { signal: controller.signal });
+
+        clearTimeout(timeout);
+
+        // read as text and try parse json
+        let rawText = null;
+        try { rawText = await res.text(); } catch (e) { rawText = null; }
+        let parsed = null;
+        try { parsed = rawText ? JSON.parse(rawText) : null; } catch (e) { parsed = null; }
+
+        // determine answer string
+        const answerText = buildAnswerFromResponse(parsed, rawText, res.statusText);
+
+        // If answer very long, show jump button and mark message as typing
+        const long = isLongText(answerText);
+        if (long) {
+          aiMsg.setAttribute('data-typing', 'true');
+          // Replace interim text and start typing effect with progress callback
+          // Show jump button if user scrolled up
+          if (!autoScroll) showJump();
+          // while typing, ensure jump button visible so user can jump anytime
+          showJump();
+          await ketikEfek(aiMsg, answerText, 4, (i,total) => {
+            // if user scrolled up while typing, keep jump visible
+            if (!autoScroll) showJump();
+          });
+          aiMsg.setAttribute('data-typing', 'false');
+          hideJump();
+        } else {
+          // short answer: just type and keep jump hidden
+          await ketikEfek(aiMsg, answerText);
+        }
+
+      } catch (err) {
+        let errMsg = (err && err.name === 'AbortError') ? '⚠️ Permintaan timeout (terlalu lama).' : (`⚠️ Gagal ambil jawaban: ${err.message || err}`);
+        // replace the interim content with error
+        aiMsg.textContent = '';
+        await ketikEfek(aiMsg, errMsg);
+      }
+
+      if (autoScroll) chat.scrollTop = chat.scrollHeight;
     }
 
-    if (autoScroll) chat.scrollTop = chat.scrollHeight;
-  }
+    // send button, enter key
+    sendBtn.addEventListener('click', kirimPertanyaan);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); kirimPertanyaan(); }
+    });
 
-  // listener enter
-  input.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      kirimPertanyaan();
-    }
-  });
+    // small UX: when user manually scrolls to bottom, hide the jump button
+    chat.addEventListener('scroll', () => {
+      const atBottom = chat.scrollHeight - chat.scrollTop - chat.clientHeight < 60;
+      if (atBottom) hideJump();
+    });
 
-  // menu toggles
-  const menuBtn = document.getElementById('menuBtn');
-  const sideMenu = document.getElementById('sideMenu');
-  const closeMenuBtn = document.getElementById('closeMenuBtn');
+    // initial focus
+    input.focus();
 
-  menuBtn.onclick = () => { sideMenu.classList.add('open'); };
-  closeMenuBtn.onclick = () => { sideMenu.classList.remove('open'); };
-
-  // small UX: autofocus
-  input.focus();
+    // expose some helper for debugging (optional)
+    window.LIONOR_UI = {
+      showJump, hideJump, scrollToEl, chatEl: chat
+    };
   </script>
 </body>
 </html>
