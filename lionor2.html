@@ -14,7 +14,6 @@
       flex-direction: column;
       height: 100vh;
     }
-
     header {
       position: fixed;
       top: 0;
@@ -28,7 +27,6 @@
       box-shadow: 0 2px 5px rgba(0,0,0,0.5);
       z-index: 10;
     }
-
     #chat {
       flex: 1;
       padding: 90px 20px 100px;
@@ -37,7 +35,6 @@
       flex-direction: column;
       gap: 15px;
     }
-
     .msg {
       max-width: 80%;
       padding: 12px 16px;
@@ -45,19 +42,16 @@
       line-height: 1.6;
       white-space: pre-wrap;
     }
-
-   .user {
-  align-self: flex-end;
-  background: #00ffe7;
-  color: black;        /* buat teks hitam */
-  font-weight: bold;   /* buat teks tebal */
-}
-
+    .user {
+      align-self: flex-end;
+      background: #00ffe7;
+      color: black;
+      font-weight: bold;
+    }
     .ai {
       align-self: flex-start;
       background: #20242f;
     }
-
     #input-area {
       position: fixed;
       bottom: 0;
@@ -68,7 +62,6 @@
       border-top: 1px solid #333;
       z-index: 10;
     }
-
     input[type="text"] {
       flex: 1;
       padding: 12px;
@@ -78,7 +71,6 @@
       color: #fff;
       font-size: 1em;
     }
-
     button {
       margin-left: 10px;
       padding: 12px 20px;
@@ -89,108 +81,81 @@
       border-radius: 8px;
       cursor: pointer;
     }
+    button:hover { background-color: #00d1bf; }
 
-    button:hover {
-      background-color: #00d1bf;
+    /* menu */
+    #menuBtn {
+      position: fixed;
+      top: 8px;
+      left: 8px;
+      width: 48px;
+      height: 48px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #00ffe7;
+      font-size: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1100;
+      padding: 0;
     }
-    /* Tombol menu di dalam header */
-
-#menuBtn {
-  position: fixed;
-  top: 8px;      /* Dekat pojok atas */
-  left: 8px;     /* Dekat pojok kiri */
-  width: 48px;   /* Ukuran kotak tombol */
-  height: 48px;  /* Ukuran kotak tombol */
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #00ffe7;
-  font-size: 32px; /* Ukuran ikon garis tiga */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1100;
-  padding: 0;
-}
-    
-#sideMenu {
-  position: fixed;
-  top: 0;
-  left: -100%;
-  width: 240px;
-  height: 100vh;
-  background: #1a1d24;
-  overflow-y: auto;
-  z-index: 998;
-  transition: left 0.3s ease;
-}
-
-#sideMenu.open {
-  left: 0;
-}
-
-#closeMenuBtn {
-  background: none;
-  border: none;
-  color: #00ffe7;
-  font-size: 24px;
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  cursor: pointer;
-}
-
-/* Saat menu muncul */
-#sideMenu.show {
-  transform: translateX(0);
-}
-
-#sideMenu ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  padding-top: 60px; /* beri jarak sesuai tinggi header */
-}
-
-#sideMenu li {
-  padding: 15px 20px;
-  border-bottom: 1px solid #444;
-  cursor: pointer;
-}
-
-#sideMenu li:hover {
-  background: #333;
-}
-
-.menu-header {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  background: #2a2b2f;
-  padding: 16px;
-  font-size: 18px;
-  font-weight: bold;
-  border-bottom: 1px solid #444;
-  color: #00ffe7;
-  text-align: center;
-}
+    #sideMenu {
+      position: fixed;
+      top: 0;
+      left: -100%;
+      width: 240px;
+      height: 100vh;
+      background: #1a1d24;
+      overflow-y: auto;
+      z-index: 998;
+      transition: left 0.3s ease;
+    }
+    #sideMenu.open { left: 0; }
+    #closeMenuBtn {
+      background: none;
+      border: none;
+      color: #00ffe7;
+      font-size: 24px;
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      cursor: pointer;
+    }
+    #sideMenu ul { list-style: none; padding: 0; margin: 0; padding-top: 60px; }
+    #sideMenu li { padding: 15px 20px; border-bottom: 1px solid #444; cursor: pointer; }
+    #sideMenu li:hover { background: #333; }
+    .menu-header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: #2a2b2f;
+      padding: 16px;
+      font-size: 18px;
+      font-weight: bold;
+      border-bottom: 1px solid #444;
+      color: #00ffe7;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
   <header>LIONOR2 AI Beta</header>
-<button id="menuBtn">☰</button>
- 
+  <button id="menuBtn">☰</button>
+
   <div id="sideMenu" class="hidden">
-  <div class="menu-header">Lionor AI</div>
-     <button id="closeMenuBtn">✕</button>
-  <ul>
-    <li onclick="alert('👤 Pemilik Lionor: Zezy, trader & developer AI lokal.')">Profil Pemilik</li>
-    <li onclick="alert('🛰️ Tentang kami: Lionor AI adalah asisten AI lokal yang terus berkembang.')">Tentang Kami</li>
-    <li onclick="alert('🔐 Privasi: Kami tidak menyimpan pertanyaan secara permanen.')">Kebijakan Privasi</li>
-    <li onclick="alert('🇮🇩 Terima kasih telah mendukung AI lokal buatan anak negeri.')">Support AI Lokal</li>
-  </ul>
-</div>
+    <div class="menu-header">Lionor AI</div>
+    <button id="closeMenuBtn">✕</button>
+    <ul>
+      <li onclick="alert('👤 Pemilik Lionor: Zezy, trader & developer AI lokal.')">Profil Pemilik</li>
+      <li onclick="alert('🛰️ Tentang kami: Lionor AI adalah asisten AI lokal yang terus berkembang.')">Tentang Kami</li>
+      <li onclick="alert('🔐 Privasi: Kami tidak menyimpan pertanyaan secara permanen.')">Kebijakan Privasi</li>
+      <li onclick="alert('🇮🇩 Terima kasih telah mendukung AI lokal buatan anak negeri.')">Support AI Lokal</li>
+    </ul>
+  </div>
+
   <div id="chat"></div>
 
   <div id="input-area">
@@ -198,112 +163,27 @@
     <button onclick="kirimPertanyaan()">Kirim</button>
   </div>
 
-  <div id="popup-premium" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:999; align-items:center; justify-content:center;">
-  <div style="background:#1c1e24; padding:25px; border-radius:12px; width:90%; max-width:400px; color:white; text-align:center;">
-    <p>Limit Pertanyaan Kamu Sudah Habis</p>
-    <h2>Upgrade ke Lionor Premium</h2>
-    <p>✅ 100 pertanyaan<br>✅ Akses di 3 website: zestore.id, vc signal trading.id, zeetrading.id<br>✅ Akses update tercepat</p>
-    <img src="https://your-qris-link.com/qris-image.jpg" alt="QRIS Dana" style="width:100%; max-width:250px; margin:10px auto; border-radius:8px;">
-    <p>💳 Harga: Rp150.000<br>+ admin 1% (Rp1.500)</p>
-
-    <input type="text" id="namaUser" placeholder="Nama" style="margin-top:10px; width:100%; padding:10px; border-radius:6px; border:none;">
-    <input type="email" id="emailUser" placeholder="Email" style="margin-top:10px; width:100%; padding:10px; border-radius:6px; border:none;">
-    <input type="tel" id="waUser" placeholder="No WhatsApp" style="margin-top:10px; width:100%; padding:10px; border-radius:6px; border:none;">
-
-    <button id="btnBayar" disabled style="margin-top:15px; padding:10px 15px; background:#555; color:#aaa; border:none; border-radius:6px;">Tunggu 15 detik...</button>
-    <br>
-    <button onclick="closePopup()" style="margin-top:10px; background:none; border:none; color:#00ffe7; cursor:pointer;">Tutup</button>
-  </div>
-</div>
   <script>
   // === AUTO REPLY MANUAL ===
   const autoReply = (q) => {
     const pertanyaan = q.toLowerCase().trim();
+    if (pertanyaan === "siapa pemilik lionor ai" || pertanyaan === "siapa pemilik lionor" || pertanyaan === "lionor ai punya siapa" || pertanyaan === "lionor ai milik siapa" || pertanyaan === "punya siapa lionor ai") {
+      return `LIONOR AI Beta adalah karya dari seorang kreator independen bernama Zezy.
 
-    if (pertanyaan === "siapa pemilik lionor ai") {
-    return `LIONOR AI Beta adalah karya dari seorang kreator independen bernama Zezy.
+Ia bukan bagian dari korporasi besar atau institusi resmi manapun. Zezy membangun Lionor AI dengan semangat keterbukaan, pendidikan mandiri, dan idealisme.`;
+    }
 
-Ia bukan bagian dari korporasi besar atau institusi resmi manapun. Justru dari ruang kerja kecil dan pikiran yang tak pernah diam, Zezy merancang Lionor sebagai bentuk perlawanan halus terhadap dominasi teknologi luar negeri yang seringkali tak ramah terhadap budaya dan konteks lokal.
+    if (pertanyaan === "lionor ai dari mana") {
+      return `Lionor AI berasal dari Indonesia—dibangun dengan semangat lokal yang kental namun tetap ingin punya kualitas global.`;
+    }
 
-Zezy membangun Lionor AI dengan semangat keterbukaan, pendidikan mandiri, dan idealisme untuk membuktikan bahwa kecerdasan buatan pun bisa lahir dari tangan orang biasa—asal punya visi, konsistensi, dan keberanian untuk berbeda.
+    if (pertanyaan === "apa visi misi lionor ai") {
+      return `Visi Lionor AI: menyederhanakan yang rumit dan membuka akses teknologi.`;
+    }
 
-Lionor AI bukan milik perusahaan.
-Lionor AI adalah milik semangat yang percaya bahwa teknologi itu seharusnya dekat, hangat, dan bermanfaat.`;
-  }
-
-  if (pertanyaan === "siapa pemilik lionor") {
-    return `LIONOR AI Beta adalah karya dari seorang kreator independen bernama Zezy.
-
-Ia bukan bagian dari korporasi besar atau institusi resmi manapun. Justru dari ruang kerja kecil dan pikiran yang tak pernah diam, Zezy merancang Lionor sebagai bentuk perlawanan halus terhadap dominasi teknologi luar negeri yang seringkali tak ramah terhadap budaya dan konteks lokal.
-
-Zezy membangun Lionor AI dengan semangat keterbukaan, pendidikan mandiri, dan idealisme untuk membuktikan bahwa kecerdasan buatan pun bisa lahir dari tangan orang biasa—asal punya visi, konsistensi, dan keberanian untuk berbeda.
-
-Lionor AI bukan milik perusahaan.
-Lionor AI adalah milik semangat yang percaya bahwa teknologi itu seharusnya dekat, hangat, dan bermanfaat.`;
-  }
-
-  if (pertanyaan === "lionor ai punya siapa") {
-    return `LIONOR AI Beta adalah karya dari seorang kreator independen bernama Zezy.
-
-Ia bukan bagian dari korporasi besar atau institusi resmi manapun. Justru dari ruang kerja kecil dan pikiran yang tak pernah diam, Zezy merancang Lionor sebagai bentuk perlawanan halus terhadap dominasi teknologi luar negeri yang seringkali tak ramah terhadap budaya dan konteks lokal.
-
-Zezy membangun Lionor AI dengan semangat keterbukaan, pendidikan mandiri, dan idealisme untuk membuktikan bahwa kecerdasan buatan pun bisa lahir dari tangan orang biasa—asal punya visi, konsistensi, dan keberanian untuk berbeda.
-
-Lionor AI bukan milik perusahaan.
-Lionor AI adalah milik semangat yang percaya bahwa teknologi itu seharusnya dekat, hangat, dan bermanfaat.`;
-  }
-
-  if (pertanyaan === "lionor ai milik siapa") {
-    return `LIONOR AI Beta adalah karya dari seorang kreator independen bernama Zezy.
-
-Ia bukan bagian dari korporasi besar atau institusi resmi manapun. Justru dari ruang kerja kecil dan pikiran yang tak pernah diam, Zezy merancang Lionor sebagai bentuk perlawanan halus terhadap dominasi teknologi luar negeri yang seringkali tak ramah terhadap budaya dan konteks lokal.
-
-Zezy membangun Lionor AI dengan semangat keterbukaan, pendidikan mandiri, dan idealisme untuk membuktikan bahwa kecerdasan buatan pun bisa lahir dari tangan orang biasa—asal punya visi, konsistensi, dan keberanian untuk berbeda.
-
-Lionor AI bukan milik perusahaan.
-Lionor AI adalah milik semangat yang percaya bahwa teknologi itu seharusnya dekat, hangat, dan bermanfaat.`;
-  }
-
-  if (pertanyaan === "punya siapa lionor ai") {
-    return `LIONOR AI Beta adalah karya dari seorang kreator independen bernama Zezy.
-
-Ia bukan bagian dari korporasi besar atau institusi resmi manapun. Justru dari ruang kerja kecil dan pikiran yang tak pernah diam, Zezy merancang Lionor sebagai bentuk perlawanan halus terhadap dominasi teknologi luar negeri yang seringkali tak ramah terhadap budaya dan konteks lokal.
-
-Zezy membangun Lionor AI dengan semangat keterbukaan, pendidikan mandiri, dan idealisme untuk membuktikan bahwa kecerdasan buatan pun bisa lahir dari tangan orang biasa—asal punya visi, konsistensi, dan keberanian untuk berbeda.
-
-Lionor AI bukan milik perusahaan.
-Lionor AI adalah milik semangat yang percaya bahwa teknologi itu seharusnya dekat, hangat, dan bermanfaat.`;
-  }
-
-  if (pertanyaan === "lionor ai dari mana") {
-    return `Lionor AI berasal dari Indonesia—dibangun dengan semangat lokal yang kental namun tidak membatasi diri hanya untuk pasar lokal.
-
-Platform ini lahir dari keprihatinan bahwa banyak teknologi asing masuk dan digunakan masyarakat, tapi sedikit yang tahu cara kerjanya, apalagi membuat versinya sendiri.
-
-Zezy, sang pengembang, tidak sekadar menciptakan alat, tapi sedang memperkenalkan cara berpikir baru: bahwa teknologi itu bisa dilokalkan, dibumikan, dan tetap berkelas dunia.
-
-Dengan Lionor AI, ia berharap masyarakat Indonesia bisa merasa lebih dekat dengan dunia AI, bukan sebagai pengguna pasif, tapi sebagai penjelajah dan pencipta masa depan teknologi.`;
-  }
-
-  if (pertanyaan === "apa visi misi lionor ai") {
-    return `Visi Lionor AI adalah menjadi jembatan antara kecanggihan teknologi dan keseharian manusia.
-
-Misinya tidak muluk-muluk: menyederhanakan yang rumit, mendekatkan yang jauh, dan membuka akses seluas-luasnya untuk siapa saja yang ingin belajar, bertanya, dan bertumbuh bersama teknologi.
-
-Lionor tidak dibuat hanya untuk menjawab pertanyaan, tapi untuk menyentuh sisi manusiawi dari interaksi digital: membangun kepercayaan, menciptakan rasa nyaman, dan memotivasi agar pengguna merasa lebih berdaya, bukan lebih tergantung.
-
-Dengan pendekatan bahasa yang hangat dan fitur yang relevan, Lionor ingin menjadi AI yang punya hati—bukan sekadar kecerdasan buatan, tapi juga kecerdasan sosial.`;
-  }
-
-  if (pertanyaan === "siapa zezy") {
-    return `Zezy adalah sosok di balik layar LIONOR AI.
-
-Dia bukan lulusan universitas ternama, bukan juga mantan karyawan startup besar. Tapi dia punya hal yang lebih langka: rasa penasaran yang gak ada habisnya, dan keberanian untuk membangun sesuatu dari nol.
-
-Zezy sudah terjun di dunia trading sejak 2019, membangun website top-up game, membuat kelas edukasi, dan menulis baris demi baris kode tanpa bimbingan formal. Semua didapat dari belajar mandiri, mencoba gagal, lalu belajar lagi.
-
-Ia percaya bahwa ilmu tidak harus datang dari gelar, dan inovasi tidak menunggu izin dari siapa pun. Dengan Lionor, dia ingin memberi bukti: bahwa siapa pun yang cukup tekun bisa menciptakan teknologi sendiri—dari kamar kecil, untuk dunia besar.`;
-  }
+    if (pertanyaan === "siapa zezy") {
+      return `Zezy adalah pengembang di balik Lionor: trader, developer, autodidak.`;
+    }
 
     if (pertanyaan === "hallo lionor" || pertanyaan === "halo lionor") {
       return "Hallo juga! aku LIONOR AI Milik Zezy! Ada yang mau kamu tanyain hari ini?";
@@ -320,178 +200,174 @@ Ia percaya bahwa ilmu tidak harus datang dari gelar, dan inovasi tidak menunggu 
     return null;
   };
 
-// === BATAS PERTANYAAN HARIAN ===
-let jumlahPertanyaan = parseInt(localStorage.getItem('jumlahPertanyaan') || '0');
-const LIMIT_HARIAN = 100;
+  // === BATAS PERTANYAAN HARIAN ===
+  let jumlahPertanyaan = parseInt(localStorage.getItem('jumlahPertanyaan') || '0');
+  const LIMIT_HARIAN = 100;
 
-const chat = document.getElementById('chat');
-const input = document.getElementById('pertanyaan');
-const wibDate = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
-console.log('WIB:', wibDate);
-    
-let autoScroll = true;
+  const chat = document.getElementById('chat');
+  const input = document.getElementById('pertanyaan');
 
-// Cek scroll, set autoScroll sesuai posisi scroll user
-chat.addEventListener('scroll', () => {
-  const threshold = 50; // px dari bawah dianggap scroll bottom
-  const atBottom = chat.scrollHeight - chat.scrollTop - chat.clientHeight < threshold;
-  autoScroll = atBottom;
-});
+  let autoScroll = true;
+  chat.addEventListener('scroll', () => {
+    const threshold = 50;
+    const atBottom = chat.scrollHeight - chat.scrollTop - chat.clientHeight < threshold;
+    autoScroll = atBottom;
+  });
 
-// Ubah ketikEfek jadi async biar bisa await tiap karakter
-async function ketikEfek(element, text, delay = 4) {
-  element.textContent = '';
-  for (let i = 0; i < text.length; i++) {
-    element.textContent += text.charAt(i);
-    if (autoScroll) {
-      chat.scrollTop = chat.scrollHeight;
+  async function ketikEfek(element, text, delay = 4) {
+    element.textContent = '';
+    for (let i = 0; i < text.length; i++) {
+      element.textContent += text.charAt(i);
+      if (autoScroll) chat.scrollTop = chat.scrollHeight;
+      await new Promise(r => setTimeout(r, delay));
     }
-    await new Promise(r => setTimeout(r, delay));
-  }
-}
-
-// === POPUP PREMIUM ===
-function tampilkanPopupPembayaran() {
-  const popup = document.createElement('div');
-  popup.style.position = 'fixed';
-  popup.style.top = '0';
-  popup.style.left = '0';
-  popup.style.width = '100vw';
-  popup.style.height = '100vh';
-  popup.style.background = 'rgba(0,0,0,0.8)';
-  popup.style.display = 'flex';
-  popup.style.justifyContent = 'center';
-  popup.style.alignItems = 'center';
-  popup.style.zIndex = '9999';
-
-  popup.innerHTML = `
-    <div style="background:#1e1f22;padding:25px;border-radius:10px;color:white;width:300px;max-width:90%;text-align:center;">
-      <h3 style="margin-top:0;margin-bottom:15px;">🚀 Lionor AI Premium</h3>
-      <p>✅ 100 pertanyaan per hari<br>✅ Akses dari 3 website:<br>- Zestore.id<br>- VCSignalTrading.id<br>- Zeetrading.id<br>✅ Dapat update fitur lebih awal</p>
-      <img src="https://your-qris-url.com/qris.jpg" alt="QRIS Dana" style="width:100%;max-width:200px;border-radius:8px;margin:10px auto;">
-      <p><strong>Harga:</strong> Rp151.500 (QRIS Dana + 1% admin)</p>
-      <input id="namaUser" placeholder="Nama Lengkap" style="width:100%;margin-bottom:8px;padding:8px;" />
-      <input id="emailUser" placeholder="Email" style="width:100%;margin-bottom:8px;padding:8px;" />
-      <input id="waUser" placeholder="Nomor WhatsApp" style="width:100%;margin-bottom:10px;padding:8px;" />
-      <button id="btnSudahBayar" disabled style="width:100%;padding:10px;background:#555;color:#aaa;border:none;border-radius:5px;">Tunggu 15 detik...</button>
-    </div>
-  `;
-  document.body.appendChild(popup);
-
-  const btn = document.getElementById('btnSudahBayar');
-  let countdown = 15;
-  const interval = setInterval(() => {
-    countdown--;
-    if (countdown > 0) {
-      btn.textContent = `Tunggu ${countdown} detik...`;
-    } else {
-      clearInterval(interval);
-      btn.disabled = false;
-      btn.style.background = '#00ffe7';
-      btn.style.color = '#10131a';
-      btn.textContent = '✅ Sudah Bayar';
-      btn.onclick = prosesPembayaran;
-    }
-  }, 1000);
-}
-
-function prosesPembayaran() {
-  const nama = document.getElementById('namaUser').value;
-  const email = document.getElementById('emailUser').value;
-  const wa = document.getElementById('waUser').value;
-
-  if (!nama || !email || !wa) {
-    alert("Lengkapi semua data dulu ya.");
-    return;
   }
 
-  const teks = `Halo admin Lionor AI, saya sudah bayar.\n\nNama: ${nama}\nEmail: ${email}\nWhatsApp: ${wa}\n\nMohon aktifkan Lionor Premium.`;
-  const url = `https://wa.me/62XXXXXXXXXX?text=${encodeURIComponent(teks)}`;
+  // jawaban jam sekarang (dipakai sebelum fetch)
+  function jawabJamSekarang(teks) {
+    const kataKunci = ['jam berapa', 'waktu sekarang', 'sekarang jam', 'berapa jam'];
+    for (const kata of kataKunci) {
+      if (teks.toLowerCase().includes(kata)) {
+        const wibDate = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', hour12: false });
+        return `Sekarang pukul ${wibDate}`;
+      }
+    }
+    return null;
+  }
 
-  localStorage.setItem('jumlahPertanyaan', 0); // Reset
-  window.open(url, '_blank');
-}
+  // Helper: format error/response jadi teks
+  function buildAnswerFromResponse(res, parsed, rawText) {
+    // prioritas: parsed.answer -> parsed.error.message -> parsed.message -> parsed.choices -> rawText -> statusText
+    if (parsed) {
+      if (parsed.answer) return parsed.answer;
+      if (parsed.error && parsed.error.message) {
+        const code = parsed.error.code ? ` (${parsed.error.code})` : '';
+        return `⚠️ API error${code}: ${parsed.error.message}`;
+      }
+      if (parsed.message) return `⚠️ ${parsed.message}`;
+      // choices (OpenAI-style)
+      try {
+        const ch = parsed.choices;
+        if (Array.isArray(ch) && ch.length > 0) {
+          const m = ch[0].message?.content || ch[0].text;
+          if (m) return m;
+        }
+      } catch (e) {}
+      // fallback show small JSON summary
+      return `⚠️ Response (json): ${JSON.stringify(parsed).slice(0, 300)}`;
+    }
 
-// === KIRIM PERTANYAAN KE CHATBOX ===
-async function kirimPertanyaan() {
-  const teks = input.value.trim();
-  if (!teks) return;
+    // not JSON
+    if (rawText) {
+      // if raw text short, show it, else truncate
+      return rawText.length < 1000 ? rawText : rawText.slice(0, 1000) + '...';
+    }
 
-  jumlahPertanyaan = parseInt(localStorage.getItem('jumlahPertanyaan') || '0');
+    // last resort
+    return `⚠️ Server error ${res.status}: ${res.statusText || 'Unknown'}`;
+  }
 
-  if (jumlahPertanyaan >= LIMIT_HARIAN) {
+  // === KIRIM PERTANYAAN KE CHATBOX ===
+  async function kirimPertanyaan() {
+    const teks = input.value.trim();
+    if (!teks) return;
+
+    jumlahPertanyaan = parseInt(localStorage.getItem('jumlahPertanyaan') || '0');
+
+    if (jumlahPertanyaan >= LIMIT_HARIAN) {
+      const aiMsg = document.createElement('div');
+      aiMsg.className = 'msg ai';
+      chat.appendChild(aiMsg);
+      await ketikEfek(aiMsg, "⚠️ Anda telah melebihi batas harian. Silakan upgrade ke Lionor AI Premium.");
+      // tampilkanPopupPembayaran(); // optional
+      return;
+    }
+
+    jumlahPertanyaan++;
+    localStorage.setItem('jumlahPertanyaan', jumlahPertanyaan);
+
+    const userMsg = document.createElement('div');
+    userMsg.className = 'msg user';
+    userMsg.textContent = teks;
+    chat.appendChild(userMsg);
+
+    input.value = '';
+    input.focus();
+
+    // cek auto-reply lokal dulu
+    const jawabanCepat = autoReply ? autoReply(teks) : null;
+    const jamNow = jawabJamSekarang(teks);
     const aiMsg = document.createElement('div');
     aiMsg.className = 'msg ai';
     chat.appendChild(aiMsg);
-    await ketikEfek(aiMsg, "⚠️ Anda telah melebihi batas harian. Silakan upgrade ke Lionor AI Premium.");
-    tampilkanPopupPembayaran();
-    return;
+
+    if (autoScroll) chat.scrollTop = chat.scrollHeight;
+
+    if (jawabanCepat) {
+      await ketikEfek(aiMsg, jawabanCepat);
+      return;
+    }
+    if (jamNow) {
+      await ketikEfek(aiMsg, jamNow);
+      return;
+    }
+
+    await ketikEfek(aiMsg, '⏳ Lionor mikir...');
+
+    try {
+      // timeout helper (so user can get message instead of hanging)
+      const controller = new AbortController();
+      const timeoutMs = 15000; // 15s
+      const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+      const res = await fetch(`/.netlify/functions/ask?q=${encodeURIComponent(teks)}`, { signal: controller.signal });
+
+      clearTimeout(timeout);
+
+      // always try to read as text first (to support non-json error bodies)
+      let rawText = null;
+      try {
+        rawText = await res.text();
+      } catch (e) {
+        rawText = null;
+      }
+
+      // try parse JSON
+      let parsed = null;
+      try { parsed = rawText ? JSON.parse(rawText) : null; } catch (e) { parsed = null; }
+
+      // Build user-friendly answer string
+      const answerText = buildAnswerFromResponse(res, parsed, rawText);
+
+      await ketikEfek(aiMsg, answerText || "⚠️ Lionor gak ngerti. Coba tanya dengan cara lain ya.");
+    } catch (err) {
+      // network / timeout / abort / other error
+      let errMsg = err && err.name === 'AbortError' ? '⚠️ Permintaan timeout (terlalu lama).' : (`⚠️ Gagal ambil jawaban: ${err.message || err}`);
+      // tampilkan alasan langsung
+      await ketikEfek(aiMsg, errMsg);
+    }
+
+    if (autoScroll) chat.scrollTop = chat.scrollHeight;
   }
 
-  jumlahPertanyaan++;
-  localStorage.setItem('jumlahPertanyaan', jumlahPertanyaan);
+  // listener enter
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      kirimPertanyaan();
+    }
+  });
 
-  const userMsg = document.createElement('div');
-  userMsg.className = 'msg user';
-  userMsg.textContent = teks;
-  chat.appendChild(userMsg);
-
-  input.value = '';
-  input.focus();
-
-  const jawabanCepat = autoReply ? autoReply(teks) : null;
-  const aiMsg = document.createElement('div');
-  aiMsg.className = 'msg ai';
-  chat.appendChild(aiMsg);
-
-  if (autoScroll) chat.scrollTop = chat.scrollHeight;
-
-  if (jawabanCepat) {
-    await ketikEfek(aiMsg, jawabanCepat);
-    return;
-  }
-
-  await ketikEfek(aiMsg, '⏳ Lionor mikir...');
-
-  try {
-    const res = await fetch(`/.netlify/functions/ask?q=${encodeURIComponent(teks)}`);
-    const data = await res.json();
-    await ketikEfek(aiMsg, data.answer || "⚠️ Lionor gak ngerti. Coba tanya dengan cara lain ya.");
-  } catch (err) {
-    await ketikEfek(aiMsg, "⚠️ Gagal ambil jawaban. Cek koneksi atau backend-nya.");
-  }
-
-  if (autoScroll) chat.scrollTop = chat.scrollHeight;
-}
-
-// Listener enter key
-input.addEventListener('keydown', function (e) {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    kirimPertanyaan();
-  }
-});
-    const menuBtn = document.getElementById('menuBtn');
+  // menu toggles
+  const menuBtn = document.getElementById('menuBtn');
   const sideMenu = document.getElementById('sideMenu');
   const closeMenuBtn = document.getElementById('closeMenuBtn');
 
-  menuBtn.onclick = () => {
-    sideMenu.classList.add('open');
-  };
+  menuBtn.onclick = () => { sideMenu.classList.add('open'); };
+  closeMenuBtn.onclick = () => { sideMenu.classList.remove('open'); };
 
-  closeMenuBtn.onclick = () => {
-    sideMenu.classList.remove('open');
-  };
-  function jawabJamSekarang(teks) {
-  const kataKunci = ['jam berapa', 'waktu sekarang', 'sekarang jam'];
-  for (const kata of kataKunci) {
-    if (teks.toLowerCase().includes(kata)) {
-      const wibDate = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', hour12: false });
-      return `Sekarang pukul ${wibDate}`;
-    }
-  }
-  return null;
-}
-</script>
+  // small UX: autofocus
+  input.focus();
+  </script>
 </body>
 </html>
