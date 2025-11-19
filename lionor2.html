@@ -250,10 +250,11 @@
     <button class="sendBtn" id="sendBtn">Kirim</button>
   </div>
 
-  <!-- settings popup (LANG removed per request) -->
+  <!-- settings popup -->
   <div id="settingsPopup" role="dialog" aria-modal="true" aria-hidden="true">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
       <div style="font-weight:700; color:var(--accent)">Pengaturan Mode Lionor</div>
+      <div style="font-size:13px; color:#9fffe7">Bahasa default: <span id="popupLangLabel">Indonesia</span></div>
     </div>
 
     <div class="row">
@@ -264,7 +265,6 @@
         <option value="analisis">Analisis</option>
         <option value="deep">Deep Research (Lambat)</option>
         <option value="santai">Santai (Warkop style)</option>
-        <option value="curhat">Curhat (Pendengar & Support)</option>
       </select>
     </div>
 
@@ -287,8 +287,18 @@
       </select>
     </div>
 
+    <div class="row">
+      <label for="popupLang">Bahasa</label>
+      <select id="popupLang" class="smallInput" >
+        <option value="id">Bahasa Indonesia</option>
+        <option value="en">English</option>
+        <option value="ms">Bahasa Melayu</option>
+        <option value="su">Sunda</option>
+      </select>
+    </div>
+
     <div style="margin-top:6px; color:#aef9e9; font-size:13px">
-      Catatan: Pilih mode di sini. Bahasa tetap default Bahasa Indonesia.
+      Catatan: Kirim dalam bahasa lokal yang dipilih; Lionor akan membalas sesuai bahasa tersebut.
     </div>
 
     <div class="popup-footer">
@@ -310,51 +320,43 @@
     const settingsPopup = document.getElementById('settingsPopup');
     const popupMode = document.getElementById('popupMode');
     const popupModel = document.getElementById('popupModel');
+    const popupLang = document.getElementById('popupLang');
     const popupSpeed = document.getElementById('popupSpeed');
     const saveSettings = document.getElementById('saveSettings');
     const cancelSettings = document.getElementById('cancelSettings');
     const sideActiveMode = document.getElementById('sideActiveMode');
     const sideActiveModel = document.getElementById('sideActiveModel');
+    const popupLangLabel = document.getElementById('popupLangLabel');
     const jumpBtn = document.getElementById('jumpBtn');
 
     // persistence keys
     const KEY_MODE = 'lionor_mode';
     const KEY_MODEL = 'lionor_model';
+    const KEY_LANG = 'lionor_lang';
     const KEY_SPEED = 'lionor_speed';
-    const KEY_CONV = 'lionor_conversation';
 
     // defaults
     const defaults = {
       mode:'normal',
       model:'llama-3.3-70b',
+      lang:'id',
       speed:'14'
     };
 
     // init from localStorage
     const savedMode = localStorage.getItem(KEY_MODE) || defaults.mode;
     const savedModel = localStorage.getItem(KEY_MODEL) || defaults.model;
+    const savedLang = localStorage.getItem(KEY_LANG) || defaults.lang;
     const savedSpeed = localStorage.getItem(KEY_SPEED) || defaults.speed;
-
-    // conversation history (persisted)
-    let conversation = [];
-    try {
-      const rawConv = localStorage.getItem(KEY_CONV);
-      conversation = rawConv ? JSON.parse(rawConv) : [];
-    } catch (e) {
-      conversation = [];
-    }
-    // helper to persist conversation (limit to last 40 messages)
-    function persistConversation() {
-      const trimmed = conversation.slice(-40);
-      localStorage.setItem(KEY_CONV, JSON.stringify(trimmed));
-    }
 
     // reflect initial UI
     popupMode.value = savedMode;
     popupModel.value = savedModel;
+    popupLang.value = savedLang;
     popupSpeed.value = savedSpeed;
     sideActiveMode.textContent = popupMode.options[popupMode.selectedIndex].text;
     sideActiveModel.textContent = popupModel.value;
+    popupLangLabel.textContent = popupLang.options[popupLang.selectedIndex].text;
 
     // menu toggle (no separate X)
     menuBtn.addEventListener('click', () => {
@@ -377,6 +379,7 @@
       // load current
       popupMode.value = localStorage.getItem(KEY_MODE) || defaults.mode;
       popupModel.value = localStorage.getItem(KEY_MODEL) || defaults.model;
+      popupLang.value = localStorage.getItem(KEY_LANG) || defaults.lang;
       popupSpeed.value = localStorage.getItem(KEY_SPEED) || defaults.speed;
     });
     cancelSettings.addEventListener('click', () => {
@@ -388,14 +391,17 @@
     saveSettings.addEventListener('click', () => {
       const mode = popupMode.value;
       const model = popupModel.value;
+      const lang = popupLang.value;
       const speed = popupSpeed.value;
 
       localStorage.setItem(KEY_MODE, mode);
       localStorage.setItem(KEY_MODEL, model);
+      localStorage.setItem(KEY_LANG, lang);
       localStorage.setItem(KEY_SPEED, speed);
 
       sideActiveMode.textContent = popupMode.options[popupMode.selectedIndex].text;
       sideActiveModel.textContent = model;
+      popupLangLabel.textContent = popupLang.options[popupLang.selectedIndex].text;
 
       settingsPopup.classList.remove('open');
       settingsPopup.setAttribute('aria-hidden','true');
@@ -413,8 +419,7 @@
       'normal': 14,
       'analisis': 20,
       'deep': 28,
-      'santai': 10,
-      'curhat': 12
+      'santai': 10
     };
 
     // parse bold segments like (**bold**)
@@ -481,44 +486,25 @@
       return null;
     }
 
-    // santai post-process (elu/gua + Bro)
+    // post-process for 'santai' mode: simple replacement to elu/gua and tack "Bro, "
     function applySantaiStyle(text) {
       if (!text || typeof text !== 'string') return text;
+      // avoid modifying content inside backticks or code blocks by simple heuristic: if contains ``` skip replacements
       if (text.includes('```')) {
+        // still prefix Bro if not present
         if (!/^(\s*bro[,!:]?\s*)/i.test(text)) return 'Bro, ' + text;
         return text;
       }
       let t = text;
+      // word-boundary replacements (case-insensitive)
       t = t.replace(/\bAku\b/g, 'Gua').replace(/\baku\b/g, 'gua');
       t = t.replace(/\bSaya\b/g, 'Gua').replace(/\bsaya\b/g, 'gua');
       t = t.replace(/\bKamu\b/g, 'Elu').replace(/\bkamu\b/g, 'elu');
       t = t.replace(/\bAnda\b/g, 'Elu').replace(/\banda\b/gi, 'elu');
+      // ensure starts with "Bro, " if not already has bro-like greeting
       if (!/^(\s*(bro|bro,|bro:|bro!|bro\.)\s*)/i.test(t)) {
         t = 'Bro, ' + t;
       }
-      return t;
-    }
-
-    // curhat post-process: ensure empathetic opening, avoid heavy transforms; also simple safety check
-    function applyCurhatStyle(text) {
-      if (!text || typeof text !== 'string') return text;
-      const dangerWords = ['bunuh diri', 'bunuh', 'ingin mati', 'ingin bunuh diri', 'selesai dengan hidup', 'putus asa'];
-      const lower = text.toLowerCase();
-      for (const w of dangerWords) {
-        if (lower.includes(w)) {
-          // override with sensitive, supportive response
-          return "Bro, gua denger lu lagi ngerasa berat banget. Gua ga bisa gantiin profesional, tapi gua ada di sini dengerin lu. " +
-                 "Kalau lu lagi dalam bahaya atau punya pikiran buat nyakitin diri, tolong segera hubungi layanan darurat atau orang terdekat. " +
-                 "Mau ceritain lebih lanjut apa yang bikin lu ngerasa gitu? Gua dengerin tanpa nge-judge.";
-        }
-      }
-      // gentle empathetic prefix if not already present
-      let t = text;
-      if (!/^\s*(bro|bro,|bro:|bro!)/i.test(t)) {
-        t = 'Bro, ' + t;
-      }
-      // soften authoritative directives: replace "anda harus" -> "mungkin coba"
-      t = t.replace(/\b(anda harus|kamu harus)\b/gi, 'mungkin coba');
       return t;
     }
 
@@ -528,11 +514,6 @@
       if (typeof parsedOrText === 'object') {
         if (parsedOrText.answer) return parsedOrText.answer;
         if (parsedOrText.message) return parsedOrText.message;
-        // if response already has messages array
-        if (parsedOrText.choices && Array.isArray(parsedOrText.choices) && parsedOrText.choices.length) {
-          const ch = parsedOrText.choices[0];
-          return ch.message?.content || ch.text || JSON.stringify(parsedOrText).slice(0,1200);
-        }
         return JSON.stringify(parsedOrText).slice(0,1200);
       }
       return parsedOrText;
@@ -541,20 +522,6 @@
     // main send
     let jumlahPertanyaan = parseInt(localStorage.getItem('jumlahPertanyaan') || '0');
     const LIMIT_HARIAN = 100;
-
-    // helper to render existing conversation on load
-    function renderConversationFromMemory() {
-      chat.innerHTML = '';
-      for (const item of conversation) {
-        const el = document.createElement('div');
-        el.className = 'msg ' + (item.role === 'user' ? 'user' : 'ai');
-        // show previously stored assistant messages (they may have bold markup already)
-        el.textContent = item.content;
-        chat.appendChild(el);
-      }
-      if (chat.children.length) chat.scrollTop = chat.scrollHeight;
-    }
-    renderConversationFromMemory();
 
     async function sendMessage() {
       const teks = input.value.trim();
@@ -571,34 +538,27 @@
       jumlahPertanyaan++;
       localStorage.setItem('jumlahPertanyaan', jumlahPertanyaan);
 
-      // add user message to UI + history
+      // add user message
       const userMsg = document.createElement('div');
       userMsg.className = 'msg user';
       userMsg.textContent = teks;
       chat.appendChild(userMsg);
       chat.scrollTop = chat.scrollHeight;
 
-      // push into conversation history and persist
-      conversation.push({ role: 'user', content: teks });
-      persistConversation();
-
       input.value = '';
       input.focus();
 
-      // quick reply local
+      // quick reply
       const quick = autoReplyLocal(teks);
       if (quick) {
         const aiMsg = document.createElement('div');
         aiMsg.className = 'msg ai';
         chat.appendChild(aiMsg);
-        // append to history
-        conversation.push({ role: 'assistant', content: quick });
-        persistConversation();
         await typeWithBold(aiMsg, quick, 6);
         return;
       }
 
-      // create AI message placeholder
+      // placeholder ai message
       const aiMsg = document.createElement('div');
       aiMsg.className = 'msg ai';
       aiMsg.dataset.generating = 'true';
@@ -606,7 +566,7 @@
       chat.scrollTop = chat.scrollHeight;
       updateJumpButton();
 
-      // decide typing speed
+      // speed selection: explicit setting > mode map
       const savedSpeed = parseInt(localStorage.getItem(KEY_SPEED) || defaults.speed, 10);
       const modeFromStorage = localStorage.getItem(KEY_MODE) || defaults.mode;
       const finalSpeed = !isNaN(savedSpeed) ? savedSpeed : (modeSpeedMap[modeFromStorage] || 14);
@@ -615,34 +575,18 @@
       chat.scrollTop = chat.scrollHeight;
 
       try {
-        const mode = localStorage.getItem(KEY_MODE) || defaults.mode;
-        const model = localStorage.getItem(KEY_MODEL) || defaults.model;
+        const mode = encodeURIComponent(localStorage.getItem(KEY_MODE) || defaults.mode);
+        const model = encodeURIComponent(localStorage.getItem(KEY_MODEL) || defaults.model);
+        const lang = encodeURIComponent(localStorage.getItem(KEY_LANG) || defaults.lang);
 
-        // prepare payload: include conversation history (last 30 items) and an optional system instruction for curhat mode
-        const convToSend = conversation.slice(-30).map(m => ({ role: m.role, content: m.content }));
-
-        // if curhat mode, prepend a system instruction (backend should forward to model)
-        if (mode === 'curhat') {
-          convToSend.unshift({
-            role: 'system',
-            content:
-              "Kamu adalah pendengar yang empatik dan supportif bernama Lionor. Jadilah pendengar yang menghargai perasaan user, berikan nasihat yang lembut, dorongan moral, dan bantu user menyusun langkah kecil. Jangan menghakimi dan prioritaskan keselamatan user. Gunakan bahasa sehari-hari yang hangat."
-          });
-        }
-
-        // Build POST request - backend Netlify function should accept JSON body and handle conversation
         const controller = new AbortController();
-        const timeoutMap = { 'tothepoint': 15000, 'normal': 30000, 'analisis': 45000, 'deep': 90000, 'santai': 30000, 'curhat': 45000 };
+        const timeoutMap = { 'tothepoint': 15000, 'normal': 30000, 'analisis': 45000, 'deep': 90000, 'santai': 30000 };
         const timeoutMs = timeoutMap[mode] || 30000;
         const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
-        const url = '/.netlify/functions/ask'; // expects POST { model, mode, conversation: [...] }
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ model, mode, conversation: convToSend }),
-          signal: controller.signal
-        });
+        const url = `/.netlify/functions/ask?q=${encodeURIComponent(teks)}&mode=${mode}&model=${model}&lang=${lang}`;
+
+        const res = await fetch(url, { signal: controller.signal });
         clearTimeout(timeout);
 
         let raw = '';
@@ -652,27 +596,16 @@
 
         let answer = buildAnswerFromResponse(parsed || raw);
 
-        // post-process for santai mode
-        if (mode === 'santai') {
+        // if mode is santai, apply local style transform
+        if ((localStorage.getItem(KEY_MODE) || defaults.mode) === 'santai') {
           answer = applySantaiStyle(answer);
         }
-        // post-process for curhat mode: make empathetic and safety-aware
-        if (mode === 'curhat') {
-          answer = applyCurhatStyle(answer);
-        }
-
-        // push assistant message to history then render with typing
-        conversation.push({ role: 'assistant', content: answer });
-        persistConversation();
 
         await typeWithBold(aiMsg, answer, finalSpeed);
 
       } catch (err) {
         const errMsg = (err && err.name === 'AbortError') ? '⚠️ Permintaan timeout (terlalu lama).' : (`⚠️ Gagal ambil jawaban: ${err.message || err}`);
         await typeWithBold(aiMsg, errMsg, 8);
-        // store the error message as assistant reply too (so history consistent)
-        conversation.push({ role: 'assistant', content: errMsg });
-        persistConversation();
       } finally {
         delete aiMsg.dataset.generating;
         updateJumpButton();
@@ -680,19 +613,13 @@
       }
     }
 
-    // periodically update jump button
+    // periodic update jump button
     setInterval(updateJumpButton, 600);
 
     input.focus();
 
-    // expose some debug utils
-    window._lionor = {
-      sendMessage,
-      conversation,
-      applySantaiStyle,
-      applyCurhatStyle,
-      parseBoldSegments
-    };
+    // expose for debug
+    window._lionor = { sendMessage, applySantaiStyle, parseBoldSegments };
   </script>
 </body>
 </html>
