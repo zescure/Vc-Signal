@@ -20,7 +20,7 @@ exports.handler = async function (event, context) {
   const MODEL_MAP = {
     "llama-3.3-70b": "llama-3.3-70b-versatile",
     "llama-3-small": "llama-3-small",
-    "gpt-style": "gpt-4o-mini", // contoh mapping; sesuaikan kalau provider beda
+    "whisper-large-v3-turbo": "gpt-4o-mini", // contoh mapping; sesuaikan kalau provider beda
   };
 
   const selectedModel = MODEL_MAP[modelChoice] || MODEL_MAP["llama-3.3-70b"];
