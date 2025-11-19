@@ -136,15 +136,6 @@
       font-size:22px;
       cursor:pointer;
     }
-    #modeBadge {
-      font-size:12px;
-      color:#9fffe7;
-      padding:6px 8px;
-      background:#0f1517;
-      border-radius:8px;
-      min-width:72px;
-      text-align:center;
-    }
     input[type="text"] {
       flex: 1;
       padding: 12px;
@@ -249,11 +240,10 @@
   <!-- jump to generating message -->
   <button id="jumpBtn" title="Lompat ke pesan yang sedang digenerate">⬇</button>
 
-  <!-- input area: + button (open settings), mode badge, text input, send -->
+  <!-- input area: + button (open settings), text input, send -->
   <div id="input-area">
     <div class="left-controls">
       <button id="openSettingsBtn" title="Mode & Model">+</button>
-      <div id="modeBadge">Mode: <span id="badgeModeText">Normal</span></div>
     </div>
 
     <input type="text" id="pertanyaan" placeholder="Tulis pesan..." autocomplete="off" />
@@ -274,6 +264,7 @@
         <option value="normal">Normal</option>
         <option value="analisis">Analisis</option>
         <option value="deep">Deep Research (Lambat)</option>
+        <option value="santai">Santai (Warkop style)</option>
       </select>
     </div>
 
@@ -289,9 +280,9 @@
     <div class="row">
       <label for="popupSpeed">Kecepatan</label>
       <select id="popupSpeed" class="smallInput">
-        <option value="1">Sangat Cepat</option>
-        <option value="6">Cepat</option>
-        <option value="12">Normal</option>
+        <option value="6">Sangat Cepat</option>
+        <option value="10">Cepat</option>
+        <option value="14">Normal</option>
         <option value="28">Lambat</option>
       </select>
     </div>
@@ -307,7 +298,7 @@
     </div>
 
     <div style="margin-top:6px; color:#aef9e9; font-size:13px">
-      Catatan: Kamu bisa kirim dalam bahasa lokal yang dipilih dan Lionor akan membalas dengan bahasa yang sama.
+      Catatan: Kirim dalam bahasa lokal yang dipilih; Lionor akan membalas sesuai bahasa tersebut.
     </div>
 
     <div class="popup-footer">
@@ -317,7 +308,6 @@
   </div>
 
   <script>
-    // greeting requirement (memory): always start with 'hallo king zezy' -- UI doesn't need to show here, but we respect it in conversation start
     console.log('hallo king zezy');
 
     // elements
@@ -334,7 +324,6 @@
     const popupSpeed = document.getElementById('popupSpeed');
     const saveSettings = document.getElementById('saveSettings');
     const cancelSettings = document.getElementById('cancelSettings');
-    const modeBadgeText = document.getElementById('badgeModeText');
     const sideActiveMode = document.getElementById('sideActiveMode');
     const sideActiveModel = document.getElementById('sideActiveModel');
     const popupLangLabel = document.getElementById('popupLangLabel');
@@ -346,12 +335,12 @@
     const KEY_LANG = 'lionor_lang';
     const KEY_SPEED = 'lionor_speed';
 
-    // default values
+    // defaults
     const defaults = {
       mode:'normal',
       model:'llama-3.3-70b',
       lang:'id',
-      speed:'12' // ms per char - default 'Normal'
+      speed:'14'
     };
 
     // init from localStorage
@@ -360,12 +349,11 @@
     const savedLang = localStorage.getItem(KEY_LANG) || defaults.lang;
     const savedSpeed = localStorage.getItem(KEY_SPEED) || defaults.speed;
 
-    // set initial UI
+    // reflect initial UI
     popupMode.value = savedMode;
     popupModel.value = savedModel;
     popupLang.value = savedLang;
     popupSpeed.value = savedSpeed;
-    modeBadgeText.textContent = popupMode.options[popupMode.selectedIndex].text;
     sideActiveMode.textContent = popupMode.options[popupMode.selectedIndex].text;
     sideActiveModel.textContent = popupModel.value;
     popupLangLabel.textContent = popupLang.options[popupLang.selectedIndex].text;
@@ -388,7 +376,7 @@
     openSettingsBtn.addEventListener('click', () => {
       settingsPopup.classList.add('open');
       settingsPopup.setAttribute('aria-hidden','false');
-      // reflect current values
+      // load current
       popupMode.value = localStorage.getItem(KEY_MODE) || defaults.mode;
       popupModel.value = localStorage.getItem(KEY_MODEL) || defaults.model;
       popupLang.value = localStorage.getItem(KEY_LANG) || defaults.lang;
@@ -411,13 +399,10 @@
       localStorage.setItem(KEY_LANG, lang);
       localStorage.setItem(KEY_SPEED, speed);
 
-      // update badges
-      modeBadgeText.textContent = popupMode.options[popupMode.selectedIndex].text;
       sideActiveMode.textContent = popupMode.options[popupMode.selectedIndex].text;
       sideActiveModel.textContent = model;
       popupLangLabel.textContent = popupLang.options[popupLang.selectedIndex].text;
 
-      // close popup
       settingsPopup.classList.remove('open');
       settingsPopup.setAttribute('aria-hidden','true');
     });
@@ -428,31 +413,20 @@
     });
     sendBtn.addEventListener('click', sendMessage);
 
-    // typing speed per mode optional mapping (if you want mode to implicitly control speed)
+    // mode -> default speed map (ms per char)
     const modeSpeedMap = {
-      'tothepoint': 6,   // fast
-      'normal': 12,
+      'tothepoint': 6,
+      'normal': 14,
       'analisis': 20,
-      'deep': 28
+      'deep': 28,
+      'santai': 10
     };
 
-    // helper: escape HTML for safety when setting textContent
-    function escapeHtml(unsafe) {
-      return unsafe
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
-    }
-
-    // parse text into segments where (**bold**) markers used
-    // returns array of { text: "...", bold: true/false }
+    // parse bold segments like (**bold**)
     function parseBoldSegments(text) {
       const segments = [];
-      // match occurrences of (**...**)
       let idx = 0;
-      const regex = /\(\*\*(.*?)\*\*\)/g; // captures minimal inside (** **)
+      const regex = /\(\*\*(.*?)\*\*\)/g;
       let m;
       while ((m = regex.exec(text)) !== null) {
         const before = text.slice(idx, m.index);
@@ -465,62 +439,45 @@
       return segments;
     }
 
-    // progressive type writer that supports bold segments.
-    // container: element to append to; message: raw text; speed: ms per char
-    async function typeWithBold(container, message, speed = 12) {
-      container.innerHTML = ''; // clear
+    async function typeWithBold(container, message, speed = 14) {
+      container.innerHTML = '';
       const segments = parseBoldSegments(message);
-      // create span elements for each segment
       const spanElems = segments.map(seg => {
         const sp = document.createElement('span');
-        if (seg.bold) {
-          sp.className = 'boldSpan';
-        }
+        if (seg.bold) sp.className = 'boldSpan';
         sp.dataset.full = seg.text;
         sp.textContent = '';
         container.appendChild(sp);
         return sp;
       });
-
-      // iterate characters across spans
-      for (let i=0; i<spanElems.length; i++) {
+      for (let i=0;i<spanElems.length;i++){
         const sp = spanElems[i];
         const full = sp.dataset.full;
-        for (let j=0; j<full.length; j++) {
+        for (let j=0;j<full.length;j++){
           sp.textContent += full.charAt(j);
-          // keep scroll near bottom if user at bottom
-          if (isAtBottom()) chat.scrollTop = chat.scrollHeight;
+          if ((chat.scrollHeight - chat.scrollTop - chat.clientHeight) < 60) chat.scrollTop = chat.scrollHeight;
           await new Promise(r => setTimeout(r, speed));
         }
       }
     }
 
-    // check if user is at bottom
     function isAtBottom() {
-      const threshold = 60;
-      return (chat.scrollHeight - chat.scrollTop - chat.clientHeight) < threshold;
+      return (chat.scrollHeight - chat.scrollTop - chat.clientHeight) < 60;
     }
 
-    // show jump button logic: show only if there's a generating message and user not at bottom
     function updateJumpButton() {
       const gen = chat.querySelector('.msg[data-generating="true"]');
       const shouldShow = !!gen && !isAtBottom();
       jumpBtn.style.display = shouldShow ? 'flex' : 'none';
     }
-
-    // on scroll update jump button
     chat.addEventListener('scroll', updateJumpButton);
     window.addEventListener('resize', updateJumpButton);
-
-    // jump button action: scroll to the generating message (or last AI)
     jumpBtn.addEventListener('click', () => {
       const gen = chat.querySelector('.msg[data-generating="true"]') || chat.querySelector('.msg.ai:last-of-type');
-      if (gen) {
-        gen.scrollIntoView({behavior:'smooth', block:'center'});
-      }
+      if (gen) gen.scrollIntoView({behavior:'smooth', block:'center'});
     });
 
-    // auto-reply local quick phrases (kept from your original)
+    // quick local replies
     function autoReplyLocal(q) {
       const pert = q.toLowerCase().trim();
       if (pert === "hallo lionor" || pert === "halo lionor") return "Hallo juga! aku LIONOR AI Milik Zezy! Ada yang mau kamu tanyain hari ini?";
@@ -529,21 +486,40 @@
       return null;
     }
 
-    // build answer from server response (kept tolerant)
+    // post-process for 'santai' mode: simple replacement to elu/gua and tack "Bro, "
+    function applySantaiStyle(text) {
+      if (!text || typeof text !== 'string') return text;
+      // avoid modifying content inside backticks or code blocks by simple heuristic: if contains ``` skip replacements
+      if (text.includes('```')) {
+        // still prefix Bro if not present
+        if (!/^(\s*bro[,!:]?\s*)/i.test(text)) return 'Bro, ' + text;
+        return text;
+      }
+      let t = text;
+      // word-boundary replacements (case-insensitive)
+      t = t.replace(/\bAku\b/g, 'Gua').replace(/\baku\b/g, 'gua');
+      t = t.replace(/\bSaya\b/g, 'Gua').replace(/\bsaya\b/g, 'gua');
+      t = t.replace(/\bKamu\b/g, 'Elu').replace(/\bkamu\b/g, 'elu');
+      t = t.replace(/\bAnda\b/g, 'Elu').replace(/\banda\b/gi, 'elu');
+      // ensure starts with "Bro, " if not already has bro-like greeting
+      if (!/^(\s*(bro|bro,|bro:|bro!|bro\.)\s*)/i.test(t)) {
+        t = 'Bro, ' + t;
+      }
+      return t;
+    }
+
+    // buildAnswerFromResponse tolerant
     function buildAnswerFromResponse(parsedOrText) {
       if (!parsedOrText) return "⚠️ Lionor gak ngerti. Coba tanya lagi ya.";
-      // if parsed JSON object with answer field
       if (typeof parsedOrText === 'object') {
         if (parsedOrText.answer) return parsedOrText.answer;
         if (parsedOrText.message) return parsedOrText.message;
-        // fallback: stringify truncated
-        return JSON.stringify(parsedOrText).slice(0, 1200);
+        return JSON.stringify(parsedOrText).slice(0,1200);
       }
-      // string
       return parsedOrText;
     }
 
-    // MAIN: send message
+    // main send
     let jumlahPertanyaan = parseInt(localStorage.getItem('jumlahPertanyaan') || '0');
     const LIMIT_HARIAN = 100;
 
@@ -572,7 +548,7 @@
       input.value = '';
       input.focus();
 
-      // quick local reply check
+      // quick reply
       const quick = autoReplyLocal(teks);
       if (quick) {
         const aiMsg = document.createElement('div');
@@ -582,35 +558,29 @@
         return;
       }
 
-      // create AI message placeholder
+      // placeholder ai message
       const aiMsg = document.createElement('div');
       aiMsg.className = 'msg ai';
-      aiMsg.dataset.generating = 'true'; // mark generating
+      aiMsg.dataset.generating = 'true';
       chat.appendChild(aiMsg);
       chat.scrollTop = chat.scrollHeight;
-
       updateJumpButton();
 
-      // choose speed: use explicit speed saved or mode->speed fallback
+      // speed selection: explicit setting > mode map
       const savedSpeed = parseInt(localStorage.getItem(KEY_SPEED) || defaults.speed, 10);
       const modeFromStorage = localStorage.getItem(KEY_MODE) || defaults.mode;
-      // final speed uses savedSpeed if set, otherwise map from mode
-      const speed = !isNaN(savedSpeed) ? savedSpeed : (modeSpeedMap[modeFromStorage] || 12);
+      const finalSpeed = !isNaN(savedSpeed) ? savedSpeed : (modeSpeedMap[modeFromStorage] || 14);
 
-      // show initial placeholder short status
       aiMsg.textContent = '⏳ Lionor mikir...';
       chat.scrollTop = chat.scrollHeight;
 
-      // simulate fetch to server (your backend endpoint)
       try {
-        // include mode/model/lang in request (your backend should handle them)
         const mode = encodeURIComponent(localStorage.getItem(KEY_MODE) || defaults.mode);
         const model = encodeURIComponent(localStorage.getItem(KEY_MODEL) || defaults.model);
         const lang = encodeURIComponent(localStorage.getItem(KEY_LANG) || defaults.lang);
 
-        // Adjust timeout based on mode (deep may allow longer)
         const controller = new AbortController();
-        const timeoutMap = { 'tothepoint': 15000, 'normal': 30000, 'analisis': 45000, 'deep': 90000 };
+        const timeoutMap = { 'tothepoint': 15000, 'normal': 30000, 'analisis': 45000, 'deep': 90000, 'santai': 30000 };
         const timeoutMs = timeoutMap[mode] || 30000;
         const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -624,33 +594,32 @@
         let parsed = null;
         try { parsed = raw ? JSON.parse(raw) : null; } catch(e){ parsed = null; }
 
-        const answer = buildAnswerFromResponse(parsed || raw);
-        // replace placeholder with typed text supporting bold markers
-        await typeWithBold(aiMsg, answer, speed);
+        let answer = buildAnswerFromResponse(parsed || raw);
+
+        // if mode is santai, apply local style transform
+        if ((localStorage.getItem(KEY_MODE) || defaults.mode) === 'santai') {
+          answer = applySantaiStyle(answer);
+        }
+
+        await typeWithBold(aiMsg, answer, finalSpeed);
 
       } catch (err) {
         const errMsg = (err && err.name === 'AbortError') ? '⚠️ Permintaan timeout (terlalu lama).' : (`⚠️ Gagal ambil jawaban: ${err.message || err}`);
-        await typeWithBold(aiMsg, errMsg, 6);
+        await typeWithBold(aiMsg, errMsg, 8);
       } finally {
-        // remove generating mark and update UI
         delete aiMsg.dataset.generating;
         updateJumpButton();
         if (isAtBottom()) chat.scrollTop = chat.scrollHeight;
       }
     }
 
-    // auto update jump button frequently
+    // periodic update jump button
     setInterval(updateJumpButton, 600);
 
-    // initial focus
     input.focus();
 
-    // expose some debug for console
-    window._lionor = {
-      sendMessage,
-      parseBoldSegments,
-      typeWithBold
-    };
+    // expose for debug
+    window._lionor = { sendMessage, applySantaiStyle, parseBoldSegments };
   </script>
 </body>
 </html>
