@@ -20,7 +20,7 @@ exports.handler = async function (event, context) {
         Authorization: `Bearer ${GROQ_API_KEY}`,
       },
       body: JSON.stringify({
-  model: "llama3-8b-8192",
+  model: "model":"llama-3.3-70b-versatile",
   messages: [
     {
       role: "system",
