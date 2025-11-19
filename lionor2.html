@@ -193,9 +193,9 @@
     <div class="control-row">
       <label for="modelSelect">Model</label>
       <select id="modelSelect" title="Pilih model backend">
-        <option value="llama-3.3-70b">llama-3.3-70b</option>
-        <option value="llama-3-small">llama-3-small</option>
-        <option value="gpt-style">gpt-style</option>
+        <option value="llama-3.3-70b">GPT-4 Turbo</option>
+        <option value="llama-3-small">Gemini 3 Pro</option>
+        <option value="gpt-style">QWEN3-22b</option>
       </select>
     </div>
 
@@ -281,7 +281,7 @@ Ia bukan bagian dari korporasi besar atau institusi resmi manapun. Zezy membangu
     autoScroll = atBottom;
   });
 
-  async function ketikEfek(element, text, delay = 4) {
+  async function ketikEfek(element, text, delay = 2) {
     element.textContent = '';
     for (let i = 0; i < text.length; i++) {
       element.textContent += text.charAt(i);
