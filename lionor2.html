@@ -5,455 +5,485 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>LIONOR Chat</title>
   <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #0e0f11;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
+    :root{
+      --bg:#0e0f11;
+      --panel:#1a1d24;
+      --muted:#252932;
+      --accent:#00ffe7;
+      --card:#20242f;
+      --glass: rgba(255,255,255,0.03);
     }
-    header {
-      position: fixed;
-      top: 0;
-      width: 96%;
-      background: #1a1d24;
-      padding: 16px;
-      text-align: center;
-      font-size: 1.4em;
-      color: #00ffe7;
-      font-weight: bold;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-      z-index: 10;
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:'Segoe UI',sans-serif;background:var(--bg);color:#fff}
+    header{
+      position:fixed;top:0;left:0;right:0;height:64px;
+      display:flex;align-items:center;gap:12px;padding:0 16px;background:var(--panel);
+      font-size:1.25rem;color:var(--accent);font-weight:700;z-index:20;
+      box-shadow:0 2px 8px rgba(0,0,0,0.6);
     }
-    #chat {
-      flex: 1;
-      padding: 120px 20px 100px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-    .msg {
-      max-width: 80%;
-      padding: 12px 16px;
-      border-radius: 12px;
-      line-height: 1.6;
-      white-space: pre-wrap;
-    }
-    .user {
-      align-self: flex-end;
-      background: #00ffe7;
-      color: black;
-      font-weight: bold;
-    }
-    .ai {
-      align-self: flex-start;
-      background: #20242f;
-    }
-    #input-area {
-      position: fixed;
-      bottom: 0;
-      width: 96%;
-      display: flex;
-      padding: 15px;
-      background: #16181f;
-      border-top: 1px solid #333;
-      z-index: 10;
-    }
-    input[type="text"] {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      background: #252932;
-      color: #fff;
-      font-size: 1em;
-    }
-    button {
-      margin-left: 10px;
-      padding: 12px 20px;
-      background-color: #00ffe7;
-      color: #10131a;
-      font-weight: bold;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    button:hover { background-color: #00d1bf; }
-
-    /* menu */
-    #menuBtn {
-      position: fixed;
-      top: 8px;
-      left: 8px;
-      width: 48px;
-      height: 48px;
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: #00ffe7;
-      font-size: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1100;
-      padding: 0;
-    }
-    #sideMenu {
-      position: fixed;
-      top: 0;
-      left: -100%;
-      width: 320px;
-      height: 100vh;
-      background: #1a1d24;
-      overflow-y: auto;
-      z-index: 998;
-      transition: left 0.3s ease;
-    }
-    #sideMenu.open { left: 0; }
-    #closeMenuBtn {
-      background: none;
-      border: none;
-      color: #00ffe7;
-      font-size: 24px;
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      cursor: pointer;
-    }
-    #sideMenu ul { list-style: none; padding: 0; margin: 0; padding-top: 120px; }
-    #sideMenu li { padding: 15px 20px; border-bottom: 1px solid #444; cursor: pointer; }
-    #sideMenu li:hover { background: #333; }
-    .menu-header {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      background: #2a2b2f;
-      padding: 16px;
-      font-size: 18px;
-      font-weight: bold;
-      border-bottom: 1px solid #444;
-      color: #00ffe7;
-      text-align: center;
+    header .title {flex:1;text-align:center}
+    /* menu button */
+    #menuBtn{
+      background:none;border:none;color:var(--accent);font-size:28px;
+      cursor:pointer;padding:6px;display:flex;align-items:center;justify-content:center;
     }
 
-    /* mode & model controls */
-    .control-row {
-      display: flex;
-      gap: 10px;
-      padding: 12px 16px;
-      align-items: center;
-      background: #111216;
-      border-bottom: 1px solid #222;
-    }
-    .control-row label { font-size: 13px; color: #9fffe7; width: 90px; }
-    .control-row select {
-      flex: 1;
-      padding: 8px;
-      border-radius: 6px;
-      border: none;
-      background: #252932;
-      color: #fff;
-    }
-    .small {
-      font-size: 12px;
-      color: #a9fef0;
-      padding: 8px 16px;
-    }
-    .mode-indicator {
-      margin: 12px 16px;
-      font-size: 13px;
-      color: #c7ffee;
+    #chat{
+      padding:92px 16px 120px; /* leave room header + input area */
+      height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:12px;
     }
 
+    .msg{max-width:86%;padding:12px 14px;border-radius:12px;line-height:1.6;white-space:pre-wrap}
+    .user{align-self:flex-end;background:var(--accent);color:#000;font-weight:700}
+    .ai{align-self:flex-start;background:var(--card);color:#e6eef0}
+    .ai.generating { box-shadow: 0 0 0 2px rgba(0,255,231,0.04) inset; }
+
+    /* input area */
+    #input-area{
+      position:fixed;left:0;right:0;bottom:0;padding:12px;display:flex;gap:8px;
+      align-items:center;background:#16181f;border-top:1px solid #272b30;z-index:18;
+    }
+    #input-wrap{display:flex;gap:8px;align-items:center;flex:1}
+    input[type="text"]{
+      flex:1;padding:12px 12px;border-radius:10px;border:none;background:var(--muted);color:#fff;font-size:1rem;
+    }
+    .btn{
+      background:var(--accent);color:#10131a;border:none;padding:10px 12px;border-radius:10px;cursor:pointer;font-weight:700;
+    }
+    .icon-btn{background:none;border:none;color:var(--accent);font-size:20px;cursor:pointer;padding:8px;border-radius:8px}
+    .small-txt{font-size:12px;color:#9fffe7;margin-left:8px}
+
+    /* settings modal */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;z-index:50}
+    .modal{width:min(420px,94%);background:#0f1113;border-radius:12px;padding:16px;border:1px solid #222;box-shadow:0 8px 40px rgba(0,0,0,0.6)}
+    .modal h3{margin:0 0 8px;color:var(--accent)}
+    .row{display:flex;gap:8px;align-items:center;margin:8px 0}
+    label{width:110px;font-size:13px;color:#9fffe7}
+    select,input[type="radio"]{flex:1;padding:8px;border-radius:8px;border:none;background:var(--muted);color:#fff}
+    .modes-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}
+    .mode-card{padding:10px;border-radius:8px;background:var(--glass);border:1px solid rgba(255,255,255,0.03);cursor:pointer}
+    .mode-card.active{outline:2px solid rgba(0,255,231,0.12);border-color:rgba(0,255,231,0.2)}
+
+    /* jump button */
+    #jumpBtn{position:fixed;right:16px;bottom:84px;background:#101214;border-radius:12px;padding:12px;border:1px solid #2c2f33;color:var(--accent);cursor:pointer;z-index:19}
+
+    /* compact info next to input */
+    .compact-info{display:flex;gap:8px;align-items:center;color:#c7ffee;font-size:12px;padding:6px 8px;border-radius:8px;background:transparent}
+    .compact-info .pill{background:rgba(255,255,255,0.03);padding:6px 8px;border-radius:8px;font-weight:700}
+
+    /* side menu (kept for extra items but open/close via menuBtn toggle) */
+    #sideMenu{position:fixed;left:-100%;top:0;bottom:0;width:320px;background:var(--panel);z-index:17;transition:left .28s ease;padding-top:64px;overflow:auto}
+    #sideMenu.open{left:0}
+    #sideMenu .menu-header{position:absolute;top:0;left:0;right:0;height:64px;display:flex;align-items:center;justify-content:center;background:#222;color:var(--accent);font-weight:700;border-bottom:1px solid #222}
+    #sideMenu ul{list-style:none;padding:0;margin:0}
+    #sideMenu li{padding:14px 16px;border-bottom:1px solid #2a2b2f;cursor:pointer;color:#dff; }
+    #sideMenu li:hover{background:#26282c}
+
+    /* responsive */
+    @media (max-width:520px){
+      header .title{font-size:1rem}
+      label{display:none}
+      .modal{width:94%}
+    }
   </style>
 </head>
 <body>
-  <header>LIONOR3 AI Beta</header>
-  <button id="menuBtn">☰</button>
+  <header>
+    <button id="menuBtn" aria-label="menu">☰</button>
+    <div class="title">LIONOR3 AI Beta</div>
+  </header>
 
-  <div id="sideMenu" class="hidden">
+  <nav id="sideMenu" aria-hidden="true">
     <div class="menu-header">Lionor AI</div>
-    <button id="closeMenuBtn">✕</button>
-
-    <!-- Mode & Model controls -->
-    <div class="control-row" style="margin-top:72px;">
-      <label for="modeSelect">Mode</label>
-      <select id="modeSelect" title="Pilih mode Lionor">
-        <option value="normal">Normal</option>
-        <option value="deep">Deep Research</option>
-        <option value="analisis">Analisis</option>
-        <option value="tothepoint">To The Point</option>
-      </select>
-    </div>
-
-    <div class="control-row">
-      <label for="modelSelect">Model</label>
-      <select id="modelSelect" title="Pilih model backend">
-        <option value="llama-3.3-70b">GPT-4 Turbo</option>
-        <option value="llama-3-small">Gemini 3 Pro</option>
-        <option value="gpt-style">QWEN3-22b</option>
-      </select>
-    </div>
-
-    <div style="padding:12px 16px;">
-      <div class="mode-indicator">Mode aktif: <span id="activeMode">Normal</span></div>
-      <div class="mode-indicator">Model aktif: <span id="activeModel">llama-3.3-70b</span></div>
-    </div>
-
     <ul>
-      <li onclick="alert('👤 Pemilik Lionor: Zezy — developer & trader muda yang membangun AI ini dari nol, mulai dari konsep, UI, hingga logic core.')">
-        Profil Pemilik
-      </li>
-
-      <li onclick="alert('🛰️ Tentang Lionor: Lionor AI adalah asisten AI lokal yang terus berkembang. Meski dirancang dan dibangun sendiri oleh Zezy, Lionor memanfaatkan kekuatan model besar dari Groq, Anthropic, dan OpenAI untuk memberikan respon cepat dan akurat.')">
-        Tentang Kami
-      </li>
-
-      <li onclick="alert('🔐 Privasi: Pertanyaan tidak disimpan secara permanen. Data hanya diproses oleh server untuk memberikan jawaban, tanpa pelacakan jangka panjang.')">
-        Kebijakan Privasi
-      </li>
-
-      <li onclick="alert('🇮🇩 Dukungan: Terima kasih telah mendukung pengembangan AI lokal buatan anak negeri. Lionor terus diperbarui dan ditingkatkan seiring waktu.')">
-        Support AI Lokal
-      </li>
+      <li onclick="alert('👤 Pemilik Lionor: Zezy — developer & trader muda.')">Profil Pemilik</li>
+      <li onclick="alert('🛰️ Tentang: Lionor dikembangkan lokal tapi dapat integrasi model besar.')">Tentang Kami</li>
+      <li onclick="alert('🔐 Privasi: Data diproses untuk jawaban, tanpa pelacakan jangka panjang.')">Kebijakan Privasi</li>
+      <li onclick="alert('🇮🇩 Dukungan: Terima kasih telah mendukung AI lokal.')">Support AI Lokal</li>
     </ul>
+  </nav>
+
+  <main id="chat" role="log" aria-live="polite"></main>
+
+  <!-- input area with + settings and jump button -->
+  <div id="input-area">
+    <div id="input-wrap">
+      <div class="compact-info" title="Mode / Model / Language (klik + untuk ubah)">
+        <div class="pill" id="pillMode">Mode: Normal</div>
+        <div class="pill" id="pillModel">Model: GPT-4 Turbo</div>
+        <div class="pill" id="pillLang">ID</div>
+      </div>
+
+      <input type="text" id="pertanyaan" placeholder="Tulis pesan..." autocomplete="off" />
+      <button id="settingsBtn" class="icon-btn" aria-label="settings">＋</button>
+      <button id="sendBtn" class="btn">Kirim</button>
+    </div>
   </div>
 
-  <div id="chat"></div>
+  <button id="jumpBtn" title="Loncat ke pesan yang sedang digenerate">⬇</button>
 
-  <div id="input-area">
-    <input type="text" id="pertanyaan" placeholder="Tulis pesan..." />
-    <button onclick="kirimPertanyaan()">Kirim</button>
+  <!-- Modal settings -->
+  <div id="modalOverlay" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h3>Pengaturan Mode & Bahasa</h3>
+
+      <div class="row">
+        <label for="modeSelect">Mode</label>
+        <select id="modeSelect">
+          <option value="normal">Normal (seimbang)</option>
+          <option value="deep">Deep Research (detail)</option>
+          <option value="analisis">Analisis (terstruktur)</option>
+          <option value="tothepoint">To The Point (cepat)</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <label for="modelSelect">Model</label>
+        <select id="modelSelect">
+          <option value="gpt4turbo">GPT-4 Turbo</option>
+          <option value="gemini3pro">Gemini 3 Pro</option>
+          <option value="qwen22b">QWEN3-22b</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <label for="langSelect">Bahasa</label>
+        <select id="langSelect">
+          <option value="id">Bahasa Indonesia (ID)</option>
+          <option value="en">English (EN)</option>
+          <option value="jv">Basa Jawa (JV)</option>
+          <option value="su">Basa Sunda (SU)</option>
+        </select>
+      </div>
+
+      <div style="margin-top:8px">
+        <div style="font-size:13px;color:#bfffe7;margin-bottom:6px">Kecepatan & timeout berdasarkan mode</div>
+        <div class="modes-grid">
+          <div class="mode-card" data-mode="deep"><strong>Deep Research</strong><div style="font-size:12px;color:#bfe">Slow typing, long timeout</div></div>
+          <div class="mode-card" data-mode="analisis"><strong>Analisis</strong><div style="font-size:12px;color:#bfe">Moderate slow</div></div>
+          <div class="mode-card" data-mode="normal"><strong>Normal</strong><div style="font-size:12px;color:#bfe">Balanced speed</div></div>
+          <div class="mode-card" data-mode="tothepoint"><strong>To The Point</strong><div style="font-size:12px;color:#bfe">Fast typing, short timeout</div></div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+        <button id="closeModal" class="btn">Simpan</button>
+      </div>
+    </div>
   </div>
 
   <script>
-  // === AUTO REPLY MANUAL ===
-  const autoReply = (q) => {
-    const pertanyaan = q.toLowerCase().trim();
-    if (pertanyaan === "siapa pemilik lionor ai" || pertanyaan === "siapa pemilik lionor" || pertanyaan === "lionor ai punya siapa" || pertanyaan === "lionor ai milik siapa" || pertanyaan === "punya siapa lionor ai") {
-      return `LIONOR AI Beta adalah karya dari seorang kreator independen bernama Zezy.
+    // greeting sesuai preferensi
+    console.log('hallo king zezy');
 
-Ia bukan bagian dari korporasi besar atau institusi resmi manapun. Zezy membangun Lionor AI dengan semangat keterbukaan, pendidikan mandiri, dan idealisme.`;
+    // Chat area
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('pertanyaan');
+    const sendBtn = document.getElementById('sendBtn');
+
+    // UI elements
+    const menuBtn = document.getElementById('menuBtn');
+    const sideMenu = document.getElementById('sideMenu');
+    const settingsBtn = document.getElementById('settingsBtn');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const closeModal = document.getElementById('closeModal');
+    const jumpBtn = document.getElementById('jumpBtn');
+    const pillMode = document.getElementById('pillMode');
+    const pillModel = document.getElementById('pillModel');
+    const pillLang = document.getElementById('pillLang');
+
+    // selects inside modal
+    const modeSelect = document.getElementById('modeSelect');
+    const modelSelect = document.getElementById('modelSelect');
+    const langSelect = document.getElementById('langSelect');
+
+    // prefill from localStorage
+    const savedMode = localStorage.getItem('lionor_mode') || 'normal';
+    const savedModel = localStorage.getItem('lionor_model') || 'gpt4turbo';
+    const savedLang = localStorage.getItem('lionor_lang') || 'id';
+
+    modeSelect.value = savedMode;
+    modelSelect.value = savedModel;
+    langSelect.value = savedLang;
+
+    // set pills
+    function updatePills() {
+      const modeText = modeSelect.options[modeSelect.selectedIndex].text;
+      pillMode.textContent = `Mode: ${modeText}`;
+      pillModel.textContent = `Model: ${modelSelect.options[modelSelect.selectedIndex].text}`;
+      pillLang.textContent = langSelect.value.toUpperCase();
     }
+    updatePills();
 
-    if (pertanyaan === "lionor ai dari mana") {
-      return `Lionor AI berasal dari Indonesia—dibangun dengan semangat lokal yang kental namun tetap ingin punya kualitas global.`;
-    }
+    // menu toggle: clicking menuBtn opens/closes (no X button)
+    menuBtn.onclick = () => {
+      sideMenu.classList.toggle('open');
+      sideMenu.setAttribute('aria-hidden', !sideMenu.classList.contains('open'));
+    };
 
-    if (pertanyaan === "apa visi misi lionor ai") {
-      return `Visi Lionor AI: menyederhanakan yang rumit dan membuka akses teknologi.`;
-    }
+    // settings modal handlers
+    settingsBtn.onclick = () => {
+      // highlight mode cards based on current selection
+      document.querySelectorAll('.mode-card').forEach(c => {
+        c.classList.toggle('active', c.dataset.mode === modeSelect.value);
+      });
+      modalOverlay.style.display = 'flex';
+    };
+    closeModal.onclick = () => {
+      modalOverlay.style.display = 'none';
+      // save selections
+      localStorage.setItem('lionor_mode', modeSelect.value);
+      localStorage.setItem('lionor_model', modelSelect.value);
+      localStorage.setItem('lionor_lang', langSelect.value);
+      updatePills();
+    };
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) {
+        modalOverlay.style.display = 'none';
+      }
+    });
 
-    if (pertanyaan === "siapa zezy") {
-      return `Zezy adalah pengembang di balik Lionor: trader, developer, autodidak.`;
-    }
+    // clicking mode cards changes select
+    document.querySelectorAll('.mode-card').forEach(card=>{
+      card.addEventListener('click',()=>{
+        document.querySelectorAll('.mode-card').forEach(c=>c.classList.remove('active'));
+        card.classList.add('active');
+        modeSelect.value = card.dataset.mode;
+      });
+    });
 
-    if (pertanyaan === "hallo lionor" || pertanyaan === "halo lionor") {
-      return "Hallo juga! aku LIONOR AI Milik Zezy! Ada yang mau kamu tanyain hari ini?";
-    }
+    // jump button: scroll to currently generating AI message (if any) or last AI
+    jumpBtn.onclick = () => {
+      const curr = document.querySelector('.msg.ai.generating') || Array.from(document.querySelectorAll('.msg.ai')).pop();
+      if (curr) {
+        curr.scrollIntoView({behavior:'smooth', block:'center'});
+        // small highlight to show target
+        curr.style.transition = 'box-shadow .5s';
+        const prev = curr.style.boxShadow;
+        curr.style.boxShadow = '0 0 0 3px rgba(0,255,231,0.12)';
+        setTimeout(()=> curr.style.boxShadow = prev, 900);
+      }
+    };
 
-    if (pertanyaan.includes("siapa kamu")) {
-      return "Aku Lionor AI Beta, asisten digital yang siap membantu kamu kapan saja!";
-    }
+    // auto-scroll behavior
+    let autoScroll = true;
+    chat.addEventListener('scroll', () => {
+      const threshold = 60;
+      const atBottom = chat.scrollHeight - chat.scrollTop - chat.clientHeight < threshold;
+      autoScroll = atBottom;
+    });
 
-    if (pertanyaan.includes("makasih") || pertanyaan.includes("terima kasih")) {
-      return "Sama-sama yaa, aku senang bisa bantu 😊";
-    }
-
-    return null;
-  };
-
-  // === BATAS PERTANYAAN HARIAN ===
-  let jumlahPertanyaan = parseInt(localStorage.getItem('jumlahPertanyaan') || '0');
-  const LIMIT_HARIAN = 100;
-
-  const chat = document.getElementById('chat');
-  const input = document.getElementById('pertanyaan');
-
-  let autoScroll = true;
-  chat.addEventListener('scroll', () => {
-    const threshold = 50;
-    const atBottom = chat.scrollHeight - chat.scrollTop - chat.clientHeight < threshold;
-    autoScroll = atBottom;
-  });
-
-  async function ketikEfek(element, text, delay = 1) {
-    element.textContent = '';
-    for (let i = 0; i < text.length; i++) {
-      element.textContent += text.charAt(i);
-      if (autoScroll) chat.scrollTop = chat.scrollHeight;
-      await new Promise(r => setTimeout(r, delay));
-    }
-  }
-
-  // jawaban jam sekarang (dipakai sebelum fetch)
-  function jawabJamSekarang(teks) {
-    const kataKunci = ['jam berapa', 'waktu sekarang', 'sekarang jam', 'berapa jam'];
-    for (const kata of kataKunci) {
-      if (teks.toLowerCase().includes(kata)) {
-        const wibDate = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', hour12: false });
-        return `Sekarang pukul ${wibDate}`;
+    // typing effect but speed based on mode
+    function getTypingDelayForMode(mode) {
+      // delay in ms per character: larger = slower
+      switch(mode){
+        case 'deep': return 40;        // slowest (deep reading)
+        case 'analisis': return 25;    // moderate slow
+        case 'normal': return 12;      // balanced
+        case 'tothepoint': return 4;   // fast
+        default: return 12;
       }
     }
-    return null;
-  }
-
-  // Helper: format error/response jadi teks
-  function buildAnswerFromResponse(res, parsed, rawText) {
-    if (parsed) {
-      if (parsed.answer) return parsed.answer;
-      if (parsed.error && parsed.error.message) {
-        const code = parsed.error.code ? ` (${parsed.error.code})` : '';
-        return `⚠️ API error${code}: ${parsed.error.message}`;
+    function getTimeoutForMode(mode){
+      // server timeout suggestion (ms)
+      switch(mode){
+        case 'deep': return 70000;
+        case 'analisis': return 45000;
+        case 'normal': return 30000;
+        case 'tothepoint': return 15000;
+        default: return 30000;
       }
-      if (parsed.message) return `⚠️ ${parsed.message}`;
-      try {
-        const ch = parsed.choices;
-        if (Array.isArray(ch) && ch.length > 0) {
-          const m = ch[0].message?.content || ch[0].text;
-          if (m) return m;
+    }
+
+    // helper: format AI message string -> support (**bold**) -> convert to <strong>
+    function formatAIText(raw) {
+      if (!raw) return '';
+      // escape HTML to avoid injection, then unescape allowed <strong> later
+      const div = document.createElement('div');
+      div.textContent = raw;
+      let escaped = div.innerHTML;
+
+      // convert (**text**) -> <strong>text</strong>
+      // but original content was escaped, so we need to replace the escaped pattern
+      // The pattern for (**...**) after escaping remains \(\*\*(.+?)\*\*\)
+      escaped = escaped.replace(/\(\*\*(.+?)\*\*\)/g, '<strong>$1</strong>');
+
+      // convert newlines to <br>
+      escaped = escaped.replace(/\n/g, '<br>');
+      return escaped;
+    }
+
+    // small local auto-replies (respect bahasa setting minimally)
+    function autoReplyLocal(q, lang='id') {
+      const t = q.toLowerCase().trim();
+      if (lang === 'id') {
+        if (['hallo lionor','halo lionor','hallo lionor ai','halo lionor ai'].includes(t)) return 'Hallo juga! aku LIONOR AI Milik Zezy! Mau tanya apa?';
+        if (t.includes('siapa pemilik lionor')) return 'LIONOR AI Beta adalah karya dari seorang kreator independen bernama Zezy.';
+        if (t.includes('lionor ai dari mana')) return 'Lionor AI berasal dari Indonesia—dibangun dengan semangat lokal.';
+      } else if (lang === 'en') {
+        if (t.includes('who made lionor')) return 'Lionor AI is created by an independent developer named Zezy.';
+        if (t.includes('hello lionor')) return 'Hello! I am LIONOR AI, built by Zezy. What can I help with?';
+      }
+      return null;
+    }
+
+    // util: build answer from fetch response like previous code
+    function buildAnswerFromResponse(res, parsed, rawText) {
+      if (parsed) {
+        if (parsed.answer) return parsed.answer;
+        if (parsed.error && parsed.error.message) {
+          const code = parsed.error.code ? ` (${parsed.error.code})` : '';
+          return `⚠️ API error${code}: ${parsed.error.message}`;
         }
-      } catch (e) {}
-      return `⚠️ Response (json): ${JSON.stringify(parsed).slice(0, 300)}`;
+        if (parsed.message) return `⚠️ ${parsed.message}`;
+        try {
+          const ch = parsed.choices;
+          if (Array.isArray(ch) && ch.length > 0) {
+            const m = ch[0].message?.content || ch[0].text;
+            if (m) return m;
+          }
+        } catch (e) {}
+        return `⚠️ Response (json): ${JSON.stringify(parsed).slice(0, 300)}`;
+      }
+      if (rawText) {
+        return rawText.length < 1000 ? rawText : rawText.slice(0, 1000) + '...';
+      }
+      return `⚠️ Server error ${res.status}: ${res.statusText || 'Unknown'}`;
     }
 
-    if (rawText) {
-      return rawText.length < 1000 ? rawText : rawText.slice(0, 1000) + '...';
+    // main send function
+    let jumlahPertanyaan = parseInt(localStorage.getItem('jumlahPertanyaan')||'0');
+    const LIMIT_HARIAN = 100;
+
+    async function ketikEfek(element, text, delayPerChar=12) {
+      element.classList.add('generating');
+      element.innerHTML = ''; // we'll push HTML fragments
+      // text might contain HTML (from formatAIText)
+      // We'll iterate char by char but need to preserve tags: naive approach - reveal progressively per character on plain text only
+      // Simpler: reveal by characters on the HTML string
+      let i = 0;
+      while (i < text.length) {
+        element.innerHTML = text.slice(0, i+1);
+        i++;
+        if (autoScroll) chat.scrollTop = chat.scrollHeight;
+        await new Promise(r=>setTimeout(r, delayPerChar));
+      }
+      element.classList.remove('generating');
     }
 
-    return `⚠️ Server error ${res.status}: ${res.statusText || 'Unknown'}`;
-  }
+    async function kirimPertanyaan() {
+      const teks = input.value.trim();
+      if (!teks) return;
+      if (jumlahPertanyaan >= LIMIT_HARIAN) {
+        const err = document.createElement('div'); err.className='msg ai';
+        chat.appendChild(err);
+        await ketikEfek(err, '⚠️ Anda telah melebihi batas harian. Silakan upgrade ke Lionor AI Premium.', 8);
+        return;
+      }
 
-  // === MODE & MODEL PERSISTENCE ===
-  const modeSelect = document.getElementById('modeSelect');
-  const modelSelect = document.getElementById('modelSelect');
-  const activeMode = document.getElementById('activeMode');
-  const activeModel = document.getElementById('activeModel');
+      jumlahPertanyaan++;
+      localStorage.setItem('jumlahPertanyaan', jumlahPertanyaan);
 
-  // init from localStorage
-  const savedMode = localStorage.getItem('lionor_mode') || 'normal';
-  const savedModel = localStorage.getItem('lionor_model') || 'llama-3.3-70b';
-  modeSelect.value = savedMode;
-  modelSelect.value = savedModel;
-  activeMode.textContent = modeSelect.options[modeSelect.selectedIndex].text;
-  activeModel.textContent = modelSelect.value;
+      // show user message
+      const userMsg = document.createElement('div');
+      userMsg.className = 'msg user';
+      userMsg.textContent = teks;
+      chat.appendChild(userMsg);
+      input.value = '';
+      input.focus();
 
-  modeSelect.addEventListener('change', () => {
-    localStorage.setItem('lionor_mode', modeSelect.value);
-    activeMode.textContent = modeSelect.options[modeSelect.selectedIndex].text;
-  });
-  modelSelect.addEventListener('change', () => {
-    localStorage.setItem('lionor_model', modelSelect.value);
-    activeModel.textContent = modelSelect.value;
-  });
-
-  // === KIRIM PERTANYAAN KE CHATBOX ===
-  async function kirimPertanyaan() {
-    const teks = input.value.trim();
-    if (!teks) return;
-
-    jumlahPertanyaan = parseInt(localStorage.getItem('jumlahPertanyaan') || '0');
-
-    if (jumlahPertanyaan >= LIMIT_HARIAN) {
+      // check local quick reply
+      const lang = localStorage.getItem('lionor_lang') || 'id';
+      const quick = autoReplyLocal(teks, lang);
       const aiMsg = document.createElement('div');
       aiMsg.className = 'msg ai';
       chat.appendChild(aiMsg);
-      await ketikEfek(aiMsg, "⚠️ Anda telah melebihi batas harian. Silakan upgrade ke Lionor AI Premium.");
-      return;
-    }
+      if (autoScroll) chat.scrollTop = chat.scrollHeight;
 
-    jumlahPertanyaan++;
-    localStorage.setItem('jumlahPertanyaan', jumlahPertanyaan);
-
-    const userMsg = document.createElement('div');
-    userMsg.className = 'msg user';
-    userMsg.textContent = teks;
-    chat.appendChild(userMsg);
-
-    input.value = '';
-    input.focus();
-
-    // cek auto-reply lokal dulu
-    const jawabanCepat = autoReply ? autoReply(teks) : null;
-    const jamNow = jawabJamSekarang(teks);
-    const aiMsg = document.createElement('div');
-    aiMsg.className = 'msg ai';
-    chat.appendChild(aiMsg);
-
-    if (autoScroll) chat.scrollTop = chat.scrollHeight;
-
-    if (jawabanCepat) {
-      await ketikEfek(aiMsg, jawabanCepat);
-      return;
-    }
-    if (jamNow) {
-      await ketikEfek(aiMsg, jamNow);
-      return;
-    }
-
-    await ketikEfek(aiMsg, '⏳ Lionor mikir...');
-
-    try {
-      // timeout helper (so user can get message instead of hanging)
-      const controller = new AbortController();
-      const timeoutMs = 30000; // 30s untuk respons lebih panjang (deep research)
-      const timeout = setTimeout(() => controller.abort(), timeoutMs);
-
-      // kirim mode & model ke fungsi server
-      const mode = encodeURIComponent(localStorage.getItem('lionor_mode') || 'normal');
-      const model = encodeURIComponent(localStorage.getItem('lionor_model') || 'llama-3.3-70b');
-      const url = `/.netlify/functions/ask?q=${encodeURIComponent(teks)}&mode=${mode}&model=${model}`;
-
-      const res = await fetch(url, { signal: controller.signal });
-
-      clearTimeout(timeout);
-
-      // always try to read as text first (to support non-json error bodies)
-      let rawText = null;
-      try {
-        rawText = await res.text();
-      } catch (e) {
-        rawText = null;
+      if (quick) {
+        const formatted = formatAIText(quick);
+        await ketikEfek(aiMsg, formatted, getTypingDelayForMode(localStorage.getItem('lionor_mode')||'normal'));
+        return;
       }
 
-      // try parse JSON
-      let parsed = null;
-      try { parsed = rawText ? JSON.parse(rawText) : null; } catch (e) { parsed = null; }
+      // show thinking
+      await ketikEfek(aiMsg, '⏳ Lionor mikir...', 10);
 
-      // Build user-friendly answer string
-      const answerText = buildAnswerFromResponse(res, parsed, rawText);
+      // prepare request
+      try {
+        const mode = localStorage.getItem('lionor_mode') || 'normal';
+        const model = localStorage.getItem('lionor_model') || 'gpt4turbo';
+        const lang = localStorage.getItem('lionor_lang') || 'id';
+        const timeoutMs = getTimeoutForMode(mode);
 
-      await ketikEfek(aiMsg, answerText || "⚠️ Lionor gak ngerti. Coba tanya dengan cara lain ya.");
-    } catch (err) {
-      let errMsg = err && err.name === 'AbortError' ? '⚠️ Permintaan timeout (terlalu lama).' : (`⚠️ Gagal ambil jawaban: ${err.message || err}`);
-      await ketikEfek(aiMsg, errMsg);
+        const controller = new AbortController();
+        const t = setTimeout(()=>controller.abort(), timeoutMs);
+
+        // build URL - adjust endpoint to your backend; currently using netlify function like sebelumnya
+        const url = `/.netlify/functions/ask?q=${encodeURIComponent(teks)}&mode=${encodeURIComponent(mode)}&model=${encodeURIComponent(model)}&lang=${encodeURIComponent(lang)}`;
+
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(t);
+
+        let rawText = null;
+        try { rawText = await res.text(); } catch (e) { rawText = null; }
+        let parsed = null;
+        try { parsed = rawText ? JSON.parse(rawText) : null; } catch (e) { parsed = null; }
+
+        const answerText = buildAnswerFromResponse(res, parsed, rawText) || '⚠️ Lionor gak ngerti. Coba tanya dengan cara lain ya.';
+
+        // format bold markers and newlines
+        const formatted = formatAIText(answerText);
+
+        // replace current content (which said "mikir...") with typing effect of formatted answer
+        // ensure we animate with delay based on selected mode
+        const delay = getTypingDelayForMode(mode);
+        await ketikEfek(aiMsg, formatted, delay);
+      } catch (err) {
+        let errMsg = (err && err.name === 'AbortError') ? '⚠️ Permintaan timeout (terlalu lama).' : `⚠️ Gagal ambil jawaban: ${err.message || err}`;
+        await ketikEfek(aiMsg, errMsg, 8);
+      }
+
+      if (autoScroll) chat.scrollTop = chat.scrollHeight;
     }
 
+    // Enter key
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        kirimPertanyaan();
+      }
+    });
+    sendBtn.addEventListener('click', kirimPertanyaan);
+
+    // initialize stored values
+    localStorage.setItem('lionor_mode', localStorage.getItem('lionor_mode') || savedMode);
+    localStorage.setItem('lionor_model', localStorage.getItem('lionor_model') || savedModel);
+    localStorage.setItem('lionor_lang', localStorage.getItem('lionor_lang') || savedLang);
+
+    // reflect changes immediately if user changes selects in modal
+    modeSelect.addEventListener('change', ()=> {
+      document.querySelectorAll('.mode-card').forEach(c => c.classList.toggle('active', c.dataset.mode === modeSelect.value));
+    });
+    modelSelect.addEventListener('change', updatePills);
+    langSelect.addEventListener('change', updatePills);
+
+    // initial active card
+    document.querySelectorAll('.mode-card').forEach(c => {
+      c.classList.toggle('active', c.dataset.mode === modeSelect.value);
+    });
+
+    // small sample message to show interface at start (optional)
+    const welcome = document.createElement('div');
+    welcome.className = 'msg ai';
+    const initialText = 'Hallo! Lionor siap bantu. (Note: gunakan (**teks**) untuk cetak tebal pada jawaban AI).';
+    welcome.innerHTML = formatAIText(initialText);
+    chat.appendChild(welcome);
     if (autoScroll) chat.scrollTop = chat.scrollHeight;
-  }
 
-  // listener enter
-  input.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      kirimPertanyaan();
-    }
-  });
+    // update pills periodically (in case stored changed)
+    setInterval(updatePills, 2000);
 
-  // menu toggles
-  const menuBtn = document.getElementById('menuBtn');
-  const sideMenu = document.getElementById('sideMenu');
-  const closeMenuBtn = document.getElementById('closeMenuBtn');
-
-  menuBtn.onclick = () => { sideMenu.classList.add('open'); };
-  closeMenuBtn.onclick = () => { sideMenu.classList.remove('open'); };
-
-  // small UX: autofocus
-  input.focus();
   </script>
 </body>
 </html>
