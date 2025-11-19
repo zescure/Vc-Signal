@@ -176,7 +176,7 @@
       cursor:pointer;
     }
 
-    /* settings popup (no language choices) */
+    /* settings popup */
     #settingsPopup {
       position: fixed;
       left: 50%;
@@ -202,6 +202,8 @@
     .btn.ghost { background:transparent; color:#9fffe7; border:1px solid #274; }
     .btn.primary { background:var(--accent); color:#071015; font-weight:700; }
 
+    /* small helpers */
+    .muted { color:#9fffe7; font-size:12px }
     .boldSpan { font-weight:700; display:inline; }
 
     @media (min-width:720px){
@@ -214,6 +216,7 @@
 <body>
   <header>LIONOR3 AI Beta</header>
 
+  <!-- side menu (toggle with menuBtn) -->
   <button id="menuBtn" title="Menu">☰</button>
   <nav id="sideMenu" aria-hidden="true">
     <div class="menu-header">Lionor AI</div>
@@ -225,16 +228,19 @@
 
     <ul>
       <li onclick="alert('👤 Pemilik Lionor: Zezy — developer & trader muda yang membangun AI ini dari nol.')">Profil Pemilik</li>
-      <li onclick="alert('🛰️ Tentang Lionor: Lionor AI adalah asisten AI lokal. Zezy membangun konsep & UI.')">Tentang Kami</li>
-      <li onclick="alert('🔐 Privasi: Pertanyaan diproses oleh server untuk jawaban.')">Kebijakan Privasi</li>
+      <li onclick="alert('🛰️ Tentang Lionor: Lionor AI adalah asisten AI lokal. Zezy membangun konsep & UI, sementara model besar di-backend oleh beragam provider.')">Tentang Kami</li>
+      <li onclick="alert('🔐 Privasi: Pertanyaan hanya diproses untuk jawaban, tidak disimpan permanen.')">Kebijakan Privasi</li>
       <li onclick="alert('🇮🇩 Dukungan: Terima kasih sudah dukung pengembangan AI lokal.')">Support AI Lokal</li>
     </ul>
   </nav>
 
+  <!-- chat messages -->
   <div id="chat" aria-live="polite"></div>
 
+  <!-- jump to generating message -->
   <button id="jumpBtn" title="Lompat ke pesan yang sedang digenerate">⬇</button>
 
+  <!-- input area: + button (open settings), text input, send -->
   <div id="input-area">
     <div class="left-controls">
       <button id="openSettingsBtn" title="Mode & Model">+</button>
@@ -244,10 +250,11 @@
     <button class="sendBtn" id="sendBtn">Kirim</button>
   </div>
 
-  <!-- settings popup: removed bahasa settings -->
+  <!-- settings popup -->
   <div id="settingsPopup" role="dialog" aria-modal="true" aria-hidden="true">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
       <div style="font-weight:700; color:var(--accent)">Pengaturan Mode Lionor</div>
+      <div style="font-size:13px; color:#9fffe7">Bahasa default: <span id="popupLangLabel">Indonesia</span></div>
     </div>
 
     <div class="row">
@@ -258,7 +265,6 @@
         <option value="analisis">Analisis</option>
         <option value="deep">Deep Research (Lambat)</option>
         <option value="santai">Santai (Warkop style)</option>
-        <option value="curhat">Curhat (Pendengar)</option>
       </select>
     </div>
 
@@ -281,8 +287,18 @@
       </select>
     </div>
 
+    <div class="row">
+      <label for="popupLang">Bahasa</label>
+      <select id="popupLang" class="smallInput" >
+        <option value="id">Bahasa Indonesia</option>
+        <option value="en">English</option>
+        <option value="ms">Bahasa Melayu</option>
+        <option value="su">Sunda</option>
+      </select>
+    </div>
+
     <div style="margin-top:6px; color:#aef9e9; font-size:13px">
-      Catatan: Bahasa default tetap Bahasa Indonesia.
+      Catatan: Kirim dalam bahasa lokal yang dipilih; Lionor akan membalas sesuai bahasa tersebut.
     </div>
 
     <div class="popup-footer">
@@ -304,23 +320,45 @@
     const settingsPopup = document.getElementById('settingsPopup');
     const popupMode = document.getElementById('popupMode');
     const popupModel = document.getElementById('popupModel');
+    const popupLang = document.getElementById('popupLang');
     const popupSpeed = document.getElementById('popupSpeed');
     const saveSettings = document.getElementById('saveSettings');
     const cancelSettings = document.getElementById('cancelSettings');
     const sideActiveMode = document.getElementById('sideActiveMode');
     const sideActiveModel = document.getElementById('sideActiveModel');
+    const popupLangLabel = document.getElementById('popupLangLabel');
     const jumpBtn = document.getElementById('jumpBtn');
 
-    // session-only settings (no localStorage)
-    let currentMode = 'normal';
-    let currentModel = 'llama-3.3-70b';
-    let currentSpeed = 14; // ms per char
+    // persistence keys
+    const KEY_MODE = 'lionor_mode';
+    const KEY_MODEL = 'lionor_model';
+    const KEY_LANG = 'lionor_lang';
+    const KEY_SPEED = 'lionor_speed';
 
-    // in-memory daily counter (session-only)
-    let jumlahPertanyaan = 0;
-    const LIMIT_HARIAN = 200;
+    // defaults
+    const defaults = {
+      mode:'normal',
+      model:'llama-3.3-70b',
+      lang:'id',
+      speed:'14'
+    };
 
-    // menu toggle
+    // init from localStorage
+    const savedMode = localStorage.getItem(KEY_MODE) || defaults.mode;
+    const savedModel = localStorage.getItem(KEY_MODEL) || defaults.model;
+    const savedLang = localStorage.getItem(KEY_LANG) || defaults.lang;
+    const savedSpeed = localStorage.getItem(KEY_SPEED) || defaults.speed;
+
+    // reflect initial UI
+    popupMode.value = savedMode;
+    popupModel.value = savedModel;
+    popupLang.value = savedLang;
+    popupSpeed.value = savedSpeed;
+    sideActiveMode.textContent = popupMode.options[popupMode.selectedIndex].text;
+    sideActiveModel.textContent = popupModel.value;
+    popupLangLabel.textContent = popupLang.options[popupLang.selectedIndex].text;
+
+    // menu toggle (no separate X)
     menuBtn.addEventListener('click', () => {
       const wasOpen = sideMenu.classList.contains('open');
       if (wasOpen) {
@@ -334,30 +372,57 @@
       }
     });
 
-    // open settings
+    // settings popup open/close
     openSettingsBtn.addEventListener('click', () => {
-      // reflect current session settings
-      popupMode.value = currentMode;
-      popupModel.value = currentModel;
-      popupSpeed.value = String(currentSpeed);
       settingsPopup.classList.add('open');
       settingsPopup.setAttribute('aria-hidden','false');
+      // load current
+      popupMode.value = localStorage.getItem(KEY_MODE) || defaults.mode;
+      popupModel.value = localStorage.getItem(KEY_MODEL) || defaults.model;
+      popupLang.value = localStorage.getItem(KEY_LANG) || defaults.lang;
+      popupSpeed.value = localStorage.getItem(KEY_SPEED) || defaults.speed;
     });
     cancelSettings.addEventListener('click', () => {
       settingsPopup.classList.remove('open');
       settingsPopup.setAttribute('aria-hidden','true');
     });
+
+    // save settings
     saveSettings.addEventListener('click', () => {
-      currentMode = popupMode.value;
-      currentModel = popupModel.value;
-      currentSpeed = parseInt(popupSpeed.value, 10) || 14;
+      const mode = popupMode.value;
+      const model = popupModel.value;
+      const lang = popupLang.value;
+      const speed = popupSpeed.value;
+
+      localStorage.setItem(KEY_MODE, mode);
+      localStorage.setItem(KEY_MODEL, model);
+      localStorage.setItem(KEY_LANG, lang);
+      localStorage.setItem(KEY_SPEED, speed);
+
       sideActiveMode.textContent = popupMode.options[popupMode.selectedIndex].text;
-      sideActiveModel.textContent = currentModel;
+      sideActiveModel.textContent = model;
+      popupLangLabel.textContent = popupLang.options[popupLang.selectedIndex].text;
+
       settingsPopup.classList.remove('open');
       settingsPopup.setAttribute('aria-hidden','true');
     });
 
-    // helpers: bold parsing & typing
+    // keyboard: enter to send
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); sendMessage(); }
+    });
+    sendBtn.addEventListener('click', sendMessage);
+
+    // mode -> default speed map (ms per char)
+    const modeSpeedMap = {
+      'tothepoint': 6,
+      'normal': 14,
+      'analisis': 20,
+      'deep': 28,
+      'santai': 10
+    };
+
+    // parse bold segments like (**bold**)
     function parseBoldSegments(text) {
       const segments = [];
       let idx = 0;
@@ -421,68 +486,43 @@
       return null;
     }
 
-    // santai style
+    // post-process for 'santai' mode: simple replacement to elu/gua and tack "Bro, "
     function applySantaiStyle(text) {
       if (!text || typeof text !== 'string') return text;
+      // avoid modifying content inside backticks or code blocks by simple heuristic: if contains ``` skip replacements
       if (text.includes('```')) {
+        // still prefix Bro if not present
         if (!/^(\s*bro[,!:]?\s*)/i.test(text)) return 'Bro, ' + text;
         return text;
       }
       let t = text;
+      // word-boundary replacements (case-insensitive)
       t = t.replace(/\bAku\b/g, 'Gua').replace(/\baku\b/g, 'gua');
       t = t.replace(/\bSaya\b/g, 'Gua').replace(/\bsaya\b/g, 'gua');
       t = t.replace(/\bKamu\b/g, 'Elu').replace(/\bkamu\b/g, 'elu');
       t = t.replace(/\bAnda\b/g, 'Elu').replace(/\banda\b/gi, 'elu');
+      // ensure starts with "Bro, " if not already has bro-like greeting
       if (!/^(\s*(bro|bro,|bro:|bro!|bro\.)\s*)/i.test(t)) {
         t = 'Bro, ' + t;
       }
       return t;
     }
 
-    // curhat style + safety
-    function applyCurhatStyle(text) {
-      if (!text || typeof text !== 'string') return text;
-      const dangerWords = ['bunuh diri','ingin bunuh','ingin mati','bunuh','putus asa','nyerah'];
-      const lower = text.toLowerCase();
-      for (const w of dangerWords) {
-        if (lower.includes(w)) {
-          return "Bro, gua denger lu lagi ngerasa berat banget. Kalau lu lagi dalam bahaya atau punya pikiran buat nyakitin diri, tolong segera kontak layanan darurat atau orang terdekat. Lu mau cerita apa dulu? Gua dengerin.";
-        }
-      }
-      let t = text;
-      if (!/^\s*(bro|bro,|bro:|bro!)/i.test(t)) {
-        t = 'Bro, ' + t;
-      }
-      t = t.replace(/\b(anda harus|kamu harus)\b/gi, 'mungkin coba');
-      return t;
-    }
-
-    // response builder tolerant
+    // buildAnswerFromResponse tolerant
     function buildAnswerFromResponse(parsedOrText) {
       if (!parsedOrText) return "⚠️ Lionor gak ngerti. Coba tanya lagi ya.";
       if (typeof parsedOrText === 'object') {
         if (parsedOrText.answer) return parsedOrText.answer;
         if (parsedOrText.message) return parsedOrText.message;
-        if (parsedOrText.choices && Array.isArray(parsedOrText.choices) && parsedOrText.choices.length) {
-          const ch = parsedOrText.choices[0];
-          return ch.message?.content || ch.text || JSON.stringify(parsedOrText).slice(0,1200);
-        }
         return JSON.stringify(parsedOrText).slice(0,1200);
       }
       return parsedOrText;
     }
 
-    // mode speed map
-    const modeSpeedMap = {
-      'tothepoint': 6,
-      'normal': 14,
-      'analisis': 20,
-      'deep': 28,
-      'santai': 10,
-      'curhat': 12
-    };
+    // main send
+    let jumlahPertanyaan = parseInt(localStorage.getItem('jumlahPertanyaan') || '0');
+    const LIMIT_HARIAN = 200;
 
-    // main send (no localStorage, no conversation persistence)
     async function sendMessage() {
       const teks = input.value.trim();
       if (!teks) return;
@@ -491,13 +531,14 @@
         const warn = document.createElement('div');
         warn.className = 'msg ai';
         chat.appendChild(warn);
-        await typeWithBold(warn, "⚠️ Anda telah melebihi batas harian (sesi).", 6);
+        await typeWithBold(warn, "⚠️ Anda telah melebihi batas harian. Silakan upgrade ke Lionor AI Premium.", 6);
         return;
       }
 
       jumlahPertanyaan++;
+      localStorage.setItem('jumlahPertanyaan', jumlahPertanyaan);
 
-      // show user msg
+      // add user message
       const userMsg = document.createElement('div');
       userMsg.className = 'msg user';
       userMsg.textContent = teks;
@@ -507,7 +548,7 @@
       input.value = '';
       input.focus();
 
-      // quick local reply
+      // quick reply
       const quick = autoReplyLocal(teks);
       if (quick) {
         const aiMsg = document.createElement('div');
@@ -517,7 +558,7 @@
         return;
       }
 
-      // placeholder
+      // placeholder ai message
       const aiMsg = document.createElement('div');
       aiMsg.className = 'msg ai';
       aiMsg.dataset.generating = 'true';
@@ -525,22 +566,25 @@
       chat.scrollTop = chat.scrollHeight;
       updateJumpButton();
 
-      // choose speed: explicit setting (session) > mode map
-      const speed = currentSpeed || (modeSpeedMap[currentMode] || 14);
+      // speed selection: explicit setting > mode map
+      const savedSpeed = parseInt(localStorage.getItem(KEY_SPEED) || defaults.speed, 10);
+      const modeFromStorage = localStorage.getItem(KEY_MODE) || defaults.mode;
+      const finalSpeed = !isNaN(savedSpeed) ? savedSpeed : (modeSpeedMap[modeFromStorage] || 14);
 
       aiMsg.textContent = '⏳ Lionor mikir...';
       chat.scrollTop = chat.scrollHeight;
 
       try {
-        // prefer GET (server likely supports q param). If your server expects POST, replace with POST version.
-        const mode = encodeURIComponent(currentMode);
-        const model = encodeURIComponent(currentModel);
-        const url = `/.netlify/functions/ask?q=${encodeURIComponent(teks)}&mode=${mode}&model=${model}`;
+        const mode = encodeURIComponent(localStorage.getItem(KEY_MODE) || defaults.mode);
+        const model = encodeURIComponent(localStorage.getItem(KEY_MODEL) || defaults.model);
+        const lang = encodeURIComponent(localStorage.getItem(KEY_LANG) || defaults.lang);
 
         const controller = new AbortController();
-        const timeoutMap = { 'tothepoint': 15000, 'normal': 30000, 'analisis': 45000, 'deep': 90000, 'santai': 30000, 'curhat': 45000 };
-        const timeoutMs = timeoutMap[currentMode] || 30000;
+        const timeoutMap = { 'tothepoint': 15000, 'normal': 30000, 'analisis': 45000, 'deep': 90000, 'santai': 30000 };
+        const timeoutMs = timeoutMap[mode] || 30000;
         const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+        const url = `/.netlify/functions/ask?q=${encodeURIComponent(teks)}&mode=${mode}&model=${model}&lang=${lang}`;
 
         const res = await fetch(url, { signal: controller.signal });
         clearTimeout(timeout);
@@ -552,11 +596,12 @@
 
         let answer = buildAnswerFromResponse(parsed || raw);
 
-        // post-process modes
-        if (currentMode === 'santai') answer = applySantaiStyle(answer);
-        if (currentMode === 'curhat') answer = applyCurhatStyle(answer);
+        // if mode is santai, apply local style transform
+        if ((localStorage.getItem(KEY_MODE) || defaults.mode) === 'santai') {
+          answer = applySantaiStyle(answer);
+        }
 
-        await typeWithBold(aiMsg, answer, speed);
+        await typeWithBold(aiMsg, answer, finalSpeed);
 
       } catch (err) {
         const errMsg = (err && err.name === 'AbortError') ? '⚠️ Permintaan timeout (terlalu lama).' : (`⚠️ Gagal ambil jawaban: ${err.message || err}`);
@@ -568,29 +613,13 @@
       }
     }
 
-    // keyboard Enter
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); sendMessage(); }
-    });
-    sendBtn.addEventListener('click', sendMessage);
-
-    // initial UI reflect
-    popupMode.value = currentMode;
-    popupModel.value = currentModel;
-    popupSpeed.value = String(currentSpeed);
-
-    // expose debug
-    window._lionor = {
-      sendMessage,
-      setMode: (m) => { currentMode = m; popupMode.value = m; sideActiveMode.textContent = popupMode.options[popupMode.selectedIndex]?.text || m; },
-      setModel: (m) => { currentModel = m; popupModel.value = m; sideActiveModel.textContent = m; }
-    };
-
-    // periodically update jump button
+    // periodic update jump button
     setInterval(updateJumpButton, 600);
 
-    // autofocus
     input.focus();
+
+    // expose for debug
+    window._lionor = { sendMessage, applySantaiStyle, parseBoldSegments };
   </script>
 </body>
 </html>
