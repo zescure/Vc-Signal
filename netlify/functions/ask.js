@@ -2,7 +2,7 @@
 // Menangani mode & model dari queryStringParameters
 const fetch = require("node-fetch");
 
-const GROQ_API_KEY = "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";
+const GROQ_API_KEY = "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";
 
 exports.handler = async function (event, context) {
   const q = (event && event.queryStringParameters && event.queryStringParameters.q) || "";
