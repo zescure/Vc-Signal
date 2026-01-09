@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>/VC Signal Forex GRATIS</title>
+    <style>
+        .preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85); /* Semi-transparent black overlay */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
+        }
+
+        /* Background image container */
+        .bg-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: -2;
+        }
+
+        /* Smoke effect overlay */
+        .smoke {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 10%, transparent 70%);
+            filter: blur(50px);
+            animation: smokeEffect 8s infinite alternate;
+            z-index: -1;
+        }
+
+        .forex-loader {
+            width: 120px;
+            height: 120px;
+            border: 4px solid #FFD700;
+            border-radius: 50%;
+            position: relative;
+            animation: rotate 2s linear infinite;
+        }
+
+        .forex-loader::before {
+            content: "FOREX";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #FFD700;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+        }
+
+        .forex-loader::after {
+            content: "";
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            border-radius: 50%;
+            border: 4px solid transparent;
+            border-top-color: #FFD700;
+            animation: rotate 1.7s linear infinite;
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            color: #FFD700;
+            font-family: Arial, sans-serif;
+            font-size: 18px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .progress {
+            width: 200px;
+            height: 4px;
+            background: rgba(51, 51, 51, 0.5);
+            margin-top: 20px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: #FFD700;
+            animation: progress 8s ease-in-out forwards;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes progress {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        @keyframes smokeEffect {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 0.3;
+            }
+            100% {
+                transform: translateY(-50px) scale(1.5);
+                opacity: 0.1;
+            }
+        }
+
+        .preloader.fade-out {
+            opacity: 0;
+        }
+
+        .content {
+            display: none;
+        }
+
+        .content.visible {
+            display: block;
+        }
+
+        /* File input styling */
+        .bg-control {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 20px;
+            z-index: 10000;
+        }
+
+        .bg-control label {
+            color: #FFD700;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .bg-control input {
+            display: none;
+        }
+          /* Pastikan ini di atas semua style lain */
+  #live-chat {
+    position: fixed !important; /* selalu ikut layar */
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 9999;
+  }
+  /* Remove overflow atau transform dari parent kalau ada */
+  .container, .content-wrapper, .slideshow-container {
+    overflow: visible;
+    transform: none;
+  }
+          #live-chat a {
+    width: 50px;
+    height: 50px;
+    display: block;
+  }
+  #live-chat img {
+    width: 100%;
+    height: auto;
+    border-radius: 50%;
+  }
+  /* Rating widget */
+  #rating-widget {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(255,255,255,0.9);
+    padding: 10px 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    font-family: sans-serif;
+    max-width: 250px;
+    z-index: 9999;
+  }
+  #rating-widget h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+  }
+  .review {
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+  .stars {
+    color: #f5a623;
+  }
+    </style>
+</head>
+<body>
+    <!-- Background image container -->
+    <div class="bg-image" id="bgImage"></div>
+
+    <!-- Smoke effect -->
+    <div class="smoke"></div>
+
+    <!-- Preloader content -->
+    <div class="preloader" id="preloader">
+        <div class="forex-loader"></div>
+        <div class="loading-text">Loading VC Signal Forex...</div>
+        <div class="progress">
+            <div class="progress-bar"></div>
+        </div>
+    </div>
+
+    <!-- Background control -->
+     <!-- Background control -->
+    <div class="bg-control">
+        <label for="bgInput">
+            
+            <input type="file" id="bgInput" accept="image/*">
+        </label>
+    </div>
+
+    <script>
+        // Background image handler
+        const bgInput = document.getElementById('bgInput');
+        const bgImage = document.getElementById('bgImage');
+
+        bgInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    bgImage.style.backgroundImage = `url(${e.target.result})`;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Preloader handler
+        window.addEventListener('load', function() {
+            const preloader = document.getElementById('preloader');
+            
+            setTimeout(function() {
+                preloader.classList.add('fade-out');
+                
+                setTimeout(function() {
+                    preloader.style.display = 'none';
+                }, 500);
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>/vc signal forex gratis</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #000; /* Latar belakang hitam */
+            color: #FFD700; /* Teks kuning keemasan */
+            text-align: center;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 400px;
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        .marquee-container {
+            background-color: #FFD700;
+            border-radius: 50px;
+            padding: 10px;
+            font-size: 14px;
+            color: black;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .btn {
+            background-color: #FFD700;
+            color: black;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 75px;
+            padding: 12px;
+            cursor: pointer;
+            border: none;
+            margin: 10px;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background-color: black;
+            color: #FFD700;
+            border: 2px solid #FFD700;
+        }
+
+        .tab-container {
+            background: linear-gradient(to right bottom, #222, #444);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: rgba(255, 215, 0, 0.5) 0px 2px 8px 0px;
+            margin-bottom: 20px;
+        }
+
+        .tab-container p {
+            background-color: #FFD700;
+            color: black;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .menu {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .menu a {
+            text-decoration: none;
+            color: #FFD700;
+            display: block;
+            text-align: center;
+            font-size: 14px;
+            width: 80px;
+        }
+
+        .menu img {
+            width: 70px;
+            border-radius: 10px;
+            box-shadow: rgba(255, 215, 0, 0.5) 0px 1px 5px 0px;
+        }
+        
+    position: relative;
+    overflow: ;
+}
+
+/* Gaya dasar */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #000; /* Hitam sebagai dasar */
+    color: #FFD700; /* Kuning keemasan */
+    margin: 0;
+    padding: 0;
+    min-height: 100vh; /* Memastikan halaman bisa di-scroll */
+    position: relative;
+}
+
+/* Efek Asap Kuning Bergerak */
+body::before {
+    content: "";
+    position: fixed; /* Tetap di latar belakang tanpa mengganggu scroll */
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 215, 0, 0.3) 10%, transparent 70%);
+    filter: blur(100px);
+    animation: smokeMove 10s infinite linear;
+    z-index: -1;
+}
+
+@keyframes smokeMove {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        transform: translate(50%, 50%) scale(1.5);
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+}
+          /* Live chat popup container */
+  #live-chat {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 9999;
+  }
+  #live-chat a {
+    width: 50px;
+    height: 50px;
+    display: block;
+  }
+  #live-chat img {
+    width: 100%;
+    height: auto;
+    border-radius: 50%;
+  }
+   /* Supaya mirip styling tab-container asli */
+  .tab-container.rating {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 16px;
+    border-radius: 6px;
+    max-width: 320px;
+    font-family: sans-serif;
+    margin: 16px auto;
+  }
+  .tab-container.rating .user {
+    font-weight: bold;
+    margin-bottom: 8px;
+    display: block;
+    color: #333;
+  }
+  .tab-container.rating .stars {
+    font-size: 20px;
+    line-height: 1;
+    color: #f5a623;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .tab-container.rating .text {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 12px;
+    display: block;
+  }
+  /* summary ala Play Store */
+  .tab-container.rating .summary {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #333;
+    margin-top: 12px;
+  }
+  .tab-container.rating .summary .avg-stars {
+    font-size: 18px;
+    color: #f5a623;
+    line-height: 1;
+  }
+  .tab-container.rating .summary .count {
+    color: #777;
+  }
+          .tab-container.trade-modal {
+    position: fixed !important;
+    bottom: 20px;
+    left: 20px;
+    max-width: 240px;
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    font-family: sans-serif;
+    z-index: 9999;
+  }
+  .tab-container.trade-modal h4 {
+    margin: 0 0 8px;
+    font-size: 14px;
+  }
+  .tab-container.trade-modal p {
+    margin: 4px 0;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #333;
+  }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>VC Forex <span class="balance">by Zeetrading.id</span></h1>
+
+    <div class="marquee-container">
+        selamat datang nikmati layanan kami Versi Premium Berbayar
+    </div>
+
+    <button class="btn">Home</button>
+    <button class="btn">Berbayar</button>
+    
+            
+  <!-- Slide 1 -->
+  <div class="tab-container">
+    <img src="https://www.audi.com/content/dam/gbp2/company_alt/report/2022/audi_report_stories/finanzielle-Highlights/1920x700_aufmacher_finanzielle-highlights.gif?imwidth=1210&imdensity=1" alt="Banner 1" style="max-width: 101%; height: auto; position: auto; display: flex-wrap;">
+    <h3>VC Signal forex Adalah Layanan penyedia Jasa signal Trading dan Research data pasar seluruh dunia</h3>
+    <h6>kami berupaya memberikan infomasi pasar akurat dengan terperinci,data di-generate langsung oleh pasokan informasi mikro Ekonomi mata uang USD</h6>
+    <h8>insider kami tersebar seluruh dunia khususnya : INDONESIA, JEPANG, RUSSIA, SWISS, GERMAN, TURKI, MALAYSIA, USA, CHINA, AUSTRALIA</h8>
+    </div>
+
+    <!-- Menu Game -->
+    <div class="tab-container">
+        <p>Apa Yang Anda Butuhkan?</p>
+        <div class="menu">
+            <h5>perlu di ingat informasi ini hanya sebagai pertimbangan lebih lanjut dan bukan alat ketergantungan</h5>
+            <a href="SignalForex.html"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS8b_j-MY0EcNzdGvXeF64Cf3wsMabGyM7qxg&usqp=CAU" alt=""><br>Signal Forex</a>
+            <a href="OrderBook.html"><img src="https://cdn-icons-gif.flaticon.com/16894/16894128.gif" alt=""><br>Order Book</a>
+            <a href="DataAnalisis.html"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSaCmPiX8ODWNsRIHq87CcPVtZuL5qDqeYP7g&usqp=CAU" alt=""><br>Data Analisis</a>
+            <a href="https://tradingeconomics.com/matrix"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPtosle4UB5uJ-p0VdtLLrsY9Cebo7Gl0plpL3nqJl9Q&s" alt=""><br>Heatmap Data</a>
+            <a href="https://www.cftc.gov/dea/futures/other_lf.htm"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-3XlTWjMOu7nKiPMkhRScrgpwmE1iKh8WbA&usqp=CAU" alt=""><br>Data Insider (cot)</a>
+            <a href="#"><img src="https://media1.giphy.com/media/yxHjTQPD0v5eOdEqV7/giphy.gif?cid=6c09b952kakyclagjir55dc84iveccvc1crtcn26zk1py51a&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g" alt=""><br>Signal Orang Lain</a>
+        </div>
+      </div>
+
+    <!-- Pulsa dan Paket Data -->
+    <div class="tab-container">
+        <p>Produk Zeetrading</p>
+        <div class="menu">
+            <a href="#"><img src="https://scontent.cdninstagram.com/v/t51.2885-19/382375315_1698847267275664_3083161580008964434_n.jpg?stp=dst-jpg_s240x240_tt6&_nc_cat=102&ccb=1-7&_nc_sid=bf7eb4&_nc_ohc=_b3np2dsuWUQ7kNvgFFW9JI&_nc_zt=24&_nc_ht=scontent.cdninstagram.com&oh=00_AYCQr7Viz556O5NCMDbhGB3c4UUwxP95XnvRNIGNcvkh5Q&oe=679FD568" alt=""><br>Kelas Trading</a>
+            <a href="#"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5CI-9tBKPKtmQhlf0pTeHuEpCfTwmLBYQgA&s" alt=""><br>E-book</a>
+            <a href="#"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTk3CpzBFLPWsGDokHtpC40lDzVAs0t9W4J6w&usqp=CAU" alt=""><br>Signal Khusus Member</a>
+            <a href="https://gopinjam-enxess.netlify.app/?utm_medium=social&utm_source=heylink.me"><img src="https://media3.giphy.com/media/J5MVUmiWf9b9suMrRh/giphy.gif?cid=6c09b952zpmunxbvomcek8ccypylfs545jlz1mvpdven2iwc&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g" alt=""><br>Trading Tanpa KTP</a>
+            <a href="#"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRm_DH6ZCjCKOPPAFQ6Tcy1hZxL6T4eGi6gkQ&s" alt=""><br>Kalender Ekonomi</a>
+            <a href="#"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZ74RHPEkVwcZzbC1b-WsIF5C2ROQxKViJnw&s" alt=""><br>Xau/usd data (soon)</a>
+        </div>
+    </div>
+
+    <!-- Pulsa dan Paket Data -->
+    <div class="tab-container">
+        <p>Perdagangan Broker</p>
+        <div class="menu">
+            <a href="https://zestore.netlify.app/opsitrading"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScS8qeuP_nB2woXfGUYRmn8m5ZQSFo2TLPG_nGthrHfA&s" alt=""><br>Trading Index</a>
+            <a href="https://zestore.netlify.app/futurestrading"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtHjT8Rlhyqm34XMFWqhhespHyHzTU5zkYCJsRilakeg&s" alt=""><br>Futures Index</a>
+            <a href="#"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCnIqlD6xJV-TQ4gkGsJELEyCDpuKh6QV7JhyWc5c-rw&s" alt="">Web3 Index<br></a>
+            
+        </div>
+    </div>
+
+            <!-- Pulsa dan Paket Data -->
+    <div class="tab-container">
+        <p>lionor tes (segera)</p>
+        <div class="menu">
+            <a href="#"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScS8qeuP_nB2woXfGUYRmn8m5ZQSFo2TLPG_nGthrHfA&s" alt=""><br>lionor Imagen</a>
+            <a href="https://vc-signalforex.netlify.app/lionor2"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtHjT8Rlhyqm34XMFWqhhespHyHzTU5zkYCJsRilakeg&s" alt=""><br>lionor2 Chat</a>
+            <a href="#"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCnIqlD6xJV-TQ4gkGsJELEyCDpuKh6QV7JhyWc5c-rw&s" alt="">lionor Market Data<br></a>
+            
+        </div>
+    </div>
+            
+            
+            <div class="content-wrapper">
+        <div class="slideshow-container mx-auto my-8">
+  <!-- Slide 1 -->
+  <div class="tab-container">
+    <img src="https://images.squarespace-cdn.com/content/v1/54c07413e4b08708b0a2ecbd/1580604751024-QQFXHRVHWNAB00HE7SM0/SINEWAVE-HEADER-ANI-BLACK-SM.gif?format=1500w" alt="Banner 1" style="max-width: 101%; height: auto; position: auto; display: flex-wrap;">
+    </div>
+
+    <!-- Tagihan & TV Digital -->
+    <div class="tab-container">
+        <p>Lainnya</p>
+        <div class="menu">
+            <a href="https://heylink.me/ZEETRADING.id"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQHfkQZhXUgPQ3_akWqnR8oVDArQGwhc6SShg&usqp=CAU" alt=""><br>Rekomendasi broker</a>
+            <a href="#"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQNx3fu6sMCD1Yi_y5eKiM_xTXc3SonidqaXBVThZZrTw&s" alt=""><br>Tournamen Trading</a>
+            <a href="#"><img src="https://media1.giphy.com/media/KGydQFLZ4IUX7Fn5Z4/giphy.gif?cid=6c09b952he3t4h97t00x5zul7zeh4ffv81o3aif1h39e63y5&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g" alt=""><br>affiliate zeecorp</a>
+            <a href="KalkulatorForex.html"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQT50FEdgs9WWdq98ed7aLgyC2J0U0RXDu2biY9m4hzAQ&s" alt=""><br>Kalkulator trading</a>
+            <a href="#"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWZ4uWREa0HM0diynpZowiwvSzBmHBmW5fgQ&usqp=CAU" alt=""><br>VC Crypto</a>
+        </div>
+    </div>
+
+    <!-- E-Money & Streaming -->
+    <div class="tab-container">
+        <p>Kamu Pemula? coba ini</p>
+        <div class="menu">
+            <a href="https://zeetrading-privateclass.blogspot.com/2024/10/memulai-trading-dari-nol-di-forex.html"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjmPKZp6DzARrwQ7w3Q5q0FUpnMRG7lr9J2uj_wrBXdAgj_mXESR7DoNdfFkjKK4EPk_0HEI8B6ZOjsgimKgyJ7P7qNp8cHhOMS_cq_tSnt-hFI87S6LN_NB7zk25KwoioIeSHmK3Zzg4UuYa0UIyixJMp1TNr8lLL_2hWimAr0oJhuutYcihaXlGeIwWWs/s300/animasi%20bbm%20tanda%20tanya%20gif.gif" alt=""><br>Apa itu trading?</a>
+            <a href="https://zee-trading.blogspot.com/2021/08/zeetrading.html"><img src="https://patternswizard.com/wp-content/uploads/2021/12/patterns-rotating.gif" alt=""><br>chart pattern</a>
+            <a href="#"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTAuWA0reL7V2R2DxtOXm6eImjGoHmbAF8kng&s" alt=""><br>sejarah trading</a>
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLScoSegqOtJN5gSfmR4FQL5k4FNTbyWCziQCl_g_27V1fZVswQ/viewform?usp=sf_link"><img src="https://i.pinimg.com/originals/00/9d/d9/009dd94a954cb90091e310766e619a1a.gif" alt=""><br>Trading Tanpa Modal</a>
+            <a href="#"><img src="https://cdn.dribbble.com/users/303272/screenshots/1073851/tutorial.gif" alt=""><br>video tutorial</a>
+            <!-- Live chat buttons -->
+<div id="live-chat">
+  <a href="https://chat.whatsapp.com/DuYcl3ygCebFhyNAKiaHk8" target="_blank" title="Chat via WhatsApp">
+    <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="WhatsApp">
+  </a>
+  <a href="https://instagram.com/zeetrading.id" target="_blank" title="Chat via Instagram">
+    <img src="https://cdn-icons-png.flaticon.com/512/1384/1384063.png" alt="Instagram">
+  </a>
+  <a href="https://t.me/zeetrading_official" target="_blank" title="Chat via Telegram">
+    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" alt="Telegram">
+  </a>
+</div>
+
+            <!-- Rating widget -->
+<!-- Konten utama ulasan -->
+<div class="tab-container rating">
+  <span class="user">user0000000002025</span>
+  <span class="stars">☆☆☆☆☆</span>
+  <span class="text">Belum ada ulasan.</span>
+  <!-- ringkasan Play Store -->
+  <div class="summary">
+    <span class="avg-stars">0.0 ★</span>
+    <span class="count">(0 ulasan)</span>
+  </div>
+</div>
+            <div class="tab-container trade-modal">
+  <h4>Aktivitas Trade Member</h4>
+  <p id="trade-activity">Memuat data…</p>
+</div>
+            <h4>© Zeetrading.id 2019</h4>
+            <script type='text/javascript' src='//pl28086675.effectivegatecpm.com/68/c9/21/68c921b7b27d7e7d156a2cd992e8feae.js'></script>
+            <script type='text/javascript' src='//pl28078722.effectivegatecpm.com/80/8d/9a/808d9a06927c8bb92411fa16f876f49d.js'></script>
+<meta name="monetag" content="2af04c050075352f272357b3095f0e6d">
+<script src="https://quge5.com/88/tag.min.js" data-zone="189998" async data-cfasync="false"></script>
+            <script>
+    function showContent(id) {
+        // Sembunyikan semua konten
+        let contents = document.querySelectorAll('.content');
+        contents.forEach(content => content.style.display = 'none');
+
+        // Tampilkan konten yang dipilih
+        document.getElementById(id).style.display = 'block';
+    }
+        document.addEventListener('DOMContentLoaded', () => {
+    // util: bikin username
+    function genUser() {
+      let s = '';
+      for (let i = 0; i < 9; i++) s += Math.floor(Math.random() * 10);
+      return 'user' + s + '2025';
+    }
+    // util: bintang random 1–5
+    function genStars() {
+      const n = Math.floor(Math.random() * 5) + 1;
+      return { str: '★'.repeat(n) + '☆'.repeat(5 - n), count: n };
+    }
+    // util: teks sesuai banyak bintang
+    function genText(count) {
+      const pos = ['Love it!', 'Mantap sinyalnya!', 'Top markotop!'];
+      const neu = ['Biasa aja.', 'Lumayan.', 'Cukup standar.'];
+      const neg = ['Perlu diperbaiki.', 'Kurang akurat.', 'Sayang belum oke.'];
+      if (count >= 4) return pos[Math.floor(Math.random() * pos.length)];
+      if (count === 3) return neu[Math.floor(Math.random() * neu.length)];
+      return neg[Math.floor(Math.random() * neg.length)];
+    }
+
+    // elemen
+    const userEl   = document.querySelector('.tab-container.rating .user');
+    const starsEl  = document.querySelector('.tab-container.rating .stars');
+    const textEl   = document.querySelector('.tab-container.rating .text');
+    const avgEl    = document.querySelector('.tab-container.rating .avg-stars');
+    const cntEl    = document.querySelector('.tab-container.rating .count');
+
+    // state akumulasi
+    let totalStars = 0;
+    let totalCount = 0;
+    let pendingStars = []; // optional: simpan tiap rating baru
+
+    // tiap 5 detik: generate satu rating user → tampilkan di atas & akumulasi
+    function updateRating() {
+      const { str, count } = genStars();
+      userEl.textContent  = genUser();
+      starsEl.textContent = str;
+      textEl.textContent  = genText(count);
+      // akumulasi
+      totalStars += count;
+      totalCount += 1;
+      pendingStars.push(count);
+    }
+    updateRating();
+    setInterval(updateRating, 3000);
+
+    // tiap 10 detik: hitung rata‑rata & update summary
+    function updateSummary() {
+      if (totalCount === 0) return;
+      const avg = (totalStars / totalCount).toFixed(1);
+      avgEl.textContent = `${avg} ★`;
+      cntEl.textContent = `(${totalCount} ulasan)`;
+    }
+    updateSummary();
+    setInterval(updateSummary, 10000);
+  });
+                  document.addEventListener('DOMContentLoaded', () => {
+    // daftar market yang di‑fokus
+    const markets = [
+      'XAU/USD', 'GBP/USD', 'USD/JPY', 'USD/CHF',
+      'CRUDE OIL', 'HANGSENG', 'US500', 'IDX'
+    ];
+    // random username: user + 9 digit + 2025
+    function genUser() {
+      let s = '';
+      for (let i = 0; i < 9; i++) s += Math.floor(Math.random() * 10);
+      return 'user' + s + '2025';
+    }
+    // random int antara min…max
+    function randInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    // pick random market dari array
+    function genMarket() {
+      return markets[Math.floor(Math.random() * markets.length)];
+    }
+
+    const el = document.getElementById('trade-activity');
+    function updateTrade() {
+      const user     = genUser();
+      const amount   = randInt(1, 9999);
+      const isProfit = Math.random() < 0.5;
+      const sign     = isProfit ? '+' : '-';
+      const label    = isProfit ? 'Keuntungan' : 'Kerugian';
+      const market   = genMarket();
+      el.textContent =
+        `${user} Telah Menutup ${label} (${sign}USD${amount}) ` +
+        `Market ${market}`;
+    }
+
+    updateTrade();                 // render pertama
+    setInterval(updateTrade, 3000); // update tiap 3 detik
+  });
+    // Tampilkan tampilan awal (misalnya Home)
+    showContent('home');
+                // generate fake username like user123456782025
+    // generate fake username user + 9 random digits + 
+            </script>
+        </div>
+    </div>
+</div>
+<h6>CV kretivitas Tanpa Batas</h6>
+</body>
+            </html>
