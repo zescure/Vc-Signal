@@ -1,0 +1,280 @@
+<!-- index.html
+   Demo: Trading dashboard + AI SMC signal generator (single file)
+   NOTE: For production, move AI key/requests to backend to avoid exposing keys.
+-->
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SMC Auto Signal — Demo</title>
+  <style>
+    :root{--bg:#0b1020;--card:#0f1724;--accent:#22c1c3;color:#e6eef6}
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial;background:linear-gradient(180deg,#071022 0%, #07182b 100%);color:var(--color,#e6eef6)}
+    header{padding:18px;display:flex;gap:12px;align-items:center}
+    h1{margin:0;font-size:16px}
+    .container{display:grid;grid-template-columns:1fr 360px;gap:14px;padding:14px}
+    .card{background:rgba(255,255,255,0.03);border-radius:10px;padding:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
+    #chartWrap{height:560px}
+    label{display:block;font-size:12px;margin-top:8px;color:#bcd}
+    input,select,button,textarea{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--color,#e6eef6);box-sizing:border-box}
+    .row{display:flex;gap:8px}
+    .small{font-size:13px}
+    button.generate{margin-top:10px;padding:10px;background:linear-gradient(90deg,#22c1c3,#5bd1ff);color:#012; border:none;font-weight:700;cursor:pointer;border-radius:8px}
+    pre#aiOutput{white-space:pre-wrap;background:rgba(0,0,0,0.25);padding:10px;border-radius:8px;max-height:280px;overflow:auto}
+    .muted{font-size:12px;color:#9fb}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SMC Auto Signal — Demo</h1>
+    <div class="muted" style="margin-left:10px">Demo: TradingView widget + AI prompt → entry/SL/TP + lot calc</div>
+  </header>
+
+  <div class="container">
+    <!-- LEFT: Chart area (TradingView widget embed) -->
+    <div class="card" id="leftCol">
+      <div id="chartWrap">
+        <!-- TradingView widget (iframe) -->
+        <!-- NOTE: Customize symbol/timeframe by editing symbolInput below -->
+        <iframe id="tv_iframe" srcdoc='
+          <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+          <style>html,body,#tv{height:100%;margin:0}</style>
+          </head><body>
+          <div id="tv"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+          <script>
+            const config = {
+              "container_id": "tv",
+              "width": "100%",
+              "height": "100%",
+              "symbol": "BINANCE:BTCUSDT",
+              "interval": "60",
+              "timezone": "Etc/UTC",
+              "theme": "dark",
+              "style": "1",
+              "locale": "en",
+              "toolbar_bg": "#f1f3f6",
+              "enable_publishing": false,
+              "allow_symbol_change": true,
+              "hideideas": true
+            };
+            new TradingView.widget(config);
+            // post message to parent when symbol/timeframe changes (basic)
+            window.addEventListener("message", e=>{});
+          </script>
+          </body></html>' style="width:100%;height:100%;border:none;border-radius:8px;overflow:hidden"></iframe>
+      </div>
+    </div>
+
+    <!-- RIGHT: Controls / AI / Outputs -->
+    <div class="card" id="rightCol">
+      <label>Symbol (contoh: BTCUSDT / ETHUSDT / BTCUSD)</label>
+      <input id="symbolInput" value="BTCUSDT" class="small" />
+
+      <label>Timeframe (interval) — contoh: 1m, 5m, 1h, 4h, 1d</label>
+      <input id="tfInput" value="60" class="small" />
+
+      <label>Account balance (USD)</label>
+      <input id="balanceInput" value="1000" class="small"/>
+
+      <label>Risk per trade (%)</label>
+      <input id="riskInput" value="1" class="small"/>
+
+      <label>AI Endpoint (contoh: xAI / groq / custom) — masukkan URL endpoint</label>
+      <input id="aiEndpoint" placeholder="https://api.example.com/v1/generate" class="small"/>
+
+      <label>AI API Key (masukkan jika perlu)</label>
+      <input id="aiKey" placeholder="Bearer ..." class="small"/>
+
+      <label>Model / Extra params (opsional)</label>
+      <input id="aiModel" placeholder="model name or params" class="small"/>
+
+      <label>Prompt tambahan (opsional)</label>
+      <textarea id="extraPrompt" rows="4" placeholder="Tambahan instruksi ke AI (mis. fokus SMC zone, risk management rules, hanya entry intraday)"></textarea>
+
+      <button class="generate" id="btnGenerate">Generate Signal</button>
+
+      <div style="margin-top:10px">
+        <label>AI Output</label>
+        <pre id="aiOutput">Tekan Generate untuk memulai analisis...</pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // -----------------------
+    // Utility: fetch klines from Binance public API (crypto demo)
+    // For other instruments use appropriate public API or a backend datafeed
+    // -----------------------
+    async function fetchKlinesBinance(symbol='BTCUSDT', interval='60', limit=200){
+      // Binance intervals: 1m,3m,5m,15m,30m,1h -> '1m' or '60m' but svc expects '1m','1h' etc.
+      // Map numeric like '60' to '1h' for simplicity:
+      const map = { '1':'1m','3':'3m','5':'5m','15':'15m','30':'30m','60':'1h','240':'4h','1440':'1d' };
+      let intStr = map[interval] || interval;
+      const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${intStr}&limit=${limit}`;
+      const r = await fetch(url);
+      if(!r.ok) throw new Error('Gagal ambil data klines dari Binance: ' + r.status);
+      const data = await r.json();
+      // convert to useful array of objects
+      return data.map(d=>({
+        openTime: d[0], open: parseFloat(d[1]), high: parseFloat(d[2]), low: parseFloat(d[3]),
+        close: parseFloat(d[4]), volume: parseFloat(d[5]), closeTime: d[6]
+      }));
+    }
+
+    // -----------------------
+    // Prompt builder for SMC analysis — template
+    // -----------------------
+    function buildPrompt(symbol, timeframe, klines, extra){
+      // include last N candles summary
+      const last = klines.slice(-60); // last 60
+      const series = last.map(k => `${new Date(k.openTime).toISOString()} O:${k.open.toFixed(2)} H:${k.high.toFixed(2)} L:${k.low.toFixed(2)} C:${k.close.toFixed(2)}`).join('\n');
+      return `
+You are an experienced market analyst specialized in Smart Money Concept (SMC) and supply/demand orderblocks.
+Instrument: ${symbol}
+Timeframe: ${timeframe}
+Task: Analyze the provided recent price candles and the current price, then OUTPUT a single JSON object with these fields:
+- "bias": "bull" or "bear" or "neutral"
+- "entry": price (number) — suggested entry price
+- "sl": price (number) — suggested stop loss
+- "tp": array of prices (numbers) — suggested take profit levels (1-3)
+- "reason": brief explanation (2-4 sentences) describing SMC structures used (orderblock, liquidity grab, fair value gap, breaker)
+- "moment": textual cue what market moment to enter (e.g., "retest orderblock at 1h support", "liquidity sweep then pullback")
+- "confidence": percentage 0-100
+
+Rules:
+1) Use Smart Money Concept logic (orderblocks, liquidity runs/grabs, fair value gaps, structure breaks). Prefer orderblocks + retest.
+2) Keep SL logical (outside orderblock / above/below wick) and compute sensible TP levels (structure levels, previous liquidity).
+3) Return only valid JSON. No extra commentary.
+4) If unsure, return "bias":"neutral" and empty arrays.
+
+Extra instructions: ${extra || 'None'}
+
+Recent candles (newest last):
+${series}
+END
+`;
+    }
+
+    // -----------------------
+    // AI request function (generic fetch) — adapt headers/body to provider
+    // For production: use server-side proxy to hide key and handle provider format
+    // -----------------------
+    async function callAI(endpoint, key, modelOrParams, prompt){
+      if(!endpoint) throw new Error('AI endpoint belum diisi.');
+      // Default: try an OpenAI-style request body; many providers support this shape or require minor changes.
+      const body = {
+        model: modelOrParams || 'gpt-like',
+        input: prompt,
+        max_tokens: 600
+      };
+      const headers = { 'Content-Type':'application/json' };
+      if(key) headers['Authorization'] = key.startsWith('Bearer') ? key : ('Bearer ' + key);
+
+      const res = await fetch(endpoint, { method:'POST', headers, body: JSON.stringify(body) });
+      if(!res.ok){
+        const txt = await res.text();
+        throw new Error('AI request failed: ' + res.status + ' ' + txt);
+      }
+      const json = await res.json();
+      // Try best-effort to extract text from typical responses
+      // - Some providers return {choices:[{text:...}]}, some {output: ...}, some {result:...}
+      let text="";
+      if(json.choices && json.choices[0] && (json.choices[0].text || json.choices[0].message)) {
+        text = json.choices[0].text || (json.choices[0].message && json.choices[0].message.content) || JSON.stringify(json.choices[0]);
+      } else if(json.output) text = Array.isArray(json.output) ? json.output.map(x=>x.content || JSON.stringify(x)).join('\n') : (json.output.content || JSON.stringify(json.output));
+      else if(json.result) text = typeof json.result === 'string' ? json.result : JSON.stringify(json.result);
+      else text = JSON.stringify(json);
+      return text;
+    }
+
+    // -----------------------
+    // Lot size calc (simple): lot = (balance * risk%) / (abs(entry - sl) * pipValue)
+    // For demo: pipValue simplified to $1 per 1 price unit for crypto USD pairs (user may adapt)
+    // -----------------------
+    function calcLot(balance, riskPct, entry, sl){
+      const riskAmount = balance * (riskPct/100);
+      const distance = Math.abs(entry - sl);
+      if(distance === 0) return 0;
+      // pipValue assumption: 1 price unit = $1 per lot (user must adapt to instrument leverage/contract size)
+      const lot = riskAmount / distance;
+      return Math.max(0, +(lot.toFixed(6)));
+    }
+
+    // -----------------------
+    // Main: on generate click
+    // -----------------------
+    document.getElementById('btnGenerate').addEventListener('click', async () => {
+      const sym = document.getElementById('symbolInput').value.trim().toUpperCase();
+      const tf = document.getElementById('tfInput').value.trim() || '60';
+      const balance = parseFloat(document.getElementById('balanceInput').value) || 0;
+      const risk = parseFloat(document.getElementById('riskInput').value) || 1;
+      const aiEndpoint = document.getElementById('aiEndpoint').value.trim();
+      const aiKey = document.getElementById('aiKey').value.trim();
+      const aiModel = document.getElementById('aiModel').value.trim();
+      const extra = document.getElementById('extraPrompt').value.trim();
+      const out = document.getElementById('aiOutput');
+
+      out.textContent = 'Mengambil data candle...';
+      try{
+        const klines = await fetchKlinesBinance(sym, tf, 300);
+        out.textContent = 'Membangun prompt untuk AI...';
+
+        const prompt = buildPrompt(sym, tf, klines, extra);
+        out.textContent = 'Mengirim ke AI — tunggu respons...';
+
+        // If no endpoint given, show mock / local rulebased fallback
+        let aiText;
+        if(!aiEndpoint){
+          // Simple fallback: naive SMC-like mock (only for demo)
+          const last = klines[klines.length-1];
+          const entry = last.close;
+          const sl = +(entry - ( (last.high - last.low) * 0.5 )).toFixed(2);
+          const tp1 = +(entry + ( (entry - sl) * 1.5 )).toFixed(2);
+          const mock = {
+            bias: "bull",
+            entry: entry,
+            sl: sl,
+            tp: [tp1],
+            reason: "Demo fallback: price near recent support, expecting retest. (Use real AI for accurate SMC analysis.)",
+            moment: "retest / candle close confirmation",
+            confidence: 35
+          };
+          aiText = JSON.stringify(mock, null, 2);
+        } else {
+          aiText = await callAI(aiEndpoint, aiKey, aiModel, prompt);
+        }
+
+        // Try parse JSON out of aiText (AI is instructed to return JSON)
+        let parsed;
+        try{ parsed = JSON.parse(aiText); }
+        catch(e){
+          // try to extract JSON substring
+          const start = aiText.indexOf('{');
+          const end = aiText.lastIndexOf('}');
+          if(start>=0 && end>start){
+            parsed = JSON.parse(aiText.slice(start, end+1));
+          } else {
+            throw new Error('AI tidak mengembalikan JSON yang bisa diparse. Hasil mentah:\n' + aiText);
+          }
+        }
+
+        // Calculate lot
+        const entry = Number(parsed.entry);
+        const sl = Number(parsed.sl);
+        const lots = calcLot(balance, risk, entry, sl);
+
+        const result = {
+          ai_raw: parsed,
+          lot: lots
+        };
+
+        out.textContent = JSON.stringify(result, null, 2);
+      } catch(err){
+        out.textContent = 'Error: ' + (err.message || JSON.stringify(err));
+      }
+    });
+  </script>
+</body>
+</html>
