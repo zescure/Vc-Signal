@@ -514,9 +514,6 @@
         document.getElementById('marketVolDisplay').innerText = 'Vol x' + (m.volatility || 1);
       });
 
-      // NEW: subscribe ticks for chart
-      subscribeTicksForMarket(marketId);
-
       showPage('markets');
     }
 
@@ -833,138 +830,27 @@
       }
     }
 
-    /* ============================================================
-       TICK CHART (BALIKIN CHART REALTIME DARI ticks SUBCOLLECTION)
-       ============================================================ */
-
+    /* ---------------- CANVAS SIMPLE PLACEHOLDER ---------------- */
     const canvas = document.getElementById('chartCanvas');
     const ctx = canvas.getContext('2d');
-
-    let chartTicks = []; // [{t:Date, p:Number}]
-    let unsubscribeTicks = null;
-
     function resizeCanvas(){
       const r = canvas.getBoundingClientRect();
       const dpr = window.devicePixelRatio || 1;
       canvas.width = Math.floor(r.width * dpr);
       canvas.height = Math.floor(r.height * dpr);
       ctx.setTransform(dpr,0,0,dpr,0,0);
-      drawChart();
+      draw();
     }
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    function subscribeTicksForMarket(marketId){
-      if(unsubscribeTicks){
-        unsubscribeTicks();
-        unsubscribeTicks = null;
-      }
-
-      chartTicks = [];
-      drawChart();
-
-      // ambil tick terakhir biar chart langsung kebentuk
-      unsubscribeTicks = db
-        .collection('markets').doc(marketId)
-        .collection('ticks')
-        .orderBy('ts', 'desc')
-        .limit(120)
-        .onSnapshot(snap=>{
-          const arr = [];
-          snap.forEach(d=>{
-            const x = d.data() || {};
-            const p = clampNumber(x.price);
-            const ts = x.ts && x.ts.toDate ? x.ts.toDate() : null;
-            if(ts && p > 0) arr.push({ t: ts, p });
-          });
-
-          // karena query desc, balik jadi ascending biar chart kiri->kanan
-          arr.reverse();
-          chartTicks = arr;
-
-          drawChart();
-        }, err=>{
-          // kalau rules belum ngizinin, chart bakal kosong
-          chartTicks = [];
-          drawChart();
-        });
-    }
-
-    function drawChart(){
+    function draw(){
       const w = canvas.getBoundingClientRect().width;
       const h = canvas.getBoundingClientRect().height;
-
       ctx.clearRect(0,0,w,h);
-
-      // background grid tipis
-      ctx.fillStyle = 'rgba(255,255,255,0.02)';
-      ctx.fillRect(0,0,w,h);
-
-      // kalau belum ada tick
-      if(!chartTicks || chartTicks.length < 2){
-        ctx.fillStyle = 'rgba(255,255,255,0.35)';
-        ctx.font = '14px Arial';
-        ctx.fillText('Loading ticks...', 10, 22);
-        return;
-      }
-
-      const prices = chartTicks.map(x=>x.p);
-      let minP = Math.min(...prices);
-      let maxP = Math.max(...prices);
-
-      if(minP === maxP){
-        // biar gak flat banget
-        minP = minP * 0.999;
-        maxP = maxP * 1.001;
-      }
-
-      const padX = 10;
-      const padY = 14;
-
-      const plotW = w - padX*2;
-      const plotH = h - padY*2;
-
-      // helper map
-      const xAt = (i)=>{
-        return padX + (i/(chartTicks.length-1)) * plotW;
-      };
-      const yAt = (p)=>{
-        const t = (p - minP) / (maxP - minP);
-        return padY + (1 - t) * plotH;
-      };
-
-      // draw axis labels (simple)
-      ctx.fillStyle = 'rgba(255,255,255,0.35)';
-      ctx.font = '12px Arial';
-      ctx.fillText(formatPrice(maxP), 10, 14);
-      ctx.fillText(formatPrice(minP), 10, h - 6);
-
-      // draw line
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = 'rgba(255,210,74,0.95)';
-      ctx.beginPath();
-      for(let i=0;i<chartTicks.length;i++){
-        const x = xAt(i);
-        const y = yAt(chartTicks[i].p);
-        if(i===0) ctx.moveTo(x,y);
-        else ctx.lineTo(x,y);
-      }
-      ctx.stroke();
-
-      // last price dot
-      const last = chartTicks[chartTicks.length-1];
-      const lx = xAt(chartTicks.length-1);
-      const ly = yAt(last.p);
-
-      ctx.fillStyle = 'rgba(255,210,74,1)';
-      ctx.beginPath();
-      ctx.arc(lx, ly, 3.5, 0, Math.PI*2);
-      ctx.fill();
-
-      // last price text
-      ctx.fillStyle = 'rgba(255,255,255,0.85)';
-      ctx.font = '12px Arial';
-      ctx.fillText(formatPrice(last.p), Math.max(10, lx - 50), Math.max(14, ly - 10));
+      ctx.fillStyle = 'rgba(255,255,255,0.06)';
+      ctx.font = '14px Arial';
+      ctx.fillText('Chart placeholder (lu bisa sambung engine lama lu lagi)', 10, 24);
     }
   </script>
 </body>
