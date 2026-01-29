@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Info Akun, Transfer & Ekonomi Koin - ZESTORE</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif;}
+    body{background:#0a0a0f;color:#fff;display:flex;flex-direction:column;align-items:center;padding:20px;}
+
+    header{width:100%;max-width:400px;background:#111927;
+      padding:15px 20px;display:flex;justify-content:space-between;
+      align-items:center;border-bottom:1px solid #222;margin-bottom:20px;}
+    .logo{font-size:20px;color:#00bfff;font-weight:bold;}
+    .menu-btn{background:none;border:none;color:#fff;font-size:24px;cursor:pointer;}
+    .menu-list{display:none;flex-direction:column;background:#111927;
+      position:absolute;top:60px;left:20px;width:160px;border:1px solid #333;
+      border-radius:8px;box-shadow:0 0 10px rgba(0,0,0,0.3);padding:10px;}
+    .menu-list a{color:#fff;text-decoration:none;padding:8px;border-radius:4px;}
+    .menu-list a:hover{background:#222;}
+
+    .card{
+      width:100%;max-width:400px;background:#141b2d;padding:20px;
+      border:1px solid #2c3e50;border-radius:10px;box-shadow:0 0 20px rgba(0,0,0,0.3);
+      margin-bottom:20px;
+    }
+    .card h2,.card h3{text-align:center;margin-bottom:15px;}
+    .card h2{color:#00bfff;}
+    .card h3{color:#4c8bf5;}
+    .card p{margin:8px 0;}
+
+    .account-box button, .coin-container button{
+      width:100%;padding:10px;margin-top:10px;border:none;border-radius:5px;
+      font-size:16px;cursor:pointer;transition:.3s;
+    }
+    .logout-btn{background:#e74c3c;color:#fff;}
+    .logout-btn:hover{background:#c0392b;}
+    .back-btn{background:#2c3e50;color:#fff;}
+    .back-btn:hover{background:#1f2a38;}
+
+    .coin-display{font-size:2rem;color:#ffd700;text-align:center;}
+
+    .transfer-popup{
+      position:fixed;top:0;left:0;width:100%;height:100%;
+      background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;
+      z-index:1000;
+    }
+    .transfer-content{
+      background:#1e1e40;padding:20px;border-radius:12px;
+      width:90%;max-width:320px;text-align:left;
+    }
+    .transfer-content h3{color:#ffde59;margin-bottom:10px;text-align:center;}
+    .transfer-content label{display:block;margin-top:10px;}
+    .transfer-content input{
+      width:100%;padding:8px;margin-top:5px;border:none;border-radius:5px;
+    }
+    .transfer-content button{
+      width:100%;padding:10px;margin-top:15px;
+      border:none;border-radius:5px;background:#4c8bf5;color:#fff;
+      cursor:pointer;transition:.3s;
+    }
+    .transfer-content button:hover{background:#3a6ed1;}
+    .transfer-content .close-transfer{background:#f54242;}
+    .transfer-content p.status{margin-top:8px;color:#ffde59;font-size:.9rem;}
+
+    .history-box ul{list-style:none;max-height:200px;overflow:auto;padding-left:0;}
+    .history-box li{padding:6px;border-bottom:1px solid #2c3e50;font-size:.9rem;}
+    .history-box li.positive{color:#2ecc71;}
+    .history-box li.negative{color:#e74c3c;}
+
+    .economy-row{
+      display:flex;justify-content:space-between;gap:8px;font-size:.92rem;
+      background:#1e2537;border-radius:6px;padding:8px 10px;margin:5px 0;
+    }
+    .economy-row span:first-child{color:#999;}
+    .economy-row strong{color:#ffde59;}
+
+    /* ----- Admin box (pakai styling yang sama) ----- */
+    #adminBox .mini-title{
+      font-weight:bold;margin-top:10px;margin-bottom:6px;color:#ffde59;
+    }
+    #adminUsers{
+      max-height:180px;overflow:auto;border:1px solid #2c3e50;border-radius:6px;padding:8px;
+      font-size:.9rem;margin-bottom:10px;
+    }
+    #adminUsers li{
+      border-bottom:1px solid #2c3e50;padding:4px 0;cursor:pointer;
+    }
+    #adminUsers li:last-child{border-bottom:none;}
+    #adminUsers li span.uid{color:#4c8bf5;font-family:monospace;}
+    #adminUsers li span.coins{color:#ffd700;}
+    #adminTx{
+      max-height:200px;overflow:auto;border:1px solid #2c3e50;border-radius:6px;padding:8px;
+      font-size:.9rem;
+    }
+    #adminAdjust input{
+      width:100%;padding:8px;border:none;border-radius:5px;margin:4px 0 8px 0;
+    }
+    #adminAdjust button{
+      width:100%;padding:10px;margin-top:8px;border:none;border-radius:5px;
+      background:#4c8bf5;color:#fff;cursor:pointer;transition:.3s;
+    }
+    #adminAdjust button.danger{background:#e74c3c;}
+    #adminAdjust small{color:#ccc;}
+  
+    .economy-row strong.marquee {
+      display: inline-block;
+      white-space: nowrap;
+      animation: slideText 6s linear infinite;
+    }
+
+    @keyframes slideText {
+      from { transform: translateX(100%); }
+      to { transform: translateX(-100%); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">ZESTORE.ID</div>
+    <button class="menu-btn" id="toggleMenu">&#9776;</button>
+    <div class="menu-list" id="menuList">
+      <a href="/home">🏠 Beranda</a>
+      <a href="/info-akun">👤 Info Akun</a>
+      <a href="#" id="logoutBtn">🚪 Logout</a>
+    </div>
+  </header>
+
+  <!-- Info Akun -->
+  <div class="card account-box">
+    <h2>Info Akun</h2>
+    <p><strong>Username:</strong> <span id="displayName">–</span></p>
+    <p><strong>Email:</strong> <span id="email">–</span></p>
+    <p><strong>Nomor HP:</strong> <span id="phone">–</span></p>
+    <p><strong>Wallet Adress:</strong> <span id="uid">–</span></p>
+    <button class="logout-btn" id="logoutBtn2">Logout</button>
+    <button class="back-btn" onclick="location.href='/home'">⬅ Kembali</button>
+  </div>
+
+  <!-- Saldo Koin -->
+  <div class="card coin-container">
+    <h3>Saldo Koin ZRC Anda</h3>
+    <p class="coin-display">🪙 <span id="coinBalance">0</span></p>
+    <p style="text-align:center;color:#ccc;font-size:.9rem;">≈ Rp <span id="coinBalanceIDR">0</span></p>
+    <button id="openTransfer">Transfer Koin</button>
+  </div>
+
+  <!-- Ekonomi Koin -->
+  <div class="card economy-box">
+    <h3>Ekonomi Koin ZRC Zestore</h3>
+    <div class="economy-row"><span>Kurs Tetap</span><strong>10 koin = Rp 10</strong></div>
+    <!-- NEW: Kurs dinamis -->
+    <div class="economy-row"><span>Kurs Dinamis (real-time)</span><strong id="dynamicRate">10 koin ≈ Rp 10</strong></div>
+
+    <div class="economy-row"><span>Total Suplai</span><strong id="totalSupply">0</strong></div>
+    <div class="economy-row"><span>Koin Beredar</span><strong id="circulating">0</strong></div>
+    <div class="economy-row"><span>Koin Terkunci</span><strong id="locked">0</strong></div>
+  </div>
+
+  <!-- Popup Transfer -->
+  <div class="transfer-popup" id="transferPopup">
+    <div class="transfer-content">
+      <h3>Transfer Koin</h3>
+      <label>Wallet Adress Penerima:</label>
+      <input type="text" id="transferUid" placeholder="Masukkan Wallet Adress">
+      <label>Jumlah Koin ZRC:</label>
+      <input type="number" id="transferAmt" placeholder="Jumlah">
+
+      <div id="recipientInfo" style="font-size:.9rem;color:#0f0;margin:5px 0;"></div>
+
+      <p style="font-size:.85rem;color:#ccc;margin-top:5px;">
+        *Minimal sisa 10 koin ZRC. Biaya = 1% + 10 koin (dikirim ke wallet fee).
+      </p>
+      <button id="transferBtn">Kirim</button>
+      <button class="close-transfer" id="closeTransfer">Batal</button>
+      <p class="status" id="transferStatus"></p>
+    </div>
+  </div>
+
+  <!-- History user -->
+  <div class="card history-box">
+    <h3>Histori Transaksi</h3>
+    <ul id="txHistory"></ul>
+  </div>
+
+  <!-- ===================== ADMIN DASHBOARD (HIDDEN DEFAULT) ===================== -->
+  <div class="card" id="adminBox" style="display:none;">
+    <h2>Dashboard Admin</h2>
+
+    <p><strong>Total Akun:</strong> <span id="admTotalUser">0</span></p>
+    <p><strong>Total Saldo Semua User:</strong> <span id="admTotalCoins">0</span> koin</p>
+
+    <p class="mini-title">Top 50 saldo terbesar</p>
+    <ul id="adminUsers"></ul>
+
+    <p class="mini-title">Histori transaksi user terpilih</p>
+    <div id="adminTx"></div>
+    <p id="adminStatus" style="margin-top:8px;color:#ccc;font-size:.85rem;"></p>
+
+    <hr style="border:0;border-top:1px solid #2c3e50;margin:15px 0;">
+
+    <h3 style="margin-bottom:10px;">Adjust Saldo (Admin)</h3>
+    <div id="adminAdjust">
+      <label>UID Target</label>
+      <input type="text" id="admTargetUid" placeholder="Masukkan UID user">
+      <label>Jumlah (+ / -)</label>
+      <input type="number" id="admAmount" placeholder="contoh: 1000 atau -500">
+      <label>Alasan</label>
+      <input type="text" id="admReason" placeholder="misal: koreksi saldo / kecurangan / dsb">
+      <button id="admBtnApply">Simpan Perubahan</button>
+      <small>Aksi ini tidak memberi notifikasi ke user. Tercatat di transaksi user dengan type <code>admin-adjust</code>.</small>
+      <p id="admAdjStatus" style="margin-top:6px;color:#ffde59;font-size:.9rem;"></p>
+    </div>
+  </div>
+  <!-- =========================================================================== -->
+
+  <script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+  import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+  import {
+    getFirestore, doc, getDoc, runTransaction,
+    collection, query, orderBy, limit, getDocs,
+    serverTimestamp, setDoc, updateDoc, onSnapshot
+  } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+  // ----------------- FIREBASE INIT -----------------
+  const firebaseConfig = {
+    apiKey: "AIzaSyDVUEZ3ZVmH4ld7LVnEq_L368wEJpEs-l8",
+    authDomain: "zeepaylater-93a94.firebaseapp.com",
+    projectId: "zeepaylater-93a94",
+    storageBucket: "zeepaylater-93a94.appspot.com",
+    messagingSenderId: "358065954807",
+    appId: "1:358065954807:web:66619211fea82a4b2518f2"
+  };
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  // ----------------- ECONOMY CONFIG -----------------
+  const ECON_REF = doc(db, 'economy', 'meta');
+  const TOTAL_SUPPLY = 210_000_000_000;
+  const RATE_COINS  = 10;
+  const RATE_IDR    = 10;
+
+  // PISAH antara admin & fee receiver
+  const ADMIN_UID        = 'viCOsJo4wHVFmhtpmMx1Wd4sDF52';
+  const FEE_RECEIVER_UID = 'viCOsJo4wHVFmhtpmMx1Wd4sDF52'; // bisa kamu ganti kapan saja, tdk terkait admin
+
+  const DYN_UPDATE_MS = 5000;
+
+  // ----------------- DOM ELEM -----------------
+  const displayNameEl = document.getElementById('displayName');
+  const emailEl       = document.getElementById('email');
+  const phoneEl       = document.getElementById('phone');
+  const uidEl         = document.getElementById('uid');
+  const coinEl        = document.getElementById('coinBalance');
+  const coinIDREl     = document.getElementById('coinBalanceIDR');
+  const txHistoryUl   = document.getElementById('txHistory');
+
+  const totalSupplyEl = document.getElementById('totalSupply');
+  const circulatingEl = document.getElementById('circulating');
+  const lockedEl      = document.getElementById('locked');
+  const dynamicRateEl = document.getElementById('dynamicRate');
+
+  const openTransfer  = document.getElementById('openTransfer');
+  const transferPopup = document.getElementById('transferPopup');
+  const closeTransfer = document.getElementById('closeTransfer');
+  const transferBtn   = document.getElementById('transferBtn');
+  const transferStatus= document.getElementById('transferStatus');
+
+  // admin elems
+  const adminBox      = document.getElementById('adminBox');
+  const admTotalUser  = document.getElementById('admTotalUser');
+  const admTotalCoins = document.getElementById('admTotalCoins');
+  const adminUsersUl  = document.getElementById('adminUsers');
+  const adminTxDiv    = document.getElementById('adminTx');
+  const adminStatus   = document.getElementById('adminStatus');
+
+  const admTargetUid  = document.getElementById('admTargetUid');
+  const admAmount     = document.getElementById('admAmount');
+  const admReason     = document.getElementById('admReason');
+  const admBtnApply   = document.getElementById('admBtnApply');
+  const admAdjStatus  = document.getElementById('admAdjStatus');
+
+  let currentUser;
+  let dynTimer = null;
+
+  // Snapshot unsubscribes
+  let unsubBalanceSnap = null;
+  let unsubUserSnap = null;
+  let unsubEconSnap = null;
+
+  // ----------------- HELPERS -----------------
+  const nf = (n)=> (n||0).toLocaleString('id-ID');
+
+  async function ensureEconomyDoc(){
+    const snap = await getDoc(ECON_REF);
+    if(!snap.exists()){
+      await setDoc(ECON_REF,{
+        totalSupply: TOTAL_SUPPLY,
+        circulatingSupply: 0,
+        rate: { coins: RATE_COINS, idr: RATE_IDR },
+        bankLiquidityIDR: 150000,              // default liquidity
+        dynamicRatePer10: 10                   // default awal
+      });
+    }else{
+      // Pastikan field-field baru ada
+      const d = snap.data();
+      const needs = {};
+      if(typeof d.bankLiquidityIDR !== 'number') needs.bankLiquidityIDR = 150000;
+      if(typeof d.dynamicRatePer10 !== 'number') needs.dynamicRatePer10 = 10;
+      if(Object.keys(needs).length){
+        await updateDoc(ECON_REF, needs);
+      }
+    }
+  }
+
+  // realtime economy subscribe so UI updates instantly when engine adjusts supply
+  function subscribeEconomyRealtime(){
+    if(unsubEconSnap) unsubEconSnap();
+    try{
+      unsubEconSnap = onSnapshot(ECON_REF, snap=>{
+        if(!snap.exists()) return;
+        const d = snap.data();
+        totalSupplyEl.textContent = nf(d.totalSupply || TOTAL_SUPPLY);
+        circulatingEl.textContent = nf(d.circulatingSupply || 0);
+        lockedEl.textContent = nf((d.totalSupply || TOTAL_SUPPLY) - (d.circulatingSupply || 0));
+        const dyn = d.dynamicRatePer10 || 10;
+        dynamicRateEl.textContent = `10 koin ≈ Rp ${nf(dyn)}`;
+      });
+    }catch(e){}
+  }
+
+  async function loadEconomy(){
+    const snap = await getDoc(ECON_REF);
+    const data = snap.exists()? snap.data(): { totalSupply: TOTAL_SUPPLY, circulatingSupply: 0 };
+    const total = data.totalSupply || TOTAL_SUPPLY;
+    const circ  = data.circulatingSupply || 0;
+    totalSupplyEl.textContent = nf(total);
+    circulatingEl.textContent = nf(circ);
+    lockedEl.textContent      = nf(total - circ);
+  }
+
+  async function updateDynamicRate(){
+    const snap = await getDoc(ECON_REF);
+    if(!snap.exists()){
+      dynamicRateEl.textContent = '10 koin ≈ Rp 10';
+      return;
+    }
+    const d = snap.data();
+    const bank = Number(d.bankLiquidityIDR || 0);
+    const circ = Number(d.circulatingSupply || 0);
+
+    let ratePer10 = 10;
+    if(circ > 0){
+      ratePer10 = Math.max(0, Math.round((bank / circ) * 10));
+    }
+
+    // Simpan balik agar semua klien melihat angka yang sama (opsional, bisa dihapus kalau mau read-only)
+    if(d.dynamicRatePer10 !== ratePer10){
+      try{ await updateDoc(ECON_REF, { dynamicRatePer10: ratePer10 }); }catch(e){}
+    }
+
+    dynamicRateEl.textContent = `10 koin ≈ Rp ${nf(ratePer10)}`;
+  }
+
+  function startDynamicTicker(){
+    clearInterval(dynTimer);
+    dynTimer = setInterval(updateDynamicRate, DYN_UPDATE_MS);
+    updateDynamicRate();
+  }
+
+  // loadBalance now prefers balances/uid_<uid> if exists, otherwise fallback to users/{uid}
+  async function loadBalance(uid){
+    try{
+      const balRef = doc(db, 'balances', 'uid_' + uid);
+      const bSnap = await getDoc(balRef);
+      if(bSnap.exists()){
+        const amount = Number(bSnap.data().amount || 0);
+        coinEl.textContent = nf(amount);
+        coinIDREl.textContent = nf(amount * (RATE_IDR / RATE_COINS));
+        return;
+      }
+    }catch(e){ /* ignore and fallback */ }
+
+    // fallback to users doc
+    const snap = await getDoc(doc(db,'users',uid));
+    const bal  = snap.exists()? (snap.data().coinBalance||0) : 0;
+    coinEl.textContent    = nf(bal);
+    coinIDREl.textContent = nf(bal * (RATE_IDR / RATE_COINS));
+  }
+
+  async function loadHistory(uid){
+    txHistoryUl.innerHTML = '';
+    const q = query(collection(db,'users',uid,'transactions'),
+                    orderBy('timestamp','desc'), limit(50));
+    const snaps = await getDocs(q);
+    snaps.forEach(d => {
+      const data = d.data();
+      const dt   = data.timestamp?.toDate?.().toLocaleString('id-ID') || '-';
+      const am   = data.amount;
+      const cls  = am>0?'positive':'negative';
+      txHistoryUl.innerHTML += `<li class="${cls}">${dt} → ${am>0?'+':''}${nf(am)} koin</li>`;
+    });
+  }
+
+  // Subscribe & sync functions: keep balances/uid_<uid> and users/{uid}.coinBalance consistent
+  function subscribeUserSync(uid){
+    // unsubscribe existing
+    if(unsubBalanceSnap) { try{ unsubBalanceSnap(); }catch(e){} unsubBalanceSnap = null; }
+    if(unsubUserSnap) { try{ unsubUserSnap(); }catch(e){} unsubUserSnap = null; }
+
+    const balanceRef = doc(db, 'balances', 'uid_' + uid);
+    const userRef = doc(db, 'users', uid);
+
+    // listen balances doc (other systems might write here)
+    try{
+      unsubBalanceSnap = onSnapshot(balanceRef, snap=>{
+        if(!snap.exists()) return;
+        const a = Number(snap.data().amount || 0);
+        // update UI with balances doc immediately
+        coinEl.textContent = nf(a);
+        coinIDREl.textContent = nf(a * (RATE_IDR / RATE_COINS));
+      });
+    }catch(e){}
+
+    // listen users doc (main canonical coinBalance) and mirror to balances doc when users change
+    try{
+      unsubUserSnap = onSnapshot(userRef, async snap=>{
+        if(!snap.exists()) return;
+        const ub = Number(snap.data().coinBalance || 0);
+        // update UI
+        coinEl.textContent = nf(ub);
+        coinIDREl.textContent = nf(ub * (RATE_IDR / RATE_COINS));
+        // mirror to balances doc to keep legacy pages in sync
+        try{
+          await setDoc(balanceRef, { amount: ub, updatedAt: serverTimestamp(), source: 'users-sync' }, { merge: true });
+        }catch(e){}
+      });
+    }catch(e){}
+  }
+
+  // ---------- ADMIN HELPERS ----------
+  async function loadAdminDashboard(){
+    adminStatus.textContent = 'Memuat data...';
+    adminUsersUl.innerHTML = '';
+    adminTxDiv.innerHTML   = '';
+
+    const usersSnap = await getDocs(collection(db,'users'));
+    let totalUser = 0;
+    let totalCoins = 0;
+    const arr = [];
+    usersSnap.forEach(d=>{
+      totalUser++;
+      const data = d.data();
+      const bal  = data.coinBalance || 0;
+      totalCoins += bal;
+      arr.push({ uid:d.id, email:data.email || '-', coinBalance:bal });
+    });
+
+    admTotalUser.textContent  = nf(totalUser);
+    admTotalCoins.textContent = nf(totalCoins);
+
+    arr.sort((a,b)=> b.coinBalance - a.coinBalance);
+    const top = arr.slice(0,50);
+
+    top.forEach(user=>{
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <span class="uid">${user.uid}</span><br/>
+        <span class="coins">${nf(user.coinBalance)} koin</span>
+      `;
+      li.onclick = ()=>{
+        admTargetUid.value = user.uid; // auto isi target uid
+        loadAdminUserTx(user.uid);
+      };
+      adminUsersUl.appendChild(li);
+    });
+
+    adminStatus.textContent = 'Klik UID pada daftar untuk melihat histori transaksi user tersebut.';
+  }
+
+  async function loadAdminUserTx(uidTarget){
+    adminTxDiv.innerHTML = 'Memuat transaksi...';
+    try{
+      const q = query(collection(db,'users',uidTarget,'transactions'), orderBy('timestamp','desc'), limit(100));
+      const snaps = await getDocs(q);
+      if(snaps.empty){
+        adminTxDiv.innerHTML = '<em>Tidak ada transaksi</em>';
+        return;
+      }
+      let html = '<ul style="list-style:none;padding-left:0;">';
+      snaps.forEach(docSnap=>{
+        const t = docSnap.data();
+        const ts = t.timestamp?.toDate?.() ? t.timestamp.toDate().toLocaleString('id-ID') : '-';
+        const amt = t.amount || 0;
+        html += `<li style="border-bottom:1px solid #2c3e50;padding:4px 0;">
+          ${ts} → ${amt>0?'+':''}${nf(amt)} koin (${t.type || '-'})
+          ${t.reason ? `<br/><small style="color:#ccc">reason: ${t.reason}</small>` : ''}
+        </li>`;
+      });
+      html += '</ul>';
+      adminTxDiv.innerHTML = html;
+    }catch(e){
+      adminTxDiv.innerHTML = 'Gagal memuat transaksi: ' + e;
+    }
+  }
+
+  // ADMIN: adjust saldo (tambah/kurangi)
+  admBtnApply.onclick = async ()=>{
+    if(currentUser?.uid !== ADMIN_UID){
+      admAdjStatus.textContent = 'Bukan admin.';
+      return;
+    }
+    const target = (admTargetUid.value||'').trim();
+    const delta  = Number((admAmount.value||'').trim());
+    const reason = (admReason.value||'').trim() || '-';
+
+    if(!target || !Number.isFinite(delta) || delta === 0){
+      admAdjStatus.textContent = 'Isi UID & jumlah dengan benar.';
+      return;
+    }
+
+    admAdjStatus.textContent = 'Memproses...';
+    try{
+      await runTransaction(db, async (tx)=>{
+        const tRef = doc(db,'users',target);
+        const tSnap= await tx.get(tRef);
+        if(!tSnap.exists()) throw new Error('UID target tidak ditemukan.');
+
+        const cur = Number(tSnap.data().coinBalance||0);
+        const after = cur + delta;
+        if(after < 0) throw new Error('Saldo tidak boleh negatif.');
+
+        tx.update(tRef, { coinBalance: after });
+
+        const ts = serverTimestamp();
+        tx.set(doc(collection(tRef,'transactions')), {
+          timestamp: ts,
+          amount: delta,
+          type: 'admin-adjust',
+          by: currentUser.uid,
+          reason
+        });
+      });
+
+      // sinkron ke balances doc juga supaya halaman legacy lihat update
+      try{
+        const balRef = doc(db, 'balances', 'uid_' + (admTargetUid.value||''));
+        const snaps = await getDoc(doc(db,'users',admTargetUid.value||''));
+        const afterVal = snaps.exists() ? Number(snaps.data().coinBalance||0) : 0;
+        await setDoc(balRef, { amount: afterVal, updatedAt: serverTimestamp(), source: 'admin-adjust' }, { merge: true });
+      }catch(e){ console.warn('sync balances after admin adjust err', e); }
+
+      admAdjStatus.textContent = 'Berhasil diupdate.';
+      await loadAdminDashboard();
+      const curWatching = admTargetUid.value.trim();
+      if(curWatching){
+        await loadAdminUserTx(curWatching);
+      }
+    }catch(e){
+      console.error(e);
+      admAdjStatus.textContent = 'Gagal: ' + (e?.message || e);
+    }
+  };
+
+  // ----------------- AUTH -----------------
+  onAuthStateChanged(auth, async (user)=>{
+    if(!user) return location.href = '/register-login';
+    currentUser = user;
+
+    displayNameEl.textContent = localStorage.getItem('username') || user.displayName || '-';
+    emailEl.textContent       = user.email || '-';
+    phoneEl.textContent       = user.phoneNumber || '-';
+    uidEl.textContent         = user.uid;
+
+    await ensureEconomyDoc();
+    await Promise.all([
+      loadEconomy(),
+      loadBalance(user.uid),
+      loadHistory(user.uid)
+    ]);
+
+    // mulai ticker kurs dinamis
+    startDynamicTicker();
+
+    // start realtime economy subscription
+    subscribeEconomyRealtime();
+
+    // subscribe user sync (balances <-> users)
+    subscribeUserSync(user.uid);
+
+    // tampilkan admin dashboard kalau uid = admin
+    if(user.uid === ADMIN_UID){
+      adminBox.style.display = 'block';
+      await loadAdminDashboard();
+    }else{
+      adminBox.style.display = 'none';
+    }
+  });
+
+  // ----------------- MENU / LOGOUT -----------------
+  document.getElementById('toggleMenu').onclick = ()=>{
+    const ml = document.getElementById('menuList');
+    ml.style.display = ml.style.display==='flex' ? 'none' : 'flex';
+  };
+  const doLogout = ()=> signOut(auth).then(()=>{ localStorage.removeItem('username'); location.href='/register-login'; });
+  document.getElementById('logoutBtn').onclick = doLogout;
+  document.getElementById('logoutBtn2').onclick = doLogout;
+
+  // ----------------- TRANSFER (REWORK) -----------------
+  const recipientInfo = document.getElementById('recipientInfo');
+
+  openTransfer.onclick  = ()=>{
+    transferStatus.textContent='';
+    recipientInfo.innerHTML = '';
+    transferPopup.style.display='flex';
+  };
+  closeTransfer.onclick = ()=>transferPopup.style.display='none';
+
+  function maskEmail(email='') {
+    if (!email || !email.includes('@')) return '-';
+    const [name, domain] = email.split('@');
+    const mask = (str) => {
+      if (str.length <= 2) return str[0] + '*';
+      return str[0] + '*'.repeat(str.length - 2) + str[str.length - 1];
+    };
+    const [domName, ...domRest] = domain.split('.');
+    const domMasked = mask(domName) + (domRest.length ? '.' + domRest.join('.') : '');
+    return `${mask(name)}@${domMasked}`;
+  }
+
+  async function previewRecipient(uid) {
+    const rRef  = doc(db, 'users', uid);
+    const rSnap = await getDoc(rRef);
+    if (!rSnap.exists()) throw new Error('Penerima tidak ditemukan di /users. Pastikan UID benar dan user sudah pernah login.');
+    const rData = rSnap.data();
+    const balance = Number(rData.coinBalance || 0);
+    const email   = rData.email || '-';
+
+    let lastTx = [];
+    try {
+      const qTx = query(collection(rRef, 'transactions'), orderBy('timestamp', 'desc'), limit(3));
+      const qs  = await getDocs(qTx);
+      lastTx = qs.docs.map(d => {
+        const x = d.data();
+        const ts = x.timestamp?.toDate?.() ? x.timestamp.toDate().toLocaleString('id-ID') : '-';
+        return `${ts} → ${x.amount > 0 ? '+' : ''}${(x.amount||0).toLocaleString('id-ID')} koin (${x.type||'-'})`;
+      });
+    } catch(e) {}
+
+    return {
+      emailMasked: maskEmail(email),
+      balance,
+      history: lastTx
+    };
+  }
+
+  transferBtn.onclick = async()=>{
+    const toUidRaw = (document.getElementById('transferUid').value||'').trim();
+    const toUid    = toUidRaw.replace(/\s/g,'');
+    const amt      = Number((document.getElementById('transferAmt').value||'').trim());
+    recipientInfo.innerHTML = '';
+    
+    if(!toUid || !amt || !Number.isFinite(amt) || amt<=0){
+      transferStatus.textContent = 'Isi UID & jumlah dengan benar.';
+      return;
+    }
+    if (toUid === currentUser.uid) {
+      transferStatus.textContent = 'Tidak bisa transfer ke UID sendiri.';
+      return;
+    }
+    
+    transferStatus.textContent='Cek penerima...';
+
+    try{
+      const info = await previewRecipient(toUid);
+      recipientInfo.innerHTML = `
+        Akun ditemukan:<br>
+        Email: <b>${info.emailMasked}</b><br>
+        Saldo: <b>${info.balance.toLocaleString('id-ID')} koin</b><br>
+        ${info.history.length ? ('Histori terakhir:<br><small>' + info.history.join('<br>') + '</small>') : '<small>(Belum ada histori)</small>'}
+      `;
+
+      const ok = confirm(`Lanjut transfer ${amt.toLocaleString('id-ID')} koin ke UID:\n${toUid}\nEmail: ${info.emailMasked}`);
+      if (!ok) {
+        transferStatus.textContent = 'Transfer dibatalkan.';
+        return;
+      }
+      transferStatus.textContent='Memproses transfer...';
+
+      await runTransaction(db, async tx=>{
+        const sRef = doc(db,'users',currentUser.uid);
+        const rRef = doc(db,'users',toUid);
+        const fRef = doc(db,'users',FEE_RECEIVER_UID);
+
+        const [sSnap, rSnap, fSnap] = await Promise.all([
+          tx.get(sRef), tx.get(rRef), tx.get(fRef)
+        ]);
+
+        if(!sSnap.exists()) throw new Error('Pengirim tidak ditemukan.');
+        if(!rSnap.exists()) throw new Error('Penerima tidak ditemukan.');
+        if(!fSnap.exists()) throw new Error('Akun fee tidak ditemukan.');
+
+        const sBal = Number(sSnap.data().coinBalance||0);
+        const rBal = Number(rSnap.data().coinBalance||0);
+        const fBal = Number(fSnap.data().coinBalance||0);
+
+        const fee  = Math.ceil(amt * 0.01) + 10;
+        if (sBal - amt - fee < 10) throw new Error('Saldo tidak mencukupi (minimal sisa 10 koin).');
+
+        tx.update(sRef, { coinBalance: sBal - amt - fee });
+        tx.update(rRef, { coinBalance: rBal + amt });
+        tx.update(fRef, { coinBalance: fBal + fee });
+
+        const ts = serverTimestamp();
+        tx.set(doc(collection(sRef,'transactions')), { timestamp:ts, amount: -(amt+fee), to: toUid,            type:'transfer-out' });
+        tx.set(doc(collection(rRef,'transactions')), { timestamp:ts, amount: +amt,      from: currentUser.uid, type:'transfer-in'  });
+        tx.set(doc(collection(fRef,'transactions')), { timestamp:ts, amount: +fee,      from: currentUser.uid, type:'fee'           });
+      });
+
+      transferStatus.textContent='Transfer berhasil!';
+      // load balance & history (onSnapshot will also sync balances doc)
+      await Promise.all([ loadBalance(currentUser.uid), loadHistory(currentUser.uid) ]);
+      if(currentUser.uid === ADMIN_UID){
+        await loadAdminDashboard();
+      }
+    }catch(e){
+      console.error(e);
+      transferStatus.textContent = 'Error: ' + (e?.message || e);
+    }
+  };
+  </script>
+</body>
+</html>
