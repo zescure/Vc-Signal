@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Market Simulator - Mobile UI (Koin - PnL kredit)</title>
+  <title>Market Simulator - Mobile UI (Koin)</title>
   <style>
     :root{
       --bg:#071021;
       --card:#0b1625;
       --muted:rgba(255,255,255,0.55);
-      --accent:#ffd24a;
+      --accent:#ffd24a; /* yellow accent */
       --accent-2:#ffb86b;
       --danger:#ff7070;
       --glass: rgba(255,255,255,0.03);
@@ -17,15 +17,46 @@
       font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
     }
     html,body{height:100%;margin:0;background:linear-gradient(180deg,#04101a 0%, #071826 100%);color:#dbeeff;}
-    .app{max-width:420px;margin:18px auto;min-height:calc(100vh - 36px);border-radius:20px;overflow:hidden;box-shadow:0 10px 40px rgba(2,8,23,0.6);border:1px solid rgba(255,255,255,0.03);background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.008));display:flex;flex-direction:column;}
-    .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;gap:8px;background:linear-gradient(90deg, rgba(255,255,255,0.015), rgba(255,255,255,0.012));border-bottom:1px solid rgba(255,255,255,0.02);}
+    .app{
+      max-width:420px;
+      margin:18px auto;
+      min-height:calc(100vh - 36px);
+      border-radius:20px;
+      overflow:hidden;
+      box-shadow:0 10px 40px rgba(2,8,23,0.6);
+      border:1px solid rgba(255,255,255,0.03);
+      background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.008));
+      display:flex;
+      flex-direction:column;
+    }
+
+    /* Top bar */
+    .topbar{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:12px 14px;
+      gap:8px;
+      background:linear-gradient(90deg, rgba(255,255,255,0.015), rgba(255,255,255,0.012));
+      border-bottom:1px solid rgba(255,255,255,0.02);
+    }
     .brand{display:flex;gap:10px;align-items:center}
-    .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(145deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#062031;font-weight:800;font-size:18px;box-shadow:0 6px 18px rgba(255,210,74,0.08), inset 0 -6px 18px rgba(255,255,255,0.06);}
+    .logo{
+      width:44px;height:44px;border-radius:10px;background:linear-gradient(145deg,var(--accent),var(--accent-2));
+      display:flex;align-items:center;justify-content:center;color:#062031;font-weight:800;font-size:18px;
+      box-shadow:0 6px 18px rgba(255,210,74,0.08), inset 0 -6px 18px rgba(255,255,255,0.06);
+    }
     .app-title{font-weight:700;font-size:15px}
     .app-sub{font-size:12px;color:var(--muted);margin-top:2px}
-    .bal-card{background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));padding:8px 10px;border-radius:10px;display:flex;flex-direction:column;align-items:flex-end;min-width:120px;box-shadow:inset 0 -10px 30px rgba(0,0,0,0.2);}
+
+    .top-actions{display:flex;gap:8px;align-items:center}
+    .bal-card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
+      padding:8px 10px;border-radius:10px;display:flex;flex-direction:column;align-items:flex-end;
+      min-width:120px;
+      box-shadow:inset 0 -10px 30px rgba(0,0,0,0.2);
+    }
     .bal-lbl{font-size:11px;color:var(--muted)}
     .bal-val{font-weight:800;color:#fff;font-size:16px}
+
     .user-row{display:flex;flex-direction:column;align-items:flex-end;font-size:12px}
     .user-info{color:var(--muted);font-size:12px}
     .btn{background:transparent;border:0;color:var(--muted);padding:6px 8px;border-radius:8px;font-weight:600;cursor:pointer}
@@ -34,31 +65,70 @@
     .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.03);padding:6px 8px;border-radius:8px;color:var(--muted);cursor:pointer}
     .small{font-size:12px;color:var(--muted)}
     .muted{color:var(--muted)}
+
+    /* Content */
     .content{padding:12px;flex:1;display:flex;flex-direction:column;gap:12px;overflow:auto}
     .page{display:none}
     .page#page-home{display:block}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,0.012), rgba(255,255,255,0.01));padding:12px;border-radius:var(--radius);border:1px solid rgba(255,255,255,0.02);}
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.012), rgba(255,255,255,0.01));
+      padding:12px;border-radius:var(--radius);
+      border:1px solid rgba(255,255,255,0.02);
+    }
+
+    /* market list */
     #marketList{display:flex;flex-direction:column;gap:8px;max-height:240px;overflow:auto;padding-right:2px}
-    .list-item{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:12px;background:var(--card);border:1px solid rgba(255,255,255,0.02);gap:8px;}
+    .list-item{
+      display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:12px;background:var(--card);border:1px solid rgba(255,255,255,0.02);
+      gap:8px;
+    }
+
+    /* market detail */
     .market-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
     .market-meta{display:flex;flex-direction:column;gap:4px}
     .market-price{font-weight:900;font-size:20px}
+    .market-sub{font-size:12px;color:var(--muted)}
+
+    /* chart area */
     .chart-wrap{height:220px;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,#081926,#071426);display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.02)}
     canvas{width:100%;height:100%;display:block}
+
+    /* controls */
     .row{display:flex;gap:8px;align-items:center}
     .col{display:flex;flex-direction:column;gap:8px}
-    input[type="number"], input[type="text"], input[type="datetime-local"], select{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:10px;color:#fff;font-size:14px;}
+    input[type="number"], input[type="text"], input[type="datetime-local"], select{
+      background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:10px;color:#fff;font-size:14px;
+    }
+
+    /* lists */
     #positionsList, #tradesList, #eventsList, #rightHistory, #adminVolList {display:flex;flex-direction:column;gap:8px;overflow:auto}
     .muted.small{font-size:11px}
-    .bottom-nav{display:flex;gap:6px;padding:10px;background:linear-gradient(180deg, rgba(0,0,0,0.06), rgba(0,0,0,0.03));align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.02);}
-    .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px;border-radius:10px;background:transparent;border:0;color:var(--muted);cursor:pointer;font-weight:700;}
+
+    /* bottom nav */
+    .bottom-nav{
+      display:flex;gap:6px;padding:10px;background:linear-gradient(180deg, rgba(0,0,0,0.06), rgba(0,0,0,0.03));
+      align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.02);
+    }
+    .nav-btn{
+      flex:1;display:flex;flex-direction:column;align-items:center;padding:8px;border-radius:10px;background:transparent;border:0;color:var(--muted);cursor:pointer;font-weight:700;
+    }
     .nav-btn.active{background:rgba(255,255,255,0.02);color:var(--accent);box-shadow:inset 0 -6px 16px rgba(255,210,74,0.03)}
+    .nav-ico{font-size:14px}
+
+    /* modal root */
     #modalRoot{position:fixed;left:0;top:0;right:0;bottom:0;display:none;align-items:center;justify-content:center;z-index:200}
     .modal-backdrop{position:absolute;inset:0;background:rgba(2,6,12,0.6);display:flex;align-items:center;justify-content:center;padding:20px}
     .modal{background:linear-gradient(180deg,#081226,#061223);padding:14px;border-radius:14px;max-width:420px;width:100%;max-height:90vh;overflow:auto;border:1px solid rgba(255,255,255,0.03)}
+
+    /* admin controls area small */
     #adminControls{display:none;padding:8px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.008), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02)}
     .tiny{font-size:12px;color:var(--muted);}
-    @media (max-width:420px){.app{margin:10px}.chart-wrap{height:200px}}
+
+    /* responsive tweaks */
+    @media (max-width:420px){
+      .app{margin:10px}
+      .chart-wrap{height:200px}
+    }
   </style>
 </head>
 <body>
@@ -253,6 +323,7 @@
     </div>
   </div>
 
+  <!-- modal root -->
   <div id="modalRoot"></div>
 
   <!-- Firebase SDKs (v8) -->
@@ -260,10 +331,14 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
+  <!-- Your JS (modified only where requested) -->
   <script>
-/* =========================
-   CONFIG & INIT (tidak diubah)
-   ========================= */
+/* ------------------ CONFIG: URLs untuk tombol yang buka halaman web ------------------ */
+const SIGNIN_URL = '/register-login';   // tombol Sign in akan membuka URL ini (ganti sesuai kebutuhan)
+const DEPOSIT_URL = '/deposit';         // tombol Deposit membuka URL ini
+const WITHDRAW_URL = '/withdraw';       // tombol Withdraw membuka URL ini
+/* ----------------------------------------------------------------------------- */
+
 const firebaseConfig = {
   apiKey: "AIzaSyDVUEZ3ZVmH4ld7LVnEq_L368wEJpEs-l8",
   authDomain: "zeepaylater-93a94.firebaseapp.com",
@@ -283,10 +358,11 @@ const db = firebase.firestore();
 let deviceId = localStorage.getItem('device_id');
 if(!deviceId){ deviceId = 'dev-' + Math.floor(Math.random()*10000000); localStorage.setItem('device_id', deviceId); }
 let balanceKey = 'balance_' + deviceId;
+// default balance (fallback local storage) kept for offline/non-auth use
 let balance = parseFloat(localStorage.getItem(balanceKey)) || 10000.0;
 document.getElementById('bal').innerText = balance.toFixed(2);
 
-/* --------------- canvas/chart --------------- */
+/* --------------- chart & canvas --------------- */
 const canvas = document.getElementById('chartCanvas');
 const ctx = canvas.getContext('2d');
 let DPR = window.devicePixelRatio || 1;
@@ -341,18 +417,39 @@ function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
 function nowMs(){ return Date.now(); }
 function tsToDate(ts){ if(!ts) return null; if(ts.toMillis) return new Date(ts.toMillis()); return new Date(ts); }
 
-/* ----------------- auth ----------------- */
+/* ----------------- AUTH & SIGN-IN BUTTON BEHAVIOR ----------------- */
+/* NOTE: per request, tombol Sign in sekarang membuka halaman web (SIGNIN_URL).
+   We still keep provider variable (not used) so other parts of code aren't impacted. */
 const provider = new firebase.auth.GoogleAuthProvider();
-// -- changed: sign-in button now opens a page (you asked sign in -> open halaman)
+
+// replace sign-in click to open a web page
 document.getElementById('btnSignIn').addEventListener('click', ()=> {
-  // redirect to your login/register page
-  window.location.href = '/register-login';
+  window.open(SIGNIN_URL, '_blank');
 });
+// sign out still performs signOut
 document.getElementById('btnSignOut').addEventListener('click', ()=> auth.signOut());
 
-/* apply remote balance override (if any) - checks uid first then deviceId */
+/* ----------------- function to load coin balance from users/{uid}.coinBalance ----------------- */
+async function loadCoinBalanceFromFirestore(uid){
+  try{
+    if(!uid) return;
+    const docRef = db.collection('users').doc(uid);
+    const snap = await docRef.get();
+    const coin = snap.exists && typeof snap.data().coinBalance === 'number' ? Number(snap.data().coinBalance) : 0;
+    // set local 'balance' to coin amount so existing buy/sell logic (which uses `balance`) can work
+    balance = coin;
+    // persist to localStorage for fallback (kept behavior)
+    localStorage.setItem(balanceKey, balance);
+    document.getElementById('bal').innerText = balance.toFixed(2);
+  }catch(e){
+    console.warn('loadCoinBalanceFromFirestore err', e);
+  }
+}
+
+/* apply remote balance override (keeps existing logic, but we will load coinBalance after auth event) */
 async function applyRemoteBalanceIfExists(){
   try{
+    // check uid override
     if(currentUser && currentUser.uid){
       const udoc = await db.collection('balances').doc('uid_'+currentUser.uid).get();
       if(udoc.exists){
@@ -365,6 +462,7 @@ async function applyRemoteBalanceIfExists(){
         }
       }
     }
+    // check device override
     const ddoc = await db.collection('balances').doc(deviceId).get();
     if(ddoc.exists){
       const data = ddoc.data();
@@ -378,66 +476,6 @@ async function applyRemoteBalanceIfExists(){
   }catch(e){ console.warn('applyRemoteBalanceIfExists err', e); }
 }
 
-/* ----------------- NEW HELPER: kredit profit & **kurangi suplain terkunci** (naikkan circulatingSupply) ----------------- */
-/* Menjalankan transaction yang:
-   - menambah users/{uid}.coinBalance dengan profit
-   - MENAMBAH economy/meta.circulatingSupply sebesar profit (maks totalSupply)
-     -> ini *mengurangi* nilai "locked" = totalSupply - circulatingSupply
-   - menambahkan record di users/{uid}/transactions dengan type 'pnl-credit'
-   - menulis/sinkron balances/uid_<uid> agar halaman lain sinkron
-*/
-async function creditProfitAndReduceSupply(uid, profit){
-  if(!uid || !profit || profit <= 0) return;
-  const econRef = db.collection('economy').doc('meta');
-  const userRef = db.collection('users').doc(uid);
-  const balRef  = db.collection('balances').doc('uid_' + uid);
-  try{
-    await db.runTransaction(async (tx) => {
-      // user balance
-      const uSnap = await tx.get(userRef);
-      let userAfter = profit;
-      if(!uSnap.exists){
-        tx.set(userRef, { coinBalance: profit }, { merge: true });
-        userAfter = profit;
-      } else {
-        const cur = Number(uSnap.data().coinBalance || 0);
-        userAfter = cur + profit;
-        tx.update(userRef, { coinBalance: userAfter });
-      }
-
-      // economy circulatingSupply: increase (so locked decreases)
-      const eSnap = await tx.get(econRef);
-      const totalSup = eSnap.exists ? Number(eSnap.data().totalSupply || 0) : 0;
-      const curCirc  = eSnap.exists ? Number(eSnap.data().circulatingSupply || 0) : 0;
-      let newCirc = curCirc + profit;
-      if(totalSup && newCirc > totalSup) newCirc = totalSup; // cap
-      if(eSnap.exists){
-        tx.update(econRef, { circulatingSupply: newCirc });
-      } else {
-        tx.set(econRef, { totalSupply: totalSup || 0, circulatingSupply: newCirc }, { merge: true });
-      }
-
-      // user transaction record
-      const userTxColRef = db.collection('users').doc(uid).collection('transactions').doc();
-      tx.set(userTxColRef, {
-        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        amount: +profit,
-        type: 'pnl-credit',
-        note: 'Profit dari menutup posisi'
-      });
-
-      // sync balances doc so legacy pages read it
-      tx.set(balRef, {
-        amount: userAfter,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        source: 'pnl-credit'
-      }, { merge: true });
-    });
-  }catch(err){
-    console.warn('creditProfitAndReduceSupply err', err);
-  }
-}
-
 /* ----------------- auth state changed ----------------- */
 auth.onAuthStateChanged(async user=>{
   currentUser = user;
@@ -448,12 +486,16 @@ auth.onAuthStateChanged(async user=>{
     if(user.uid === ADMIN_UID){
       adminControlsEl.style.display = 'flex';
       document.getElementById('adminHint').style.display = 'none';
+      // admin sees add event button
       btnOpenAddEvent.style.display = 'inline-block';
     } else {
       adminControlsEl.style.display = 'none';
       document.getElementById('adminHint').style.display = 'block';
+      // non-admin cannot add event
       btnOpenAddEvent.style.display = 'none';
     }
+    // load coin balance from users/{uid} and display it (per request)
+    await loadCoinBalanceFromFirestore(user.uid);
   } else {
     document.getElementById('userInfo').innerText = 'not signed';
     document.getElementById('btnSignIn').style.display = 'inline-block';
@@ -461,8 +503,17 @@ auth.onAuthStateChanged(async user=>{
     adminControlsEl.style.display = 'none';
     document.getElementById('adminHint').style.display = 'block';
     btnOpenAddEvent.style.display = 'none';
+    // if logged out, keep showing fallback localStorage balance (already set at load)
+    document.getElementById('bal').innerText = balance.toFixed(2);
   }
+
+  // always apply remote balance overrides on login state change (kept behavior)
   await applyRemoteBalanceIfExists();
+
+  // After applyRemoteBalanceIfExists, if user logged in we re-load coin balance to ensure coin wins
+  if(currentUser && currentUser.uid){
+    await loadCoinBalanceFromFirestore(currentUser.uid);
+  }
 });
 
 /* ----------------- SPA nav ----------------- */
@@ -498,6 +549,7 @@ async function subscribeMarketsListRealtime(){
       marketListEl.appendChild(el);
     });
     renderAdminVolList();
+    // update PnL view (prices changed)
     computeAndRenderPnL();
   });
 }
@@ -527,7 +579,9 @@ async function selectMarket(marketId){
   if(unsubscribeMarket) unsubscribeMarket();
   currentMarketId = marketId; currentMarket = null; priceHistory=[]; candles=[]; lastTickTime=0;
   document.getElementById('selectedSymbol').innerText = marketId;
+  // load persisted ticks for this market
   await loadTicksForMarket(marketId);
+  // subscribe doc realtime
   unsubscribeMarket = db.collection('markets').doc(marketId).onSnapshot(doc=>{
     if(!doc.exists) return;
     const m = doc.data(); currentMarket = {...m, id:doc.id}; marketsCache[doc.id]=m;
@@ -535,6 +589,7 @@ async function selectMarket(marketId){
     document.getElementById('marketDesc').innerText = m.description || '';
     document.getElementById('marketPrice').innerText = formatPrice(m.price); document.getElementById('marketVolDisplay').innerText = 'Vol x' + (m.volatility||1);
     document.getElementById('selectedPrice').innerText = formatPrice(m.price);
+    // push tick if new
     const stamp = (m.lastUpdate && m.lastUpdate.toMillis) ? m.lastUpdate.toMillis() : Date.now();
     if(stamp > lastTickTime - 1){
       priceHistory.push({t: stamp, price: m.price});
@@ -544,9 +599,13 @@ async function selectMarket(marketId){
     draw();
     computeAndRenderPnL();
   });
+  // load events for this market
   await loadEventsForMarket(marketId);
+  // show market page
   document.getElementById('page-market').style.display='block';
   showPage('markets');
+
+  // ensure chart visible draws
   setTimeout(()=>{ try{ DPR = window.devicePixelRatio || 1; resizeCanvas(); draw(); }catch(e){} }, 80);
 }
 
@@ -576,6 +635,7 @@ async function loadEventsForMarket(mid){
 }
 function renderEventsAll(){
   eventsListEl.innerHTML = '';
+  // flatten events
   let all = [];
   for(const mid in eventsCache) all = all.concat(eventsCache[mid].map(e=>({marketId:mid, ...e})));
   all.sort((a,b)=>{
@@ -587,9 +647,11 @@ function renderEventsAll(){
     const start = tsToDate(ev.startTs);
     const end = tsToDate(ev.endTs);
     const el = document.createElement('div'); el.className='list-item';
+    // If user not admin, do not show edit/hapus buttons (btnOpenAddEvent already hidden), here also hide event edit buttons
     el.innerHTML = `<div><div style="font-weight:700">${ev.title || 'Event'}</div><div class="small">${ev.description||''}</div><div class="small">${ev.marketId} • ${start?start.toLocaleString():''} → ${end?end.toLocaleString():''}</div></div>
       <div style="text-align:right"><div class="small">Vol x${ev.volMultiplier||1}</div>${currentUser && currentUser.uid===ADMIN_UID?`<div style="margin-top:8px"><button class="btn btn-ghost" data-mid="${ev.marketId}" data-id="${ev.id}">Edit</button> <button class="btn btn-ghost" onclick="deleteEvent('${ev.marketId}','${ev.id}')">Hapus</button></div>`:''}</div>`;
     eventsListEl.appendChild(el);
+    // admin edit button hook (only present if admin)
     const btn = el.querySelector('button[data-id]');
     if(btn){
       btn.addEventListener('click', async ()=>{
@@ -632,6 +694,7 @@ window.deleteEvent = async (mid,id) => {
 btnOpenAddEvent.addEventListener('click', ()=> showEventModal({mode:'add'}));
 
 function showEventModal(opts){
+  // opts: {mode:'add'|'edit', marketId?, eventId?, data?}
   const root = document.getElementById('modalRoot'); root.innerHTML = ''; root.style.display='block';
   const backdrop = document.createElement('div'); backdrop.className='modal-backdrop';
   const modal = document.createElement('div'); modal.className='modal';
@@ -647,6 +710,7 @@ function showEventModal(opts){
     <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px"><button id="ev_save" class="btn btn-primary">Simpan</button><button id="ev_cancel" class="btn btn-ghost">Batal</button></div>`;
   backdrop.appendChild(modal); root.appendChild(backdrop);
 
+  // populate market checklist
   const ml = modal.querySelector('#ev_marketlist');
   for(const id in marketsCache){
     const m = marketsCache[id];
@@ -656,6 +720,7 @@ function showEventModal(opts){
     ml.appendChild(row);
   }
 
+  // if edit mode populate fields
   if(opts.mode === 'edit' && opts.data){
     modal.querySelector('#ev_title').value = opts.data.title || '';
     modal.querySelector('#ev_desc').value = opts.data.description || '';
@@ -669,6 +734,7 @@ function showEventModal(opts){
     }
   }
 
+  // handlers
   modal.querySelector('#modalClose').addEventListener('click', closeModal);
   modal.querySelector('#ev_cancel').addEventListener('click', closeModal);
   modal.querySelector('#ev_save').addEventListener('click', async ()=>{
@@ -680,10 +746,12 @@ function showEventModal(opts){
     const dur = parseInt(modal.querySelector('#ev_dur').value) || 30;
     const startMs = new Date(startStr).getTime();
     const endMs = startMs + dur*60*1000;
+    // collect selected markets
     const cbs = modal.querySelectorAll('input[type=checkbox][data-id]');
     const selected = [];
     cbs.forEach(cb=>{ if(cb.checked) selected.push(cb.dataset.id) });
     if(selected.length === 0) return alert('Pilih minimal satu market yang terkena event');
+    // create event document for each market selected (store under market's events subcollection)
     try{
       for(const mid of selected){
         await db.collection('markets').doc(mid).collection('events').add({
@@ -693,6 +761,7 @@ function showEventModal(opts){
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
           createdBy: currentUser ? currentUser.uid : 'anon'
         });
+        // reload events for that market
         await loadEventsForMarket(mid);
       }
       alert('Event ditambahkan pada market terpilih');
@@ -752,7 +821,9 @@ function startEngineAllMarkets(){
       for(const doc of snap.docs){
         try{
           const mid = doc.id; const m = doc.data();
+          // compute effective volatility considering events
           let baseVol = (m.volatility !== undefined) ? m.volatility : 1.0;
+          // check for active events for this market
           let effMultiplier = 1.0;
           try {
             const now = firebase.firestore.Timestamp.now();
@@ -763,14 +834,18 @@ function startEngineAllMarkets(){
             });
           } catch(e){ /* ignore */ }
           const vol = baseVol * effMultiplier;
+          // price step logic (stock-like, more random component proportional to vol)
           const last = m.price || 1.0;
           const rnd = (Math.random()-0.5)*2;
           const spike = (Math.random()<0.02)? (Math.random()-0.5)*0.05*vol : 0;
           const meanRevert = (1.0 - last) * 0.0001;
           const step = rnd * 0.0005 * vol + spike + meanRevert;
           const newP = Math.max(0.01, parseFloat((last + step).toFixed(2)));
+          // update market price
           await doc.ref.update({ price: newP, lastUpdate: firebase.firestore.FieldValue.serverTimestamp() });
+          // persist tick
           await doc.ref.collection('ticks').add({ price: newP, ts: firebase.firestore.FieldValue.serverTimestamp() }).catch(err=>console.warn('tick write err', err));
+          // NOTE: for stocks we don't auto-close positions — users sell manually
         } catch(e){ console.error('per-market engine err', e); }
       }
     } catch(e){
@@ -806,25 +881,25 @@ async function buyShares(){
   alert(`Beli ${shares} lembar @ ${formatPrice(currentMarket.price)} berhasil`);
 }
 
-/* ----------------- SELL: modified to accumulate profit and credit economy ----------------- */
 async function sellShares(){
   if(!currentMarketId || !currentMarket) return alert('Pilih market');
   const sellShares = Math.max(0, Math.floor(Number(document.getElementById('buyShares').value) || 0));
   if(isNaN(sellShares) || sellShares < 100) return alert('Minimal jual 100 lembar');
 
+  // check lock for this seller (by uid or device)
   const ownerIdent = currentUser ? currentUser.uid : deviceId;
   const locked = await isSellLockedFor(currentMarketId, ownerIdent);
   if(locked){
     return alert('Penjualan saham gagal, liquidity tidak terpenuhi. Mohon bersabar untuk tindak lanjut kami.');
   }
 
+  // gather open positions for this device/user in current market
   const coll = db.collection('markets').doc(currentMarketId).collection('positions');
   const snap = await coll.where('status','==','open').where('deviceId','==',deviceId).get();
   let available = 0; const docs = [];
   snap.forEach(d=>{ const p = d.data(); p._id = d.id; docs.push({ref:d.ref, data:p}); available += p.shares; });
   if(available < sellShares) return alert('Tidak cukup lembar untuk dijual');
   let remaining = sellShares; const batch = db.batch();
-  let totalProfitAdded = 0;
   for(const item of docs){
     if(remaining <= 0) break;
     const p = item.data; const take = Math.min(p.shares, remaining);
@@ -838,26 +913,11 @@ async function sellShares(){
     }
     remaining -= take;
     balance += take * sellPrice;
-    if(pl > 0) totalProfitAdded += pl;
   }
   await batch.commit();
   localStorage.setItem(balanceKey, balance);
   document.getElementById('bal').innerText = balance.toFixed(2);
   await db.collection('markets').doc(currentMarketId).collection('trades').add({ type:'SELL', userUID: currentUser?currentUser.uid:'anon', deviceId, shares: sellShares, price: currentMarket.price, ts: firebase.firestore.FieldValue.serverTimestamp() });
-  
-  // kredit profit ke economy jika ada profit dan user login
-  if(totalProfitAdded > 0 && currentUser && currentUser.uid){
-    await creditProfitAndReduceSupply(currentUser.uid, totalProfitAdded);
-    // reload balance dari firestore agar konsisten
-    try{
-      const udoc = await db.collection('users').doc(currentUser.uid).get();
-      const coin = udoc.exists && typeof udoc.data().coinBalance === 'number' ? Number(udoc.data().coinBalance) : balance;
-      balance = coin;
-      localStorage.setItem(balanceKey, balance);
-      document.getElementById('bal').innerText = balance.toFixed(2);
-    }catch(e){}
-  }
-
   alert(`Jual ${sellShares} lembar berhasil`);
 }
 
@@ -869,6 +929,7 @@ function subscribePositionsGroup(){
     positionsSnapshotCache = [];
     snap.forEach(d=>{
       const p = d.data(); p._path = d.ref.path; p._id = d.id;
+      // keep only positions that belong to current user or device
       if(p.userUID === (currentUser?currentUser.uid:'anon') || p.deviceId === deviceId){
         positionsSnapshotCache.push(p);
       }
@@ -877,13 +938,15 @@ function subscribePositionsGroup(){
   });
 }
 
-/* compute PnL and render */
+/* compute PnL (unrealized) and render positions list and total PnL */
 function renderPositionsAndPnL(){
+  // positionsSnapshotCache contains open & closed; we will show open as positions and closed as trades
   const open = positionsSnapshotCache.filter(p => p.status === 'open');
   const closed = positionsSnapshotCache.filter(p => p.status !== 'open');
   positionsListEl.innerHTML = '';
   tradesListEl.innerHTML = '';
   let totalUnreal = 0;
+  // for each open position compute unrealized using market current price from marketsCache or fallback to position.avgPrice
   open.forEach(p=>{
     const marketPrice = (marketsCache[p.marketId] && marketsCache[p.marketId].price) ? marketsCache[p.marketId].price : p.avgPrice;
     const unreal = p.shares * (marketPrice - p.avgPrice);
@@ -904,6 +967,7 @@ function renderPositionsAndPnL(){
 
 /* wrapper to check lock before closing position by path */
 window.attemptClosePositionPath = async (path) => {
+  // read doc to see owner and market
   const ref = db.doc(path);
   const doc = await ref.get(); if(!doc.exists) return alert('Position not found');
   const p = doc.data();
@@ -912,45 +976,30 @@ window.attemptClosePositionPath = async (path) => {
   if(locked){
     return alert('Penjualan saham gagal, liquidity tidak terpenuhi. Mohon bersabar untuk tindak lanjut kami.');
   }
+  // otherwise perform close
   await closePositionPath(path);
 };
 
-/* ----------------- closePositionPath: modified to credit profit if pl>0 ----------------- */
+/* close position by doc path (string path like markets/{mid}/positions/{id}) */
 window.closePositionPath = async (path)=>{
   const ref = db.doc(path);
-  const docSnap = await ref.get(); if(!docSnap.exists) return alert('Position not found');
-  const p = docSnap.data();
+  const doc = await ref.get(); if(!doc.exists) return alert('Position not found');
+  const p = doc.data();
   if(p.deviceId !== deviceId && (!currentUser || p.userUID !== currentUser.uid)) return alert('Hanya pemilik posisi yang bisa menjual');
   const sellPrice = (marketsCache[p.marketId] && marketsCache[p.marketId].price) ? marketsCache[p.marketId].price : p.avgPrice;
   const pl = p.shares * (sellPrice - p.avgPrice);
-
   await ref.update({ status:'closed', closedAt: firebase.firestore.FieldValue.serverTimestamp(), closePrice: sellPrice, reason:'sell-manual', pl });
-
   if(p.deviceId === deviceId){ balance += p.shares * sellPrice; localStorage.setItem(balanceKey, balance); document.getElementById('bal').innerText = balance.toFixed(2); }
-
-  if(pl > 0){
-    const uidToCredit = p.userUID || (currentUser ? currentUser.uid : null);
-    if(uidToCredit){
-      await creditProfitAndReduceSupply(uidToCredit, pl);
-      if(currentUser && currentUser.uid === uidToCredit){
-        try{ 
-          const udoc = await db.collection('users').doc(uidToCredit).get();
-          const coin = udoc.exists && typeof udoc.data().coinBalance === 'number' ? Number(udoc.data().coinBalance) : balance;
-          balance = coin;
-          localStorage.setItem(balanceKey, balance);
-          document.getElementById('bal').innerText = balance.toFixed(2);
-        }catch(e){}
-      }
-    }
-  }
-
   alert('Position closed');
 };
 
 /* ----------------- compute PnL triggered when market prices change (marketsCache updated) ----------------- */
-function computeAndRenderPnL(){ renderPositionsAndPnL(); }
+function computeAndRenderPnL(){
+  // simply re-render positions view if visible
+  renderPositionsAndPnL();
+}
 
-/* ----------------- draw chart & candles ----------------- */
+/* ----------------- draw chart & candles (same logic) ----------------- */
 document.getElementById('tfSelect').addEventListener('change', ()=>{
   userTfOverride = true;
   timeframeMs = parseInt(document.getElementById('tfSelect').value);
@@ -1001,7 +1050,9 @@ function draw(){
   if(arrLen === 0){ maxP = minP = currentMarket.price || 1.0; } else { for(let i=0;i<arrLen;i++){ const c=arr[i]; if(c.h>maxP) maxP=c.h; if(c.l<minP) minP=c.l; } }
   const pad = (maxP-minP)*0.12 || 0.5; maxP += pad; minP -= pad;
   function py(p){ if(maxP===minP) return H/2; return ((maxP-p)/(maxP-minP))*(H-40)+20; }
+  // grid
   ctx.strokeStyle='rgba(255,255,255,0.03)'; ctx.lineWidth=1; ctx.beginPath(); for(let i=0;i<5;i++){ const y = 20 + i*(H-40)/4; ctx.moveTo(LEFT_MARGIN,y); ctx.lineTo(W-10,y); } ctx.stroke();
+  // candles
   let x = startX;
   for(let i=0;i<arrLen;i++){
     const c = arr[i]; const up = c.c >= c.o; const colorUp = '#5de3a6', colorDn = '#ff7373';
@@ -1011,9 +1062,11 @@ function draw(){
     ctx.fillStyle = up ? colorUp : colorDn; ctx.fillRect(x, top, cw, h);
     x += cw + gap;
   }
+  // right axis
   ctx.fillStyle='rgba(255,255,255,0.06)'; ctx.fillRect(W-RIGHT_MARGIN+10,10,RIGHT_MARGIN-20,H-20);
   ctx.fillStyle='#bcd7ff'; ctx.font='12px Arial'; ctx.textAlign='right';
   for(let i=0;i<5;i++){ const v = minP + ((5-i-1)/4)*(maxP-minP); const y = 20 + i*(H-40)/4; ctx.fillText(Number(v).toFixed(2), W-14, y+4); }
+  // last price line
   ctx.strokeStyle='rgba(255,255,255,0.12)'; ctx.beginPath(); const yNow = py(currentMarket.price); ctx.moveTo(LEFT_MARGIN, yNow); ctx.lineTo(W-10,yNow); ctx.stroke();
   ctx.fillStyle='#fff'; ctx.font='12px Arial'; ctx.textAlign='right'; ctx.fillText(formatPrice(currentMarket.price), W-14, yNow-6);
   document.getElementById('visibleCount').innerText = `${arrLen}/${desired}`;
@@ -1037,7 +1090,9 @@ function updateRightHistoryUI(){
   await ensureDefaultMarket();
   await subscribeMarketsListRealtime();
   subscribePositionsGroup();
+  // apply remote override balance if exists
   await applyRemoteBalanceIfExists();
+  // select prefer market if exists
   const prefer = await db.collection('markets').orderBy('createdAt','asc').limit(1).get();
   if(prefer.docs[0]) selectMarket(prefer.docs[0].id);
 })();
@@ -1052,7 +1107,11 @@ async function ensureDefaultMarket(){
 }
 
 /* ----------------- event loading for all markets on boot (periodic) ----------------- */
-setInterval(async ()=>{ try{ for(const id in marketsCache) await loadEventsForMarket(id); }catch(e){} }, 60000);
+setInterval(async ()=>{ // refresh events every minute
+  try{
+    for(const id in marketsCache) await loadEventsForMarket(id);
+  }catch(e){}
+}, 60000);
 
 /* ----------------- helpers to show pages from quick buttons ----------------- */
 document.getElementById('btnMarkets').addEventListener('click', ()=> showPage('markets'));
@@ -1060,17 +1119,15 @@ document.getElementById('btnPortfolio').addEventListener('click', ()=> showPage(
 document.getElementById('btnGotoPortfolio').addEventListener('click', ()=> showPage('portfolio'));
 document.getElementById('btnGotoMarket').addEventListener('click', ()=> { if(currentMarketId) selectMarket(currentMarketId); else alert('Pilih market dulu'); });
 
-/* ----------------- Deposit / Withdraw => redirect to pages (requested) ----------------- */
+/* ----------------- Deposit / Withdraw => buka halaman web (sesuai permintaan) ----------------- */
 document.getElementById('btnDeposit').addEventListener('click', ()=>{
-  // buka halaman deposit — ganti URL jika mau target lain
-  window.location.href = '/deposit';
+  window.open(DEPOSIT_URL, '_blank');
 });
 document.getElementById('btnWithdraw').addEventListener('click', ()=>{
-  // buka halaman withdraw — ganti URL jika mau target lain
-  window.location.href = '/withdraw';
+  window.open(WITHDRAW_URL, '_blank');
 });
 
-/* ----------------- Admin: Manage Balances modal (kept unchanged) ----------------- */
+/* ----------------- Admin: Manage Balances modal ----------------- */
 btnManageBalances.addEventListener('click', async ()=>{
   if(!currentUser || currentUser.uid !== ADMIN_UID) return alert('Only admin');
   const root = document.getElementById('modalRoot'); root.innerHTML=''; root.style.display='block';
@@ -1127,6 +1184,7 @@ btnManageBalances.addEventListener('click', async ()=>{
     else if(mode === 'sub') result = cur - amt;
     await docRef.set({ amount: result, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), updatedBy: currentUser.uid });
     alert('Done: ' + target + ' -> ' + result.toFixed(2));
+    // if admin changed current device or uid balance, apply locally
     if((currentUser && target === 'uid_'+currentUser.uid) || target === deviceId){
       balance = result; localStorage.setItem(balanceKey, balance); document.getElementById('bal').innerText = balance.toFixed(2);
     }
@@ -1157,6 +1215,7 @@ btnViewAllTrades.addEventListener('click', async ()=>{
   backdrop.appendChild(modal); root.appendChild(backdrop);
 
   modal.querySelector('#at_close').addEventListener('click', ()=> {
+    // unsubscribe admin subs
     if(adminTradesUnsub) adminTradesUnsub();
     if(adminPositionsUnsub) adminPositionsUnsub();
     root.innerHTML=''; root.style.display='none';
@@ -1166,12 +1225,13 @@ btnViewAllTrades.addEventListener('click', async ()=>{
   const positionsEl = modal.querySelector('#at_positions');
   const locksEl = modal.querySelector('#at_locks');
 
+  // realtime trades (recent)
   adminTradesUnsub = db.collectionGroup('trades').orderBy('ts','desc').limit(200).onSnapshot(snap=>{
     tradesEl.innerHTML = '';
     snap.forEach(d=>{
       const t = d.data(); const id = d.id;
       const who = t.userUID || t.deviceId || 'anon';
-      const marketId = d.ref.parent.parent.id;
+      const marketId = d.ref.parent.parent.id; // markets/{mid}/trades/{id}
       const row = document.createElement('div'); row.className='list-item';
       row.innerHTML = `<div><div style="font-weight:700">${t.type} ${t.shares} • ${marketId}</div><div class="small muted">${who} • ${formatPrice(t.price)} • ${t.ts && t.ts.toDate? t.ts.toDate().toLocaleString():''}</div></div>
         <div style="text-align:right"><button class="btn btn-ghost" data-market="${marketId}" data-owner="${who}" data-lock>Lock Sell</button></div>`;
@@ -1179,6 +1239,7 @@ btnViewAllTrades.addEventListener('click', async ()=>{
       row.querySelector('button[data-lock]').addEventListener('click', async ()=>{
         const owner = row.querySelector('button[data-lock]').dataset.owner;
         const mid = row.querySelector('button[data-lock]').dataset.market;
+        // set lock doc
         await db.collection('locks').doc(`${mid}_${owner}`).set({ locked:true, by: currentUser.uid, at: firebase.firestore.FieldValue.serverTimestamp() });
         alert('Sell locked for ' + owner + ' on ' + mid);
         refreshLocks();
@@ -1186,6 +1247,7 @@ btnViewAllTrades.addEventListener('click', async ()=>{
     });
   });
 
+  // realtime positions (open)
   adminPositionsUnsub = db.collectionGroup('positions').where('status','==','open').orderBy('createdAt','desc').limit(200).onSnapshot(snap=>{
     positionsEl.innerHTML = '';
     snap.forEach(d=>{
