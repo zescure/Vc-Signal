@@ -94,6 +94,7 @@
   <section id="loginScreen" class="screen active">
     <div class="card">
       <h1>Login</h1>
+      <h3>HOLEZ CAPITAL</h3>
       <div class="input-group">
         <img class="icon-left" src="https://img.icons8.com/ios-filled/50/ffffff/new-post.png"/>
         <input type="email" id="email" placeholder="Email address" />
@@ -245,7 +246,7 @@
       try {
         const { user } = await signInWithEmailAndPassword(auth, email, password);
         await ensureUserDocuments(user);
-        window.location.href = "https://zestore.netlify.app/home";
+        window.location.href = "https://vc-signalforex.netlify.app/saham";
       } catch (err) {
         alertText.textContent = err.message;
       }
