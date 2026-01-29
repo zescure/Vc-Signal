@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>ZESTORE - ZCoin Ekonomi Baru</title>
   <style>
-    /* (Sama style seperti versi kamu, sedikit diringkas) */
     *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif;}
     body{background:#0a0a0f;color:#fff;display:flex;flex-direction:column;align-items:center;padding:20px;}
     header{width:100%;max-width:500px;background:#111927;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #222;margin-bottom:20px;}
@@ -20,6 +19,8 @@
     input{width:100%;padding:8px;border-radius:6px;border:none;margin-top:6px;}
     .admin-mini{background:#0f1724;padding:12px;border-radius:8px;margin-top:8px;}
     ul{list-style:none;padding-left:0;}
+    .btn-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+    .btn-row button{flex:1;min-width:140px;}
   </style>
 </head>
 <body>
@@ -40,7 +41,20 @@
     <h3>Saldo ZCoin (ZRC2)</h3>
     <p class="coin-display">🪙 <span id="coinBalance">0</span></p>
     <p class="muted">≈ Rp <span id="coinBalanceIDR">0</span></p>
-    <button id="openTransfer" class="primary">Transfer Koin</button>
+
+    <div class="btn-row">
+      <button id="btnDeposit" class="primary">Deposit</button>
+      <button id="btnWithdraw" class="danger">Penarikan</button>
+    </div>
+
+    <div class="btn-row">
+      <button id="openTransfer" class="primary">Transfer Koin</button>
+    </div>
+
+    <p class="muted" style="margin-top:8px;">
+      Deposit = ambil dari suplai terkunci → masuk saldo user. <br/>
+      Penarikan = saldo user → balik ke suplai terkunci.
+    </p>
   </div>
 
   <div class="card">
@@ -52,8 +66,26 @@
     <p class="muted" style="margin-top:8px;">Catatan: sistem menyimpan koin baru di koleksi <code>zcoin_balances</code>.</p>
   </div>
 
+  <!-- Deposit/Withdraw popup -->
+  <div id="dwPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);align-items:center;justify-content:center;z-index:999;">
+    <div style="background:#141828;padding:18px;border-radius:10px;width:340px;">
+      <h3 id="dwTitle">Deposit</h3>
+      <p class="muted" style="margin-top:6px" id="dwDesc">Dump top up dulu (simulasi).</p>
+
+      <label style="margin-top:10px;display:block;">Jumlah (koin)</label>
+      <input id="dwAmount" type="number" placeholder="contoh: 500" />
+
+      <p class="muted" id="dwMsg" style="margin-top:8px;"></p>
+
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button id="dwConfirm" class="primary">Proses</button>
+        <button id="dwCancel" class="danger">Batal</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Transfer popup -->
-  <div id="transferPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);align-items:center;justify-content:center;">
+  <div id="transferPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);align-items:center;justify-content:center;z-index:999;">
     <div style="background:#141828;padding:18px;border-radius:10px;width:320px;">
       <h3>Transfer ZCoin</h3>
       <label>UID Penerima</label>
@@ -101,13 +133,12 @@
   </div>
 
   <script type="module">
-    // -------------------- FIREBASE --------------------
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
     import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
     import {
       getFirestore, doc, getDoc, setDoc, updateDoc, collection,
       getDocs, query, orderBy, limit, runTransaction, serverTimestamp,
-      onSnapshot, where
+      onSnapshot
     } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
     const firebaseConfig = {
@@ -123,14 +154,13 @@
     const db   = getFirestore(app);
 
     // -------------------- ECONOMY CONFIG --------------------
-    // Total supply locked = 500,000,000,000
-    const TOTAL_SUPPLY = 500_000_000_000; // 500 miliar
-    const ZCOIN_META_REF = doc(db, 'zcoin', 'meta'); // single meta doc
-    const ZCOIN_BALANCES   = 'zcoin_balances';       // collection for balances
-    const INITIAL_AIRDROP  = 1000;                   // airdrop to new users (ubah 0 kalau nggak mau)
-    const RATE_IDR_PER_10  = 10;                     // default rate (10 koin ≈ Rp 10)
-    const ADMIN_UID        = 'viCOsJo4wHVFmhtpmMx1Wd4sDF52'; // ganti kalau perlu
-    const FEE_RECEIVER_UID = ADMIN_UID; // bisa pisah
+    const TOTAL_SUPPLY = 500_000_000_000;
+    const ZCOIN_META_REF = doc(db, 'zcoin', 'meta');
+    const ZCOIN_BALANCES = 'zcoin_balances';
+    const INITIAL_AIRDROP = 1000;
+    const RATE_IDR_PER_10 = 10;
+    const ADMIN_UID = 'viCOsJo4wHVFmhtpmMx1Wd4sDF52';
+    const FEE_RECEIVER_UID = ADMIN_UID;
 
     // -------------------- DOM --------------------
     const displayNameEl = document.getElementById('displayName');
@@ -149,6 +179,17 @@
     const closeTransfer = document.getElementById('closeTransfer');
     const transferBtn   = document.getElementById('transferBtn');
     const transferMsg   = document.getElementById('transferMsg');
+
+    // Deposit/Withdraw UI
+    const btnDeposit = document.getElementById('btnDeposit');
+    const btnWithdraw = document.getElementById('btnWithdraw');
+    const dwPopup = document.getElementById('dwPopup');
+    const dwTitle = document.getElementById('dwTitle');
+    const dwDesc = document.getElementById('dwDesc');
+    const dwAmount = document.getElementById('dwAmount');
+    const dwMsg = document.getElementById('dwMsg');
+    const dwConfirm = document.getElementById('dwConfirm');
+    const dwCancel = document.getElementById('dwCancel');
 
     // admin
     const adminBox      = document.getElementById('adminBox');
@@ -175,11 +216,10 @@
           totalSupply: TOTAL_SUPPLY,
           circulatingSupply: 0,
           dynamicRatePer10: RATE_IDR_PER_10,
-          bankLiquidityIDR: 100000, // opsional: dipakai untuk dynamic rate
+          bankLiquidityIDR: 100000,
           createdAt: serverTimestamp()
         });
       } else {
-        // ensure totalSupply is correct (opsional: hanya set jika tidak ada)
         const d = snap.data();
         const needs = {};
         if(typeof d.totalSupply !== 'number') needs.totalSupply = TOTAL_SUPPLY;
@@ -202,49 +242,48 @@
       });
     }
 
-    // create balance doc for user if missing. If initial airdrop > 0, mint it atomically.
     async function ensureUserZBalance(uid, displayName = '-'){
       const balRef = doc(db, ZCOIN_BALANCES, uid);
-      const metaRef = ZCOIN_META_REF;
-
       const snap = await getDoc(balRef);
-      if(snap.exists()) return; // already exists
+      if(snap.exists()) return;
 
       if(INITIAL_AIRDROP > 0){
-        // run transaction: make sure enough locked supply, create balance, add supply circulating, and add transaction record
         await runTransaction(db, async tx=>{
-          const metaSnap = await tx.get(metaRef);
+          const metaSnap = await tx.get(ZCOIN_META_REF);
           if(!metaSnap.exists()) throw new Error('ZCoin meta missing.');
           const meta = metaSnap.data();
-          const freeLocked = (meta.totalSupply || TOTAL_SUPPLY) - (meta.circulatingSupply || 0);
-          if(INITIAL_AIRDROP > freeLocked) throw new Error('Tidak cukup supply untuk airdrop awal.');
 
-          // create balance doc
+          const total = meta.totalSupply || TOTAL_SUPPLY;
+          const circ = meta.circulatingSupply || 0;
+          const locked = total - circ;
+
+          if(INITIAL_AIRDROP > locked) throw new Error('Tidak cukup supply untuk airdrop awal.');
+
           tx.set(balRef, {
             amount: INITIAL_AIRDROP,
             createdAt: serverTimestamp(),
             displayName: displayName || '-'
           });
 
-          // set transaction subdoc
-          const txCol = collection(balRef, 'transactions');
-          tx.set(doc(txCol), {
+          tx.set(doc(collection(balRef, 'transactions')), {
             timestamp: serverTimestamp(),
             amount: INITIAL_AIRDROP,
             type: 'airdrop',
             note: 'onboarding-airdrop'
           });
 
-          // update meta circulating
-          tx.update(metaRef, { circulatingSupply: (meta.circulatingSupply || 0) + INITIAL_AIRDROP });
+          tx.update(ZCOIN_META_REF, { circulatingSupply: circ + INITIAL_AIRDROP });
         });
       } else {
-        // just create zero balance doc
         await setDoc(balRef, { amount: 0, createdAt: serverTimestamp(), displayName: displayName || '-' });
       }
     }
 
-    // load user's zcoin balance (from zcoin_balances)
+    async function getDynamicRatePer10(){
+      const snap = await getDoc(ZCOIN_META_REF);
+      return snap.exists() ? Number(snap.data().dynamicRatePer10 || RATE_IDR_PER_10) : RATE_IDR_PER_10;
+    }
+
     async function loadZBalance(uid){
       const balRef = doc(db, ZCOIN_BALANCES, uid);
       const snap = await getDoc(balRef);
@@ -252,11 +291,6 @@
       coinEl.textContent = nf(amt);
       coinIDREl.textContent = nf(Math.round((amt/10) * (await getDynamicRatePer10())));
       await loadTxHistory(uid);
-    }
-
-    async function getDynamicRatePer10(){
-      const snap = await getDoc(ZCOIN_META_REF);
-      return snap.exists() ? (Number(snap.data().dynamicRatePer10 || RATE_IDR_PER_10)) : RATE_IDR_PER_10;
     }
 
     async function loadTxHistory(uid){
@@ -279,7 +313,108 @@
       }
     }
 
-    // Admin: refresh top holders
+    // -------------------- DEPOSIT / WITHDRAW (NEW) --------------------
+    let dwMode = 'deposit'; // 'deposit' | 'withdraw'
+
+    function openDW(mode){
+      dwMode = mode;
+      dwMsg.textContent = '';
+      dwAmount.value = '';
+      dwPopup.style.display = 'flex';
+
+      if(mode === 'deposit'){
+        dwTitle.textContent = 'Deposit ZCoin';
+        dwDesc.textContent = 'Dump top up dulu (simulasi). Deposit akan memindahkan supply terkunci → saldo user.';
+        dwConfirm.textContent = 'Deposit';
+        dwConfirm.className = 'primary';
+      } else {
+        dwTitle.textContent = 'Penarikan ZCoin';
+        dwDesc.textContent = 'Dump withdraw dulu (simulasi). Penarikan akan memindahkan saldo user → supply terkunci.';
+        dwConfirm.textContent = 'Tarik';
+        dwConfirm.className = 'danger';
+      }
+    }
+
+    function closeDW(){
+      dwPopup.style.display = 'none';
+      dwMsg.textContent = '';
+      dwAmount.value = '';
+    }
+
+    btnDeposit.onclick = ()=> openDW('deposit');
+    btnWithdraw.onclick = ()=> openDW('withdraw');
+    dwCancel.onclick = closeDW;
+
+    dwConfirm.onclick = async ()=>{
+      dwMsg.textContent = '';
+      if(!currentUser){ dwMsg.textContent = 'Belum login.'; return; }
+
+      const qty = Math.floor(Number(dwAmount.value || 0));
+      if(!qty || qty <= 0){
+        dwMsg.textContent = 'Jumlah harus > 0';
+        return;
+      }
+
+      const uid = currentUser.uid;
+      const userRef = doc(db, ZCOIN_BALANCES, uid);
+      const metaRef = ZCOIN_META_REF;
+
+      dwMsg.textContent = 'Memproses...';
+
+      try{
+        await runTransaction(db, async tx=>{
+          const metaSnap = await tx.get(metaRef);
+          const userSnap = await tx.get(userRef);
+
+          if(!metaSnap.exists()) throw new Error('Meta ZCoin tidak ditemukan.');
+          if(!userSnap.exists()) throw new Error('Wallet user tidak ditemukan.');
+
+          const meta = metaSnap.data();
+          const total = Number(meta.totalSupply || TOTAL_SUPPLY);
+          const circ  = Number(meta.circulatingSupply || 0);
+          const locked = total - circ;
+
+          const curBal = Number(userSnap.data().amount || 0);
+
+          if(dwMode === 'deposit'){
+            // Deposit: locked -> user, circulating++
+            if(qty > locked) throw new Error('Locked supply tidak cukup untuk deposit segitu.');
+
+            tx.update(userRef, { amount: curBal + qty, updatedAt: serverTimestamp() });
+            tx.set(doc(collection(userRef, 'transactions')), {
+              timestamp: serverTimestamp(),
+              amount: +qty,
+              type: 'deposit',
+              note: 'simulated-topup'
+            });
+            tx.update(metaRef, { circulatingSupply: circ + qty });
+
+          } else {
+            // Withdraw: user -> locked, circulating--
+            if(curBal < qty) throw new Error('Saldo user tidak cukup untuk penarikan segitu.');
+
+            tx.update(userRef, { amount: curBal - qty, updatedAt: serverTimestamp() });
+            tx.set(doc(collection(userRef, 'transactions')), {
+              timestamp: serverTimestamp(),
+              amount: -qty,
+              type: 'withdraw',
+              note: 'simulated-withdraw'
+            });
+            tx.update(metaRef, { circulatingSupply: circ - qty });
+          }
+        });
+
+        dwMsg.textContent = 'Sukses.';
+        await loadZBalance(currentUser.uid);
+        if(currentUser.uid === ADMIN_UID) await loadAdminDashboard();
+
+        setTimeout(()=> closeDW(), 500);
+      }catch(e){
+        dwMsg.textContent = 'Error: ' + (e?.message || e);
+      }
+    };
+
+    // -------------------- ADMIN --------------------
     async function loadAdminDashboard(){
       try{
         const col = collection(db, ZCOIN_BALANCES);
@@ -308,7 +443,6 @@
       }
     }
 
-    // Admin: mint to user or burn (negative)
     admApply.onclick = async ()=>{
       if(!currentUser || currentUser.uid !== ADMIN_UID){
         admStatus.textContent = 'Bukan admin.';
@@ -338,11 +472,8 @@
           const curBal = tSnap.exists() ? Number(tSnap.data().amount || 0) : 0;
 
           if(qty > 0){
-            // mint: ensure locked supply cukup
             if(qty > locked) throw new Error('Tidak cukup supply terkunci untuk mint.');
-            // update balance
             tx.set(targetRef, { amount: curBal + qty, updatedAt: serverTimestamp() }, { merge: true });
-            // record tx
             tx.set(doc(collection(targetRef, 'transactions')), {
               timestamp: serverTimestamp(),
               amount: qty,
@@ -350,10 +481,8 @@
               by: currentUser.uid,
               reason
             });
-            // update meta circulated
             tx.update(metaRef, { circulatingSupply: circ + qty });
           } else {
-            // burn: qty negative => reduce circulating and user balance
             const burn = Math.abs(qty);
             if(curBal < burn) throw new Error('Saldo user tidak cukup untuk burn.');
             tx.update(targetRef, { amount: curBal - burn, updatedAt: serverTimestamp() });
@@ -390,7 +519,6 @@
       if(!toUid || !amt || amt <= 0){ transferMsg.textContent = 'Isi UID & jumlah benar.'; return; }
       if(toUid === fromUid){ transferMsg.textContent = 'Tidak bisa transfer ke diri sendiri.'; return; }
 
-      // fee: 1% + 10 koin (dibayar ke fee receiver)
       const fee = Math.ceil(amt * 0.01) + 10;
 
       const fromRef = doc(db, ZCOIN_BALANCES, fromUid);
@@ -411,19 +539,13 @@
 
           if(fromBal - amt - fee < 10) throw new Error('Saldo tidak cukup (minimal sisa 10 koin).');
 
-          // update balances
           tx.update(fromRef, { amount: fromBal - amt - fee, updatedAt: serverTimestamp() });
           tx.update(toRef,   { amount: toBal + amt, updatedAt: serverTimestamp() });
           tx.update(feeRef,  { amount: feeBal + fee, updatedAt: serverTimestamp() });
 
-          const tsColFrom = collection(fromRef, 'transactions');
-          const tsColTo   = collection(toRef, 'transactions');
-          const tsColFee  = collection(feeRef, 'transactions');
-
-          tx.set(doc(tsColFrom), { timestamp: serverTimestamp(), amount: -(amt+fee), to: toUid, type: 'transfer-out' });
-          tx.set(doc(tsColTo),   { timestamp: serverTimestamp(), amount: +amt, from: fromUid, type: 'transfer-in' });
-          tx.set(doc(tsColFee),  { timestamp: serverTimestamp(), amount: +fee, from: fromUid, type: 'fee' });
-          // circulatingSupply unchanged on transfer
+          tx.set(doc(collection(fromRef, 'transactions')), { timestamp: serverTimestamp(), amount: -(amt+fee), to: toUid, type: 'transfer-out' });
+          tx.set(doc(collection(toRef, 'transactions')),   { timestamp: serverTimestamp(), amount: +amt, from: fromUid, type: 'transfer-in' });
+          tx.set(doc(collection(feeRef, 'transactions')),  { timestamp: serverTimestamp(), amount: +fee, from: fromUid, type: 'fee' });
         });
 
         transferMsg.textContent = 'Transfer sukses!';
@@ -439,21 +561,17 @@
     onAuthStateChanged(auth, async user=>{
       if(!user) return location.href = '/register-login';
       currentUser = user;
+
       displayNameEl.textContent = localStorage.getItem('username') || user.displayName || '-';
       emailEl.textContent       = user.email || '-';
       uidEl.textContent         = user.uid;
 
-      // ensure economy meta exists
       await ensureZcoinMeta();
       subscribeMetaRealtime();
 
-      // ensure user zcoin balance exists (and auto-airdrop if first time)
       await ensureUserZBalance(user.uid, user.displayName || user.email || '-');
-
-      // load balance & history
       await loadZBalance(user.uid);
 
-      // show admin panel if admin
       if(user.uid === ADMIN_UID){
         adminBox.style.display = 'block';
         await loadAdminDashboard();
@@ -462,12 +580,12 @@
       }
     });
 
-    // logout
-    document.getElementById('logoutBtn').onclick = ()=> signOut(auth).then(()=>{ localStorage.removeItem('username'); location.href='/register-login'; });
+    document.getElementById('logoutBtn').onclick = ()=> signOut(auth).then(()=>{
+      localStorage.removeItem('username');
+      location.href='/register-login';
+    });
 
-    // -------------------- ON-DEMAND HELPERS (opsional) --------------------
-    // You can add additional functions: batch airdrop, burn inactive, update dynamic rate, etc.
-    // Example: update dynamic rate (based on bankLiquidityIDR / circulatingSupply)
+    // -------------------- DYNAMIC RATE (optional) --------------------
     async function recalcDynamicRate(){
       try{
         const metaSnap = await getDoc(ZCOIN_META_REF);
@@ -482,9 +600,7 @@
         }
       }catch(e){}
     }
-    // call recalcDynamicRate periodically (opsional)
     setInterval(recalcDynamicRate, 10_000);
-
   </script>
 </body>
 </html>
