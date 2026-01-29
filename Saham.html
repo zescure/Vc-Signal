@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Market Simulator - Mobile UI</title>
+  <title>Market Simulator - Mobile UI (Koin)</title>
   <style>
     :root{
       --bg:#071021;
@@ -143,7 +143,7 @@
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
         <div class="bal-card">
-          <div class="bal-lbl">Saldo (IDR)</div>
+          <div class="bal-lbl">Saldo (koin)</div>
           <div id="bal" class="bal-val">0.00</div>
         </div>
         <div style="display:flex;gap:8px;align-items:center">
@@ -331,8 +331,14 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-  <!-- Your JS (unaltered, pasted as provided) -->
+  <!-- Your JS (modified only where requested) -->
   <script>
+/* ------------------ CONFIG: URLs untuk tombol yang buka halaman web ------------------ */
+const SIGNIN_URL = '/register-login';   // tombol Sign in akan membuka URL ini (ganti sesuai kebutuhan)
+const DEPOSIT_URL = '/deposit';         // tombol Deposit membuka URL ini
+const WITHDRAW_URL = '/withdraw';       // tombol Withdraw membuka URL ini
+/* ----------------------------------------------------------------------------- */
+
 const firebaseConfig = {
   apiKey: "AIzaSyDVUEZ3ZVmH4ld7LVnEq_L368wEJpEs-l8",
   authDomain: "zeepaylater-93a94.firebaseapp.com",
@@ -352,6 +358,7 @@ const db = firebase.firestore();
 let deviceId = localStorage.getItem('device_id');
 if(!deviceId){ deviceId = 'dev-' + Math.floor(Math.random()*10000000); localStorage.setItem('device_id', deviceId); }
 let balanceKey = 'balance_' + deviceId;
+// default balance (fallback local storage) kept for offline/non-auth use
 let balance = parseFloat(localStorage.getItem(balanceKey)) || 10000.0;
 document.getElementById('bal').innerText = balance.toFixed(2);
 
@@ -410,12 +417,36 @@ function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
 function nowMs(){ return Date.now(); }
 function tsToDate(ts){ if(!ts) return null; if(ts.toMillis) return new Date(ts.toMillis()); return new Date(ts); }
 
-/* ----------------- auth ----------------- */
+/* ----------------- AUTH & SIGN-IN BUTTON BEHAVIOR ----------------- */
+/* NOTE: per request, tombol Sign in sekarang membuka halaman web (SIGNIN_URL).
+   We still keep provider variable (not used) so other parts of code aren't impacted. */
 const provider = new firebase.auth.GoogleAuthProvider();
-document.getElementById('btnSignIn').addEventListener('click', ()=> auth.signInWithPopup(provider).catch(e=>alert(e.message)));
+
+// replace sign-in click to open a web page
+document.getElementById('btnSignIn').addEventListener('click', ()=> {
+  window.open(SIGNIN_URL, '_blank');
+});
+// sign out still performs signOut
 document.getElementById('btnSignOut').addEventListener('click', ()=> auth.signOut());
 
-// apply remote balance override (if any) - checks uid first then deviceId
+/* ----------------- function to load coin balance from users/{uid}.coinBalance ----------------- */
+async function loadCoinBalanceFromFirestore(uid){
+  try{
+    if(!uid) return;
+    const docRef = db.collection('users').doc(uid);
+    const snap = await docRef.get();
+    const coin = snap.exists && typeof snap.data().coinBalance === 'number' ? Number(snap.data().coinBalance) : 0;
+    // set local 'balance' to coin amount so existing buy/sell logic (which uses `balance`) can work
+    balance = coin;
+    // persist to localStorage for fallback (kept behavior)
+    localStorage.setItem(balanceKey, balance);
+    document.getElementById('bal').innerText = balance.toFixed(2);
+  }catch(e){
+    console.warn('loadCoinBalanceFromFirestore err', e);
+  }
+}
+
+/* apply remote balance override (keeps existing logic, but we will load coinBalance after auth event) */
 async function applyRemoteBalanceIfExists(){
   try{
     // check uid override
@@ -445,6 +476,7 @@ async function applyRemoteBalanceIfExists(){
   }catch(e){ console.warn('applyRemoteBalanceIfExists err', e); }
 }
 
+/* ----------------- auth state changed ----------------- */
 auth.onAuthStateChanged(async user=>{
   currentUser = user;
   if(user){
@@ -462,6 +494,8 @@ auth.onAuthStateChanged(async user=>{
       // non-admin cannot add event
       btnOpenAddEvent.style.display = 'none';
     }
+    // load coin balance from users/{uid} and display it (per request)
+    await loadCoinBalanceFromFirestore(user.uid);
   } else {
     document.getElementById('userInfo').innerText = 'not signed';
     document.getElementById('btnSignIn').style.display = 'inline-block';
@@ -469,10 +503,17 @@ auth.onAuthStateChanged(async user=>{
     adminControlsEl.style.display = 'none';
     document.getElementById('adminHint').style.display = 'block';
     btnOpenAddEvent.style.display = 'none';
+    // if logged out, keep showing fallback localStorage balance (already set at load)
+    document.getElementById('bal').innerText = balance.toFixed(2);
   }
 
-  // always apply remote balance overrides on login state change
+  // always apply remote balance overrides on login state change (kept behavior)
   await applyRemoteBalanceIfExists();
+
+  // After applyRemoteBalanceIfExists, if user logged in we re-load coin balance to ensure coin wins
+  if(currentUser && currentUser.uid){
+    await loadCoinBalanceFromFirestore(currentUser.uid);
+  }
 });
 
 /* ----------------- SPA nav ----------------- */
@@ -521,7 +562,7 @@ function renderAdminVolList(){
     const row = document.createElement('div');
     row.style.display='flex'; row.style.justifyContent='space-between'; row.style.alignItems='center'; row.style.padding='6px'; row.style.borderRadius='8px'; row.style.background='rgba(255,255,255,0.01)';
     row.innerHTML = `<div><div style="font-weight:700">${m.name}</div><div class="small">${m.symbol||m.id}</div></div>
-      <div style="text-align:right"><input data-id="${id}" type="Number" step="0.1" value="${m.volatility||1.0}" style="width:90px"/><div style="margin-top:6px"><button class="btn btn-ghost" data-save="${id}">Simpan</button></div></div>`;
+      <div style="text-align:right"><input data-id="${id}" type="number" step="0.1" value="${m.volatility||1.0}" style="width:90px"/><div style="margin-top:6px"><button class="btn btn-ghost" data-save="${id}">Simpan</button></div></div>`;
     adminVolListEl.appendChild(row);
     row.querySelector('button[data-save]').addEventListener('click', async ()=>{
       const id = row.querySelector('input[data-id]').dataset.id;
@@ -1078,17 +1119,12 @@ document.getElementById('btnPortfolio').addEventListener('click', ()=> showPage(
 document.getElementById('btnGotoPortfolio').addEventListener('click', ()=> showPage('portfolio'));
 document.getElementById('btnGotoMarket').addEventListener('click', ()=> { if(currentMarketId) selectMarket(currentMarketId); else alert('Pilih market dulu'); });
 
-/* ----------------- Deposit / Withdraw => WhatsApp redirect (sementara) ----------------- */
+/* ----------------- Deposit / Withdraw => buka halaman web (sesuai permintaan) ----------------- */
 document.getElementById('btnDeposit').addEventListener('click', ()=>{
-  // opens WhatsApp composer (no number) with prefilled message including deviceId/user
-  const userTag = currentUser ? (`uid:${currentUser.uid}`) : `dev:${deviceId}`;
-  const msg = `Permintaan DEPOSIT\nDevice/User: ${userTag}\nSaldo saat ini: ${balance.toFixed(2)}\nSilakan isi jumlah deposit (format: IDR xxx).`;
-  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  window.open(DEPOSIT_URL, '_blank');
 });
 document.getElementById('btnWithdraw').addEventListener('click', ()=>{
-  const userTag = currentUser ? (`uid:${currentUser.uid}`) : `dev:${deviceId}`;
-  const msg = `Permintaan WITHDRAW\nDevice/User: ${userTag}\nSaldo saat ini: ${balance.toFixed(2)}\nSilakan isi jumlah withdraw (format: IDR xxx).`;
-  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  window.open(WITHDRAW_URL, '_blank');
 });
 
 /* ----------------- Admin: Manage Balances modal ----------------- */
