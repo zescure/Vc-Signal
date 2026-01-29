@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Market Simulator - Mobile UI (Koin)</title>
+  <title>Market Simulator - Mobile UI (ZCoin Connected)</title>
   <style>
     :root{
       --bg:#071021;
       --card:#0b1625;
       --muted:rgba(255,255,255,0.55);
-      --accent:#ffd24a; /* yellow accent */
+      --accent:#ffd24a;
       --accent-2:#ffb86b;
       --danger:#ff7070;
       --glass: rgba(255,255,255,0.03);
@@ -23,7 +23,6 @@
     .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(145deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#062031;font-weight:800;font-size:18px;box-shadow:0 6px 18px rgba(255,210,74,0.08), inset 0 -6px 18px rgba(255,255,255,0.06);}
     .app-title{font-weight:700;font-size:15px}
     .app-sub{font-size:12px;color:var(--muted);margin-top:2px}
-    .top-actions{display:flex;gap:8px;align-items:center}
     .bal-card{background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));padding:8px 10px;border-radius:10px;display:flex;flex-direction:column;align-items:flex-end;min-width:120px;box-shadow:inset 0 -10px 30px rgba(0,0,0,0.2);}
     .bal-lbl{font-size:11px;color:var(--muted)}
     .bal-val{font-weight:800;color:#fff;font-size:16px}
@@ -47,23 +46,20 @@
     .market-sub{font-size:12px;color:var(--muted)}
     .chart-wrap{height:220px;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,#081926,#071426);display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.02)}
     canvas{width:100%;height:100%;display:block}
-    .row{display:flex;gap:8px;align-items:center}
-    .col{display:flex;flex-direction:column;gap:8px}
-    input[type="number"], input[type="text"], input[type="datetime-local"], select{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:10px;color:#fff;font-size:14px;}
+    input[type="number"], input[type="text"], input[type="datetime-local"], select{
+      background:transparent;border:1px solid rgba(255,255,255,0.04);
+      padding:8px;border-radius:10px;color:#fff;font-size:14px;
+    }
     #positionsList, #tradesList, #eventsList, #rightHistory, #adminVolList {display:flex;flex-direction:column;gap:8px;overflow:auto}
-    .muted.small{font-size:11px}
     .bottom-nav{display:flex;gap:6px;padding:10px;background:linear-gradient(180deg, rgba(0,0,0,0.06), rgba(0,0,0,0.03));align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.02);}
     .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px;border-radius:10px;background:transparent;border:0;color:var(--muted);cursor:pointer;font-weight:700;}
     .nav-btn.active{background:rgba(255,255,255,0.02);color:var(--accent);box-shadow:inset 0 -6px 16px rgba(255,210,74,0.03)}
-    .nav-ico{font-size:14px}
     #modalRoot{position:fixed;left:0;top:0;right:0;bottom:0;display:none;align-items:center;justify-content:center;z-index:200}
-    .modal-backdrop{position:absolute;inset:0;background:rgba(2,6,12,0.6);display:flex;align-items:center;justify-content:center;padding:20px}
-    .modal{background:linear-gradient(180deg,#081226,#061223);padding:14px;border-radius:14px;max-width:420px;width:100%;max-height:90vh;overflow:auto;border:1px solid rgba(255,255,255,0.03)}
-    #adminControls{display:none;padding:8px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.008), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02)}
     .tiny{font-size:12px;color:var(--muted);}
     @media (max-width:420px){ .app{margin:10px} .chart-wrap{height:200px} }
   </style>
 </head>
+
 <body>
   <div class="app" role="application" aria-label="Market Simulator">
     <div class="topbar">
@@ -74,11 +70,13 @@
           <div class="app-sub">Simulasi saham • realtime</div>
         </div>
       </div>
+
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
         <div class="bal-card">
-          <div class="bal-lbl">Saldo (koin)</div>
+          <div class="bal-lbl">Saldo (ZCoin)</div>
           <div id="bal" class="bal-val">0.00</div>
         </div>
+
         <div style="display:flex;gap:8px;align-items:center">
           <div class="user-row">
             <div id="userInfo" class="user-info">not signed</div>
@@ -99,17 +97,10 @@
               <div class="small muted">Realtime daftar market</div>
             </div>
             <div style="display:flex;gap:8px;align-items:center">
-              <button id="btnMarkets" class="btn-ghost">Daftar</button>
               <button id="btnGotoMarket" class="btn-ghost">Market</button>
             </div>
           </div>
-
           <div id="marketList" style="margin-top:12px"></div>
-
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
-            <div class="small muted">Riwayat terakhir</div>
-            <div class="small muted" id="visibleCount">0/0</div>
-          </div>
         </div>
 
         <div class="card" style="display:flex;gap:10px;flex-direction:column">
@@ -117,10 +108,9 @@
             <div style="font-weight:800">Portfolio</div>
             <div style="display:flex;gap:8px">
               <button id="btnGotoPortfolio" class="btn-ghost">Buka</button>
-              <button id="btnDeposit" class="btn-ghost">Deposit</button>
-              <button id="btnWithdraw" class="btn-ghost">Withdraw</button>
             </div>
           </div>
+
           <div style="display:flex;gap:10px">
             <div style="flex:1">
               <div class="small muted">Positions</div>
@@ -135,10 +125,10 @@
 
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center">
-            <div style="font-weight:800">Events</div>
-            <div id="adminHint" class="tiny muted">Login sebagai admin untuk tambah</div>
+            <div style="font-weight:800">Recent ZCoin History</div>
+            <div class="tiny muted">dari sistem ZCoin</div>
           </div>
-          <div id="eventsList" style="margin-top:10px;max-height:140px;overflow:auto"></div>
+          <div id="rightHistory" style="margin-top:10px;max-height:160px"></div>
         </div>
       </div>
 
@@ -160,57 +150,22 @@
             <canvas id="chartCanvas"></canvas>
           </div>
 
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
-            <div style="display:flex;gap:8px;align-items:center">
-              <select id="tfSelect" style="min-width:120px">
-                <option value="1000">1s</option>
-                <option value="5000">5s</option>
-                <option value="60000">1m</option>
-                <option value="300000">5m</option>
-              </select>
-              <div class="small muted">Visible: <span id="visibleCountSmall">auto</span></div>
-            </div>
-
-            <div style="display:flex;gap:8px;align-items:center">
-              <div class="small muted">Symbol: <span id="selectedSymbol">-</span></div>
-              <div class="small muted">Last: <span id="selectedPrice">0.00</span></div>
-            </div>
-          </div>
-
           <div style="display:flex;gap:8px;margin-top:12px;align-items:center">
             <input id="buyShares" type="number" placeholder="Jumlah lembar (min 100)" style="flex:1" value="100" />
             <button id="btnBuy" class="btn-primary">Beli</button>
             <button id="btnSell" class="btn-ghost">Jual</button>
+          </div>
+
+          <div class="small muted" style="margin-top:10px">
+            * Trading memakai saldo yang sama dengan ZCoin Wallet (zcoin_balances/{uid})
           </div>
         </div>
 
         <div class="card" style="margin-top:12px">
           <div style="display:flex;justify-content:space-between;align-items:center">
             <div style="font-weight:800">Trades Terakhir</div>
-            <div style="display:flex;gap:8px">
-              <button id="btnViewAllTrades" class="btn-ghost">Admin Trades</button>
-              <button id="btnOpenAddEvent" class="btn-ghost" style="display:none">Tambah Event</button>
-            </div>
           </div>
           <div id="tradesList" style="margin-top:10px;max-height:180px"></div>
-        </div>
-
-        <div id="adminControls" class="card" style="margin-top:12px;display:none">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div style="font-weight:800">Admin Controls</div>
-            <div style="display:flex;gap:8px">
-              <button id="btnCreateMarket" class="btn-ghost">Create Market</button>
-              <button id="btnEditMarket" class="btn-ghost">Edit Market</button>
-              <button id="btnEngineAll" class="btn-ghost">Start Engine (All)</button>
-            </div>
-          </div>
-          <div style="margin-top:8px">
-            <div class="small muted">Volatility editor</div>
-            <div id="adminVolList" style="margin-top:8px"></div>
-            <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
-              <button id="btnManageBalances" class="btn-ghost">Manage Balances</button>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -219,17 +174,13 @@
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center">
             <div style="font-weight:800">Portfolio</div>
-            <div class="small muted">Manage posisi & history</div>
+            <div class="small muted">Manage posisi</div>
           </div>
 
           <div style="display:flex;gap:10px;margin-top:10px">
             <div style="flex:1">
               <div class="small muted">Posisi Terbuka</div>
-              <div id="positionsList" style="max-height:240px;margin-top:8px"></div>
-            </div>
-            <div style="width:140px">
-              <div class="small muted">Recent Trades</div>
-              <div id="rightHistory" style="max-height:240px;margin-top:8px"></div>
+              <div id="positionsList2" style="max-height:320px;margin-top:8px"></div>
             </div>
           </div>
         </div>
@@ -239,13 +190,14 @@
       <div id="page-events" class="page">
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center">
-            <div style="font-weight:800">Events Calendar</div>
-            <div class="small muted">Event yang mempengaruhi market</div>
+            <div style="font-weight:800">Events</div>
+            <div class="small muted">coming soon</div>
           </div>
-          <div id="eventsList" style="margin-top:10px;max-height:320px"></div>
+          <div class="small muted" style="margin-top:10px">
+            Fitur event lu bisa lu sambung lagi nanti.
+          </div>
         </div>
       </div>
-
     </div>
 
     <div class="bottom-nav">
@@ -256,7 +208,6 @@
     </div>
   </div>
 
-  <!-- modal root -->
   <div id="modalRoot"></div>
 
   <!-- Firebase SDKs (v8) -->
@@ -264,1055 +215,511 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-  <!-- Your JS (integrated with zcoin econ) -->
   <script>
-/* ------------------ CONFIG: URLs untuk tombol yang buka halaman web ------------------ */
-const SIGNIN_URL = '/register-login';   // tombol Sign in akan membuka URL ini (ganti sesuai kebutuhan)
-const DEPOSIT_URL = '/deposit';         // tombol Deposit membuka URL ini
-const WITHDRAW_URL = '/withdraw';       // tombol Withdraw membuka URL ini
-/* ----------------------------------------------------------------------------- */
+    /* ------------------ CONFIG URL ------------------ */
+    const SIGNIN_URL = '/register-login';
 
-/* FIREBASE CONFIG */
-const firebaseConfig = {
-  apiKey: "AIzaSyDVUEZ3ZVmH4ld7LVnEq_L368wEJpEs-l8",
-  authDomain: "zeepaylater-93a94.firebaseapp.com",
-  projectId: "zeepaylater-93a94",
-  storageBucket: "zeepaylater-93a94.appspot.com",
-  messagingSenderId: "358065954807",
-  appId: "1:358065954807:web:66619211fea82a4b2518f2"
-};
-const ADMIN_UID = 'viCOsJo4wHVFmhtpmMx1Wd4sDF52'; // ubah sesuai kebutuhan
+    /* FIREBASE CONFIG */
+    const firebaseConfig = {
+      apiKey: "AIzaSyDVUEZ3ZVmH4ld7LVnEq_L368wEJpEs-l8",
+      authDomain: "zeepaylater-93a94.firebaseapp.com",
+      projectId: "zeepaylater-93a94",
+      storageBucket: "zeepaylater-93a94.appspot.com",
+      messagingSenderId: "358065954807",
+      appId: "1:358065954807:web:66619211fea82a4b2518f2"
+    };
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+    const ADMIN_UID = 'viCOsJo4wHVFmhtpmMx1Wd4sDF52';
 
-/* ---------------- ZCOIN ECONOMY CONFIG ----------------
-   - meta doc: zcoin/meta
-   - balances: zcoin_balances/{uid}
-   - transactions subcollection under each balance doc
----------------------------------------------------------*/
-const ZCOIN_META_PATH = ['zcoin','meta']; // collection 'zcoin' doc 'meta'
-const ZCOIN_BALANCES_COLL = 'zcoin_balances';
-const TOTAL_SUPPLY = 500_000_000_000; // 500 miliar
-const INITIAL_AIRDROP = 1000; // default airdrop to new users; set 0 if tidak mau airdrop
-const RATE_IDR_PER_10 = 10; // default rate used to display IDR estimate
-const FEE_RECEIVER_UID = ADMIN_UID; // fee receiver for transfers (if needed)
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-/* ------------------ device & balance (local fallback) --------------- */
-let deviceId = localStorage.getItem('device_id');
-if(!deviceId){ deviceId = 'dev-' + Math.floor(Math.random()*10000000); localStorage.setItem('device_id', deviceId); }
-let balanceKey = 'balance_' + deviceId;
-let balance = parseFloat(localStorage.getItem(balanceKey)) || 10000.0;
-document.getElementById('bal').innerText = balance.toFixed(2);
+    /* ---------------- ZCOIN PATHS ---------------- */
+    const ZCOIN_BALANCES_COLL = 'zcoin_balances';
+    const ZCOIN_META_REF = db.collection('zcoin').doc('meta');
 
-/* ---------------- canvas/engine/app state (tidied) ------------------ */
-/* (kept same as original file — tidak diubah kecuali bagian yang terkait dengan saldo) */
-const canvas = document.getElementById('chartCanvas');
-const ctx = canvas.getContext('2d');
-let DPR = window.devicePixelRatio || 1;
-function resizeCanvas(){ const r = canvas.getBoundingClientRect(); canvas.width = Math.floor(r.width*DPR); canvas.height = Math.floor(r.height*DPR); ctx.setTransform(DPR,0,0,DPR,0,0); }
-window.addEventListener('resize', ()=>{ resizeCanvas(); draw(); });
-resizeCanvas();
+    const TOTAL_SUPPLY = 500_000_000_000;
+    const INITIAL_AIRDROP = 1000;
 
-/* app state */
-let currentUser = null;
-let currentMarketId = null;
-let currentMarket = null;
-let unsubscribeMarket = null;
-let marketsCache = {};
-let eventsCache = {};
-let priceHistory = [];
-let candles = [];
-let timeframeMs = 1000;
-let lastTickTime = 0;
-let userTfOverride = false;
-let visibleSlots = null;
-let historyOffset = 0;
-const MIN_VISIBLE = 30, MAX_VISIBLE = 400;
-const LEFT_MARGIN = 40, RIGHT_MARGIN = 90;
-let engineAllInterval = null;
-let engineAllRunning = false;
-let positionsSnapshotCache = [];
-let adminTradesUnsub = null;
-let adminPositionsUnsub = null;
+    /* ---------------- APP STATE ---------------- */
+    let currentUser = null;
+    let balance = 0;
 
-/* UI refs */
-const marketListEl = document.getElementById('marketList');
-const positionsListEl = document.getElementById('positionsList');
-const tradesListEl = document.getElementById('tradesList');
-const eventsListEl = document.getElementById('eventsList');
-const adminControlsEl = document.getElementById('adminControls');
-const adminVolListEl = document.getElementById('adminVolList');
-const btnOpenAddEvent = document.getElementById('btnOpenAddEvent');
-const btnManageBalances = document.getElementById('btnManageBalances');
-const btnViewAllTrades = document.getElementById('btnViewAllTrades');
+    let currentMarketId = null;
+    let currentMarket = null;
+    let marketsCache = {};
+    let unsubscribeMarkets = null;
+    let unsubscribeMarket = null;
 
-/* ----------------- small helpers ----------------- */
-function nf(n){ return (n||0).toLocaleString('id-ID'); }
-function formatPrice(p){ return Number(p).toFixed(2); }
-function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
-function nowMs(){ return Date.now(); }
-function tsToDate(ts){ if(!ts) return null; if(ts.toMillis) return new Date(ts.toMillis()); return new Date(ts); }
+    /* ---------------- UI REFS ---------------- */
+    const balEl = document.getElementById('bal');
+    const userInfoEl = document.getElementById('userInfo');
+    const btnSignIn = document.getElementById('btnSignIn');
+    const btnSignOut = document.getElementById('btnSignOut');
 
-/* ----------------- ZCoin: meta & balances helpers (v8) ----------------- */
-function zcoinMetaRef(){ return db.collection('zcoin').doc('meta'); }
+    const marketListEl = document.getElementById('marketList');
+    const positionsListEl = document.getElementById('positionsList');
+    const positionsListEl2 = document.getElementById('positionsList2');
+    const tradesListEl = document.getElementById('tradesList');
+    const rightHistoryEl = document.getElementById('rightHistory');
 
-async function ensureZcoinMeta(){
-  const ref = zcoinMetaRef();
-  const snap = await ref.get();
-  if(!snap.exists){
-    await ref.set({
-      totalSupply: TOTAL_SUPPLY,
-      circulatingSupply: 0,
-      dynamicRatePer10: RATE_IDR_PER_10,
-      bankLiquidityIDR: 100000,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-  } else {
-    // ensure fields exist
-    const d = snap.data();
-    const update = {};
-    if(typeof d.totalSupply !== 'number') update.totalSupply = TOTAL_SUPPLY;
-    if(typeof d.circulatingSupply !== 'number') update.circulatingSupply = 0;
-    if(typeof d.dynamicRatePer10 !== 'number') update.dynamicRatePer10 = RATE_IDR_PER_10;
-    if(Object.keys(update).length) await ref.update(update);
-  }
-}
-
-function subscribeMetaRealtime(){
-  zcoinMetaRef().onSnapshot(snap=>{
-    if(!snap.exists) return;
-    const d = snap.data();
-    document.getElementById('totalSupply')?.remove?.(); // no-op safe
-    // We don't have UI fields for meta in this small app, but you can easily add them.
-    // For compatibility, update local IDR rate display if needed elsewhere.
-  });
-}
-
-// Ensure user zcoin balance exists — if not, create doc and give INITIAL_AIRDROP (atomic)
-async function ensureUserZBalance(uid, displayName){
-  const userRef = db.collection(ZCOIN_BALANCES_COLL).doc(uid);
-  const metaRef = zcoinMetaRef();
-
-  const snap = await userRef.get();
-  if(snap.exists) return;
-
-  if(INITIAL_AIRDROP > 0){
-    // run transaction: create balance and increment circulating if supply available
-    await db.runTransaction(async tx => {
-      const metaSnap = await tx.get(metaRef);
-      if(!metaSnap.exists) throw new Error('ZCoin meta not found.');
-      const meta = metaSnap.data();
-      const freeLocked = (meta.totalSupply || TOTAL_SUPPLY) - (meta.circulatingSupply || 0);
-      if(INITIAL_AIRDROP > freeLocked) throw new Error('Tidak cukup supply untuk airdrop.');
-
-      tx.set(userRef, {
-        amount: INITIAL_AIRDROP,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        displayName: displayName || '-'
-      });
-
-      const txColRef = userRef.collection('transactions').doc();
-      tx.set(txColRef, {
-        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        amount: INITIAL_AIRDROP,
-        type: 'airdrop',
-        note: 'onboarding-airdrop'
-      });
-
-      tx.update(metaRef, { circulatingSupply: (meta.circulatingSupply || 0) + INITIAL_AIRDROP });
-    });
-  } else {
-    await userRef.set({ amount: 0, createdAt: firebase.firestore.FieldValue.serverTimestamp(), displayName: displayName || '-' });
-  }
-}
-
-// load zcoin balance for UI
-async function loadZBalance(uid){
-  try{
-    if(!uid) return;
-    const ref = db.collection(ZCOIN_BALANCES_COLL).doc(uid);
-    const snap = await ref.get();
-    const amt = snap.exists ? Number(snap.data().amount || 0) : 0;
-    balance = amt;
-    localStorage.setItem(balanceKey, balance);
-    document.getElementById('bal').innerText = balance.toFixed(2);
-    await loadZTxHistory(uid);
-  }catch(e){
-    console.warn('loadZBalance err', e);
-  }
-}
-
-async function loadZTxHistory(uid){
-  const ul = document.getElementById('rightHistory');
-  try{
-    ul.innerHTML = '';
-    const col = db.collection(ZCOIN_BALANCES_COLL).doc(uid).collection('transactions');
-    const snaps = await col.orderBy('timestamp','desc').limit(10).get();
-    snaps.forEach(d=>{
-      const t = d.data();
-      const time = t.timestamp && t.timestamp.toDate ? t.timestamp.toDate().toLocaleString() : '';
-      const li = document.createElement('div'); li.className='list-item';
-      li.innerHTML = `<div><div style="font-weight:700">${t.amount>0?'+':''}${t.amount} koin</div><div class="small muted">${t.type||''} • ${time}</div></div>`;
-      ul.appendChild(li);
-    });
-  }catch(e){ /* ignore */ }
-}
-
-/* applyRemoteBalanceIfExists: check zcoin_balances uid and fallback to legacy balances */
-async function applyRemoteBalanceIfExists(){
-  try{
-    if(currentUser && currentUser.uid){
-      const docRef = db.collection(ZCOIN_BALANCES_COLL).doc(currentUser.uid);
-      const snap = await docRef.get();
-      if(snap.exists && typeof snap.data().amount === 'number'){
-        balance = snap.data().amount;
-        localStorage.setItem(balanceKey, balance);
-        document.getElementById('bal').innerText = balance.toFixed(2);
-        return;
+    /* ---------------- HELPERS ---------------- */
+    function formatPrice(p){ return Number(p || 0).toFixed(2); }
+    function mustLogin(){
+      if(!currentUser) {
+        alert('Lu harus login dulu biar saldo nyambung ke ZCoin.');
+        window.open(SIGNIN_URL, '_blank');
+        return false;
       }
-    }
-    // fallback to legacy 'balances' collection by device or uid_
-    try {
-      if(currentUser && currentUser.uid){
-        const udoc = await db.collection('balances').doc('uid_' + currentUser.uid).get();
-        if(udoc.exists && typeof udoc.data().amount === 'number'){
-          balance = udoc.data().amount;
-          localStorage.setItem(balanceKey, balance);
-          document.getElementById('bal').innerText = balance.toFixed(2);
-          return;
-        }
-      }
-      const ddoc = await db.collection('balances').doc(deviceId).get();
-      if(ddoc.exists && typeof ddoc.data().amount === 'number'){
-        balance = ddoc.data().amount;
-        localStorage.setItem(balanceKey, balance);
-        document.getElementById('bal').innerText = balance.toFixed(2);
-        return;
-      }
-    } catch(e){}
-  }catch(e){ console.warn('applyRemoteBalanceIfExists err', e); }
-}
-
-/* ----------------- AUTH & SIGN-IN BUTTON BEHAVIOR ----------------- */
-/* Sign-in opens a web page (SIGNIN_URL) per request */
-document.getElementById('btnSignIn').addEventListener('click', ()=> {
-  window.open(SIGNIN_URL, '_blank');
-});
-document.getElementById('btnSignOut').addEventListener('click', ()=> auth.signOut());
-
-/* ----------------- auth state changed: ensure zcoin meta & user balance ----------------- */
-auth.onAuthStateChanged(async user=>{
-  currentUser = user;
-  if(user){
-    document.getElementById('userInfo').innerText = user.email || user.uid;
-    document.getElementById('btnSignIn').style.display = 'none';
-    document.getElementById('btnSignOut').style.display = 'inline-block';
-    if(user.uid === ADMIN_UID){
-      adminControlsEl.style.display = 'flex';
-      document.getElementById('adminHint').style.display = 'none';
-      btnOpenAddEvent.style.display = 'inline-block';
-    } else {
-      adminControlsEl.style.display = 'none';
-      document.getElementById('adminHint').style.display = 'block';
-      btnOpenAddEvent.style.display = 'none';
+      return true;
     }
 
-    // Ensure economy meta exists
-    try{ await ensureZcoinMeta(); }catch(e){ console.warn('ensureZcoinMeta err', e); }
-
-    // Ensure user zcoin balance exists (and maybe give airdrop)
-    try{ await ensureUserZBalance(user.uid, user.displayName || user.email || '-'); }catch(e){ console.warn('ensureUserZBalance err', e); }
-
-    // load zcoin balance into UI
-    await loadZBalance(user.uid);
-  } else {
-    document.getElementById('userInfo').innerText = 'not signed';
-    document.getElementById('btnSignIn').style.display = 'inline-block';
-    document.getElementById('btnSignOut').style.display = 'none';
-    adminControlsEl.style.display = 'none';
-    document.getElementById('adminHint').style.display = 'block';
-    btnOpenAddEvent.style.display = 'none';
-    document.getElementById('bal').innerText = balance.toFixed(2);
-  }
-
-  // always apply remote legacy overrides if any
-  await applyRemoteBalanceIfExists();
-
-  // after applying, reload zbalance if user logged in (to ensure zcoin wins)
-  if(currentUser && currentUser.uid){
-    await loadZBalance(currentUser.uid);
-  }
-});
-
-/* ----------------- SPA & market subscription (kept mostly same) ----------------- */
-document.querySelectorAll('.nav-btn').forEach(b=>{
-  b.addEventListener('click', ()=> {
-    document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active');
-    const page = b.dataset.page;
-    showPage(page);
-  });
-});
-function showPage(name){
-  ['page-home','page-market','page-portfolio','page-events'].forEach(id=>document.getElementById(id).style.display='none');
-  if(name==='home') document.getElementById('page-home').style.display='block';
-  else if(name==='markets') document.getElementById('page-market').style.display='block';
-  else if(name==='portfolio') document.getElementById('page-portfolio').style.display='block';
-  else if(name==='events') document.getElementById('page-events').style.display='block';
-}
-
-/* ----------------- subscribe markets list realtime (unchanged) ----------------- */
-let unsubscribeMarketsList = null;
-async function subscribeMarketsListRealtime(){
-  if(unsubscribeMarketsList) unsubscribeMarketsList();
-  unsubscribeMarketsList = db.collection('markets').onSnapshot(snap=>{
-    marketListEl.innerHTML = '';
-    marketsCache = {};
-    snap.forEach(doc=>{
-      const m = doc.data(); m.id = doc.id; marketsCache[m.id] = m;
-      const el = document.createElement('div'); el.className='list-item';
-      el.innerHTML = `<div><div style="font-weight:700">${m.name}</div><div class="small">${m.symbol || m.id}</div></div>
-        <div style="text-align:right"><div style="font-weight:800">${formatPrice(m.price)}</div><div style="margin-top:6px"><button class="btn btn-ghost" data-id="${m.id}">View</button></div></div>`;
-      el.querySelector('button').addEventListener('click', ()=>selectMarket(m.id));
-      marketListEl.appendChild(el);
-    });
-    renderAdminVolList();
-    computeAndRenderPnL();
-  });
-}
-
-/* render admin volatility editor */
-function renderAdminVolList(){
-  adminVolListEl.innerHTML = '';
-  for(const id in marketsCache){
-    const m = marketsCache[id];
-    const row = document.createElement('div');
-    row.style.display='flex'; row.style.justifyContent='space-between'; row.style.alignItems='center'; row.style.padding='6px'; row.style.borderRadius='8px'; row.style.background='rgba(255,255,255,0.01)';
-    row.innerHTML = `<div><div style="font-weight:700">${m.name}</div><div class="small">${m.symbol||m.id}</div></div>
-      <div style="text-align:right"><input data-id="${id}" type="number" step="0.1" value="${m.volatility||1.0}" style="width:90px"/><div style="margin-top:6px"><button class="btn btn-ghost" data-save="${id}">Simpan</button></div></div>`;
-    adminVolListEl.appendChild(row);
-    row.querySelector('button[data-save]').addEventListener('click', async ()=>{
-      const id = row.querySelector('input[data-id]').dataset.id;
-      const v = parseFloat(row.querySelector('input[data-id]').value) || 1.0;
-      await db.collection('markets').doc(id).update({ volatility: v, lastUpdate: firebase.firestore.FieldValue.serverTimestamp() });
-      alert('Volatility disimpan dan langsung berlaku untuk market ' + id);
-    });
-  }
-}
-
-/* ----------------- select market & load ticks/events ----------------- */
-let unsubscribePositionsGroup = null;
-async function selectMarket(marketId){
-  if(unsubscribeMarket) unsubscribeMarket();
-  currentMarketId = marketId; currentMarket = null; priceHistory=[]; candles=[]; lastTickTime=0;
-  document.getElementById('selectedSymbol').innerText = marketId;
-  await loadTicksForMarket(marketId);
-  unsubscribeMarket = db.collection('markets').doc(marketId).onSnapshot(doc=>{
-    if(!doc.exists) return;
-    const m = doc.data(); currentMarket = {...m, id:doc.id}; marketsCache[doc.id]=m;
-    document.getElementById('marketName').innerText = m.name; document.getElementById('marketSymbol').innerText = m.symbol || doc.id;
-    document.getElementById('marketDesc').innerText = m.description || '';
-    document.getElementById('marketPrice').innerText = formatPrice(m.price); document.getElementById('marketVolDisplay').innerText = 'Vol x' + (m.volatility||1);
-    document.getElementById('selectedPrice').innerText = formatPrice(m.price);
-    const stamp = (m.lastUpdate && m.lastUpdate.toMillis) ? m.lastUpdate.toMillis() : Date.now();
-    if(stamp > lastTickTime - 1){
-      priceHistory.push({t: stamp, price: m.price});
-      lastTickTime = Math.max(lastTickTime, stamp);
-      rebuildCandlesFromHistory();
+    function setBalanceUI(val){
+      balance = Number(val || 0);
+      balEl.innerText = balance.toFixed(2);
     }
-    draw();
-    computeAndRenderPnL();
-  });
-  await loadEventsForMarket(marketId);
-  document.getElementById('page-market').style.display='block';
-  showPage('markets');
-  setTimeout(()=>{ try{ DPR = window.devicePixelRatio || 1; resizeCanvas(); draw(); }catch(e){} }, 80);
-}
 
-/* load ticks for market */
-async function loadTicksForMarket(mid){
-  priceHistory=[]; lastTickTime=0;
-  try{
-    const snap = await db.collection('markets').doc(mid).collection('ticks').orderBy('ts','asc').limit(5000).get();
-    snap.forEach(d=>{
-      const data = d.data();
-      const t = (data.ts && data.ts.toMillis) ? data.ts.toMillis() : (data.t || Date.now());
-      priceHistory.push({t, price: data.price});
-      lastTickTime = Math.max(lastTickTime, t);
-    });
-    rebuildCandlesFromHistory();
-  }catch(e){ console.warn('load ticks err', e); }
-}
-
-/* ----------------- events handling (kept same) ----------------- */
-async function loadEventsForMarket(mid){
-  eventsCache[mid] = [];
-  try{
-    const snap = await db.collection('markets').doc(mid).collection('events').orderBy('startTs','asc').get();
-    snap.forEach(d=>{ const ev = d.data(); ev.id = d.id; eventsCache[mid].push(ev); });
-    renderEventsAll();
-  }catch(e){ console.warn('load events err', e); }
-}
-function renderEventsAll(){
-  eventsListEl.innerHTML = '';
-  let all = [];
-  for(const mid in eventsCache) all = all.concat(eventsCache[mid].map(e=>({marketId:mid, ...e})));
-  all.sort((a,b)=>{
-    const ta = a.startTs && a.startTs.toMillis? a.startTs.toMillis() : (a.startTs || 0);
-    const tb = b.startTs && b.startTs.toMillis? b.startTs.toMillis() : (b.startTs || 0);
-    return ta - tb;
-  });
-  all.forEach(ev=>{
-    const start = tsToDate(ev.startTs);
-    const end = tsToDate(ev.endTs);
-    const el = document.createElement('div'); el.className='list-item';
-    el.innerHTML = `<div><div style="font-weight:700">${ev.title || 'Event'}</div><div class="small">${ev.description||''}</div><div class="small">${ev.marketId} • ${start?start.toLocaleString():''} → ${end?end.toLocaleString():''}</div></div>
-      <div style="text-align:right"><div class="small">Vol x${ev.volMultiplier||1}</div>${currentUser && currentUser.uid===ADMIN_UID?`<div style="margin-top:8px"><button class="btn btn-ghost" data-mid="${ev.marketId}" data-id="${ev.id}">Edit</button> <button class="btn btn-ghost" onclick="deleteEvent('${ev.marketId}','${ev.id}')">Hapus</button></div>`:''}</div>`;
-    eventsListEl.appendChild(el);
-    const btn = el.querySelector('button[data-id]');
-    if(btn){
-      btn.addEventListener('click', async ()=>{
-        const mid = btn.dataset.mid; const id = btn.dataset.id;
-        const doc = await db.collection('markets').doc(mid).collection('events').doc(id).get();
-        if(!doc.exists) return alert('Event tidak ditemukan');
-        const data = doc.data();
-        const newTitle = prompt('Title', data.title || '');
-        if(newTitle === null) return;
-        const newDesc = prompt('Keterangan', data.description || '');
-        if(newDesc === null) return;
-        const newVol = parseFloat(prompt('Vol Multiplier (e.g. 5)', String(data.volMultiplier || 1))) || 1;
-        const durMin = parseInt(prompt('Durasi menit (30)', '30')) || 30;
-        const startStr = prompt('Start (YYYY-MM-DDTHH:MM)', new Date(data.startTs.toMillis()).toISOString().slice(0,16));
-        if(!startStr) return;
-        const startMs = new Date(startStr).getTime();
-        const endMs = startMs + durMin*60*1000;
-        await db.collection('markets').doc(mid).collection('events').doc(id).update({
-          title: newTitle,
-          description: newDesc,
-          volMultiplier: newVol,
-          startTs: firebase.firestore.Timestamp.fromMillis(startMs),
-          endTs: firebase.firestore.Timestamp.fromMillis(endMs),
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    async function ensureZcoinMeta(){
+      const snap = await ZCOIN_META_REF.get();
+      if(!snap.exists){
+        await ZCOIN_META_REF.set({
+          totalSupply: TOTAL_SUPPLY,
+          circulatingSupply: 0,
+          dynamicRatePer10: 10,
+          bankLiquidityIDR: 100000,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-        await loadEventsForMarket(mid);
-      });
-    }
-  });
-}
-window.deleteEvent = async (mid,id) => {
-  if(!currentUser || currentUser.uid !== ADMIN_UID) return alert('Only owned');
-  if(!confirm('Hapus event?')) return;
-  await db.collection('markets').doc(mid).collection('events').doc(id).delete();
-  await loadEventsForMarket(mid);
-  alert('Event dihapus');
-};
-
-/* event modal (kept same) */
-btnOpenAddEvent.addEventListener('click', ()=> showEventModal({mode:'add'}));
-function showEventModal(opts){
-  const root = document.getElementById('modalRoot'); root.innerHTML = ''; root.style.display='block';
-  const backdrop = document.createElement('div'); backdrop.className='modal-backdrop';
-  const modal = document.createElement('div'); modal.className='modal';
-  modal.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:800">${opts.mode==='add'?'Tambah Event':'Edit Event'}</div><button id="modalClose" class="btn btn-ghost">Tutup</button></div>
-    <div style="margin-top:10px" class="grid">
-      <div><label>Judul</label><input id="ev_title" type="text" /></div>
-      <div><label>Vol Multiplier</label><input id="ev_vol" type="number" step="0.1" value="10" /></div>
-      <div style="grid-column:1/3"><label>Keterangan</label><input id="ev_desc" type="text" /></div>
-      <div><label>Start (lokal)</label><input id="ev_start" type="datetime-local" /></div>
-      <div><label>Durasi menit</label><input id="ev_dur" type="number" value="30" /></div>
-      <div style="grid-column:1/3"><label>Pilih Market (centang yang akan terkena pengaruh)</label><div id="ev_marketlist" style="max-height:160px;overflow:auto;border-radius:8px;padding:6px;background:rgba(255,255,255,0.01)"></div></div>
-    </div>
-    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px"><button id="ev_save" class="btn btn-primary">Simpan</button><button id="ev_cancel" class="btn btn-ghost">Batal</button></div>`;
-  backdrop.appendChild(modal); root.appendChild(backdrop);
-  const ml = modal.querySelector('#ev_marketlist');
-  for(const id in marketsCache){
-    const m = marketsCache[id];
-    const row = document.createElement('div');
-    row.style.display='flex'; row.style.justifyContent='space-between'; row.style.alignItems='center'; row.style.padding='6px';
-    row.innerHTML = `<label><input type="checkbox" data-id="${id}" /> <strong>${m.name}</strong> <span class="small muted">(${m.symbol||id})</span></label>`;
-    ml.appendChild(row);
-  }
-  modal.querySelector('#modalClose').addEventListener('click', closeModal);
-  modal.querySelector('#ev_cancel').addEventListener('click', closeModal);
-  modal.querySelector('#ev_save').addEventListener('click', async ()=>{
-    const title = modal.querySelector('#ev_title').value.trim() || 'Event';
-    const desc = modal.querySelector('#ev_desc').value.trim() || '';
-    const vol = parseFloat(modal.querySelector('#ev_vol').value) || 1;
-    const startStr = modal.querySelector('#ev_start').value;
-    if(!startStr) return alert('Pilih waktu mulai');
-    const dur = parseInt(modal.querySelector('#ev_dur').value) || 30;
-    const startMs = new Date(startStr).getTime();
-    const endMs = startMs + dur*60*1000;
-    const cbs = modal.querySelectorAll('input[type=checkbox][data-id]');
-    const selected = [];
-    cbs.forEach(cb=>{ if(cb.checked) selected.push(cb.dataset.id) });
-    if(selected.length === 0) return alert('Pilih minimal satu market yang terkena event');
-    try{
-      for(const mid of selected){
-        await db.collection('markets').doc(mid).collection('events').add({
-          title, description: desc, volMultiplier: vol,
-          startTs: firebase.firestore.Timestamp.fromMillis(startMs),
-          endTs: firebase.firestore.Timestamp.fromMillis(endMs),
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-          createdBy: currentUser ? currentUser.uid : 'anon'
-        });
-        await loadEventsForMarket(mid);
       }
-      alert('Event ditambahkan pada market terpilih');
-      closeModal();
-    }catch(e){ console.error(e); alert('Gagal menambahkan event: ' + e.message); }
-  });
-  function closeModal(){ root.innerHTML=''; root.style.display='none'; renderEventsAll(); }
-}
-
-/* ----------------- admin create/edit market & engine (same) ----------------- */
-document.getElementById('btnCreateMarket').addEventListener('click', async ()=>{
-  if(!currentUser || currentUser.uid !== ADMIN_UID) return alert('Only admin');
-  const name = prompt('Nama perusahaan (contoh: Holez)');
-  if(!name) return;
-  const symbol = prompt('Symbol (contoh: HOLEZ/IDR)','HOLEZ/IDR');
-  const price = parseFloat(prompt('Harga awal per lembar','1000')) || 1000;
-  const vol = parseFloat(prompt('Volatility (1.0 default)','1.0')) || 1.0;
-  const desc = prompt('Deskripsi singkat','Perusahaan contoh');
-  const doc = await db.collection('markets').add({ name, symbol, price:parseFloat(price.toFixed(2)), volatility: vol, description: desc || '', createdAt: firebase.firestore.FieldValue.serverTimestamp(), lastUpdate: firebase.firestore.FieldValue.serverTimestamp() });
-  alert('Market dibuat: ' + doc.id);
-});
-
-document.getElementById('btnEditMarket').addEventListener('click', async ()=>{
-  if(!currentUser || currentUser.uid !== ADMIN_UID) return alert('Only admin');
-  if(!currentMarketId) return alert('Pilih market dulu');
-  const docRef = db.collection('markets').doc(currentMarketId);
-  const doc = await docRef.get();
-  if(!doc.exists) return alert('Market tidak ditemukan');
-  const m = doc.data();
-  const name = prompt('Nama', m.name) || m.name;
-  const symbol = prompt('Symbol', m.symbol) || m.symbol;
-  const price = parseFloat(prompt('Price', String(m.price))) || m.price;
-  const vol = parseFloat(prompt('Volatility', String(m.volatility || 1))) || m.volatility;
-  const desc = prompt('Deskripsi', m.description || '') || m.description;
-  await docRef.update({ name, symbol, price: parseFloat(price.toFixed(2)), volatility: vol, description: desc, lastUpdate: firebase.firestore.FieldValue.serverTimestamp() });
-  alert('Market updated — volatility langsung berlaku');
-});
-
-document.getElementById('btnEngineAll').addEventListener('click', ()=>{
-  if(!currentUser || currentUser.uid !== ADMIN_UID) return alert('Only admin');
-  engineAllRunning = !engineAllRunning;
-  document.getElementById('btnEngineAll').innerText = engineAllRunning ? 'Stop Perdagangan (All)' : 'Start Engine (All)';
-  if(engineAllRunning) startEngineAllMarkets(); else stopEngineAllMarkets();
-});
-
-function stopEngineAllMarkets(){ if(engineAllInterval) clearInterval(engineAllInterval); engineAllInterval=null; engineAllRunning=false; }
-
-function startEngineAllMarkets(){
-  if(engineAllInterval) return;
-  const TICK_MS = 800;
-  engineAllInterval = setInterval(async ()=>{
-    try{
-      const snap = await db.collection('markets').get();
-      for(const doc of snap.docs){
-        try{
-          const mid = doc.id; const m = doc.data();
-          let baseVol = (m.volatility !== undefined) ? m.volatility : 1.0;
-          let effMultiplier = 1.0;
-          try {
-            const now = firebase.firestore.Timestamp.now();
-            const evSnap = await db.collection('markets').doc(mid).collection('events').where('startTs','<=',now).where('endTs','>=',now).get();
-            evSnap.forEach(ed=>{
-              const ev = ed.data();
-              if(ev.volMultiplier && ev.volMultiplier > effMultiplier) effMultiplier = ev.volMultiplier;
-            });
-          } catch(e){ }
-          const vol = baseVol * effMultiplier;
-          const last = m.price || 1.0;
-          const rnd = (Math.random()-0.5)*2;
-          const spike = (Math.random()<0.02)? (Math.random()-0.5)*0.05*vol : 0;
-          const meanRevert = (1.0 - last) * 0.0001;
-          const step = rnd * 0.0005 * vol + spike + meanRevert;
-          const newP = Math.max(0.01, parseFloat((last + step).toFixed(2)));
-          await doc.ref.update({ price: newP, lastUpdate: firebase.firestore.FieldValue.serverTimestamp() });
-          await doc.ref.collection('ticks').add({ price: newP, ts: firebase.firestore.FieldValue.serverTimestamp() }).catch(err=>console.warn('tick write err', err));
-        } catch(e){ console.error('per-market engine err', e); }
-      }
-    } catch(e){
-      console.error('engine all err', e);
     }
-  }, TICK_MS);
-}
 
-/* ----------------- buy / sell (stock model) ----------------- */
-/* NOTE: these use `balance` variable which is now synced from zcoin_balances */
-document.getElementById('btnBuy').addEventListener('click', buyShares);
-document.getElementById('btnSell').addEventListener('click', sellShares);
+    async function ensureUserZBalance(uid, displayName){
+      const userRef = db.collection(ZCOIN_BALANCES_COLL).doc(uid);
+      const snap = await userRef.get();
+      if(snap.exists) return;
 
-async function isSellLockedFor(marketId, ownerId){
-  try{
-    const doc = await db.collection('locks').doc(`${marketId}_${ownerId}`).get();
-    if(!doc.exists) return false;
-    const d = doc.data();
-    return !!d.locked;
-  }catch(e){ console.warn('isSellLockedFor err', e); return false; }
-}
+      if(INITIAL_AIRDROP > 0){
+        await db.runTransaction(async tx=>{
+          const metaSnap = await tx.get(ZCOIN_META_REF);
+          if(!metaSnap.exists) throw new Error('ZCoin meta not found');
+          const meta = metaSnap.data();
 
-async function buyShares(){
-  if(!currentMarketId || !currentMarket) return alert('Pilih market');
-  const shares = Math.max(0, Math.floor(Number(document.getElementById('buyShares').value) || 0));
-  if(isNaN(shares) || shares < 100) return alert('Minimal pembelian 100 lembar');
-  const cost = shares * currentMarket.price;
-  if(cost > balance) return alert('Saldo tidak cukup');
-  balance -= cost; localStorage.setItem(balanceKey, balance); document.getElementById('bal').innerText = balance.toFixed(2);
+          const total = meta.totalSupply || TOTAL_SUPPLY;
+          const circ = meta.circulatingSupply || 0;
+          const free = total - circ;
+          if(INITIAL_AIRDROP > free) throw new Error('Supply tidak cukup untuk airdrop');
 
-  // also persist balance change to zcoin_balances for logged in user
-  if(currentUser && currentUser.uid){
-    const userRef = db.collection(ZCOIN_BALANCES_COLL).doc(currentUser.uid);
-    await db.runTransaction(async tx => {
-      const u = await tx.get(userRef);
-      const cur = u.exists ? Number(u.data().amount || 0) : 0;
-      tx.update(userRef, { amount: cur - cost, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
-      const txdoc = userRef.collection('transactions').doc();
-      tx.set(txdoc, { timestamp: firebase.firestore.FieldValue.serverTimestamp(), amount: -cost, type:'market-buy', marketId: currentMarketId });
-    }).catch(e=>console.warn('tx buy persist err', e));
-  }
-
-  const coll = db.collection('markets').doc(currentMarketId).collection('positions');
-  await coll.add({ userUID: currentUser?currentUser.uid:'anon', deviceId, marketId: currentMarketId, marketName: currentMarket.name, shares, avgPrice: currentMarket.price, status:'open', createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-  await db.collection('markets').doc(currentMarketId).collection('trades').add({ type:'BUY', userUID: currentUser?currentUser.uid:'anon', deviceId, shares, price: currentMarket.price, ts: firebase.firestore.FieldValue.serverTimestamp() });
-  alert(`Beli ${shares} lembar @ ${formatPrice(currentMarket.price)} berhasil`);
-}
-
-async function sellShares(){
-  if(!currentMarketId || !currentMarket) return alert('Pilih market');
-  const sellShares = Math.max(0, Math.floor(Number(document.getElementById('buyShares').value) || 0));
-  if(isNaN(sellShares) || sellShares < 100) return alert('Minimal jual 100 lembar');
-
-  const ownerIdent = currentUser ? currentUser.uid : deviceId;
-  const locked = await isSellLockedFor(currentMarketId, ownerIdent);
-  if(locked){
-    return alert('Penjualan saham gagal, liquidity tidak terpenuhi. Mohon bersabar untuk tindak lanjut kami.');
-  }
-
-  const coll = db.collection('markets').doc(currentMarketId).collection('positions');
-  const snap = await coll.where('status','==','open').where('deviceId','==',deviceId).get();
-  let available = 0; const docs = [];
-  snap.forEach(d=>{ const p = d.data(); p._id = d.id; docs.push({ref:d.ref, data:p}); available += p.shares; });
-  if(available < sellShares) return alert('Tidak cukup lembar untuk dijual');
-  let remaining = sellShares; const batch = db.batch();
-  for(const item of docs){
-    if(remaining <= 0) break;
-    const p = item.data; const take = Math.min(p.shares, remaining);
-    const newShares = p.shares - take;
-    const sellPrice = currentMarket.price;
-    const pl = take * (sellPrice - p.avgPrice);
-    if(newShares <= 0){
-      batch.update(item.ref, { shares: 0, status: 'closed', closedAt: firebase.firestore.FieldValue.serverTimestamp(), closePrice: sellPrice, reason:'sell', pl: (p.pl||0)+pl });
-    } else {
-      batch.update(item.ref, { shares: newShares, pl: (p.pl||0)+pl });
-    }
-    remaining -= take;
-    balance += take * sellPrice;
-  }
-  await batch.commit();
-
-  // persist balance back to zcoin_balances if logged in
-  if(currentUser && currentUser.uid){
-    const userRef = db.collection(ZCOIN_BALANCES_COLL).doc(currentUser.uid);
-    await db.runTransaction(async tx=>{
-      const u = await tx.get(userRef);
-      const cur = u.exists ? Number(u.data().amount || 0) : 0;
-      tx.update(userRef, { amount: cur + (sellShares * currentMarket.price), updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
-      const txdoc = userRef.collection('transactions').doc();
-      tx.set(txdoc, { timestamp: firebase.firestore.FieldValue.serverTimestamp(), amount: +(sellShares * currentMarket.price), type:'market-sell', marketId: currentMarketId });
-    }).catch(e=>console.warn('tx sell persist err', e));
-  }
-
-  localStorage.setItem(balanceKey, balance);
-  document.getElementById('bal').innerText = balance.toFixed(2);
-  await db.collection('markets').doc(currentMarketId).collection('trades').add({ type:'SELL', userUID: currentUser?currentUser.uid:'anon', deviceId, shares: sellShares, price: currentMarket.price, ts: firebase.firestore.FieldValue.serverTimestamp() });
-  alert(`Jual ${sellShares} lembar berhasil`);
-}
-
-/* ----------------- positions subscription & UI (unchanged) ----------------- */
-let unsubPositionsGroup = null;
-function subscribePositionsGroup(){
-  if(unsubPositionsGroup) unsubPositionsGroup();
-  unsubPositionsGroup = db.collectionGroup('positions').onSnapshot(snap=>{
-    positionsSnapshotCache = [];
-    snap.forEach(d=>{
-      const p = d.data(); p._path = d.ref.path; p._id = d.id;
-      if(p.userUID === (currentUser?currentUser.uid:'anon') || p.deviceId === deviceId){
-        positionsSnapshotCache.push(p);
-      }
-    });
-    renderPositionsAndPnL();
-  });
-}
-
-function renderPositionsAndPnL(){
-  const open = positionsSnapshotCache.filter(p => p.status === 'open');
-  const closed = positionsSnapshotCache.filter(p => p.status !== 'open');
-  positionsListEl.innerHTML = '';
-  tradesListEl.innerHTML = '';
-  let totalUnreal = 0;
-  open.forEach(p=>{
-    const marketPrice = (marketsCache[p.marketId] && marketsCache[p.marketId].price) ? marketsCache[p.marketId].price : p.avgPrice;
-    const unreal = p.shares * (marketPrice - p.avgPrice);
-    totalUnreal += unreal;
-    const el = document.createElement('div'); el.className='list-item';
-    el.innerHTML = `<div><div style="font-weight:700">${p.shares} lembar • ${p.marketName || p.marketId}</div><div class="small muted">Avg ${formatPrice(p.avgPrice)} • Now ${formatPrice(marketPrice)} • Unreal ${unreal>=0?'<span style="color:var(--accent)">+'+unreal.toFixed(2)+'</span>':'<span style="color:var(--danger)">'+unreal.toFixed(2)+'</span>'}</div></div>
-      <div style="text-align:right"><button class="btn btn-ghost" onclick="attemptClosePositionPath('${p._path}')">Jual</button></div>`;
-    positionsListEl.appendChild(el);
-  });
-  closed.slice(0,60).forEach(p=>{
-    const el = document.createElement('div'); el.className='list-item';
-    el.innerHTML = `<div><div style="font-weight:700">${p.shares} lembar • ${p.marketName||p.marketId}</div><div class="small muted">${p.reason||p.status} • P/L ${p.pl ? p.pl.toFixed(2) : '0.00'}</div></div>
-      <div style="text-align:right">${p.closedAt? (new Date(p.closedAt.seconds*1000).toLocaleString()): ''}</div>`;
-    tradesListEl.appendChild(el);
-  });
-  document.getElementById('totalPnl').innerText = ((totalUnreal>=0?'+':'') + totalUnreal.toFixed(2));
-}
-
-window.attemptClosePositionPath = async (path) => {
-  const ref = db.doc(path);
-  const doc = await ref.get(); if(!doc.exists) return alert('Position not found');
-  const p = doc.data();
-  const ownerIdent = p.userUID ? p.userUID : p.deviceId;
-  const locked = await isSellLockedFor(p.marketId, ownerIdent);
-  if(locked){
-    return alert('Penjualan saham gagal, liquidity tidak terpenuhi. Mohon bersabar untuk tindak lanjut kami.');
-  }
-  await closePositionPath(path);
-};
-
-window.closePositionPath = async (path)=>{
-  const ref = db.doc(path);
-  const doc = await ref.get(); if(!doc.exists) return alert('Position not found');
-  const p = doc.data();
-  if(p.deviceId !== deviceId && (!currentUser || p.userUID !== currentUser.uid)) return alert('Hanya pemilik posisi yang bisa menjual');
-  const sellPrice = (marketsCache[p.marketId] && marketsCache[p.marketId].price) ? marketsCache[p.marketId].price : p.avgPrice;
-  const pl = p.shares * (sellPrice - p.avgPrice);
-  await ref.update({ status:'closed', closedAt: firebase.firestore.FieldValue.serverTimestamp(), closePrice: sellPrice, reason:'sell-manual', pl });
-  if(p.deviceId === deviceId){
-    balance += p.shares * sellPrice; localStorage.setItem(balanceKey, balance); document.getElementById('bal').innerText = balance.toFixed(2);
-    // persist to zcoin_balances if user logged in
-    if(currentUser && currentUser.uid){
-      const userRef = db.collection(ZCOIN_BALANCES_COLL).doc(currentUser.uid);
-      await db.runTransaction(async tx=>{
-        const u = await tx.get(userRef);
-        const cur = u.exists ? Number(u.data().amount || 0) : 0;
-        tx.update(userRef, { amount: cur + (p.shares * sellPrice), updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
-        const txdoc = userRef.collection('transactions').doc();
-        tx.set(txdoc, { timestamp: firebase.firestore.FieldValue.serverTimestamp(), amount: +(p.shares * sellPrice), type:'sell-manual', marketId: p.marketId });
-      }).catch(e=>console.warn('persist close pos err', e));
-    }
-  }
-  alert('Position closed');
-};
-
-/* ----------------- chart & candles drawing (kept same) ----------------- */
-document.getElementById('tfSelect').addEventListener('change', ()=>{
-  userTfOverride = true;
-  timeframeMs = parseInt(document.getElementById('tfSelect').value);
-  rebuildCandlesFromHistory(); historyOffset = 0; draw();
-});
-function rebuildCandlesFromHistory(){
-  candles = [];
-  if(!priceHistory.length) return;
-  const tf = timeframeMs || 1000;
-  let bucket = null;
-  for(let i=0;i<priceHistory.length;i++){
-    const pt = priceHistory[i];
-    const bucketStart = Math.floor(pt.t / tf) * tf;
-    if(!bucket || bucket.t !== bucketStart){
-      if(bucket) candles.push(bucket);
-      bucket = { t: bucketStart, o: pt.price, h: pt.price, l: pt.price, c: pt.price };
-    } else {
-      bucket.c = pt.price;
-      if(pt.price > bucket.h) bucket.h = pt.price;
-      if(pt.price < bucket.l) bucket.l = pt.price;
-    }
-  }
-  if(bucket) candles.push(bucket);
-  if(candles.length > 5000) candles = candles.slice(-5000);
-}
-function getVisibleSlice(slotCount, offset){
-  const len = candles.length;
-  if(len === 0) return [];
-  const end = (offset === 0) ? len : Math.max(0, len - offset);
-  const start = Math.max(0, end - slotCount);
-  return candles.slice(start, end);
-}
-function draw(){
-  const W = canvas.width / DPR; const H = canvas.height / DPR;
-  ctx.clearRect(0,0,W,H); if(!currentMarket){ ctx.fillStyle='#9fb0d6'; ctx.font='14px Arial'; ctx.fillText('Pilih market untuk melihat chart',20,30); return; }
-  let desired = visibleSlots || Math.floor((W - LEFT_MARGIN - RIGHT_MARGIN)/8); desired = clamp(desired, MIN_VISIBLE, MAX_VISIBLE);
-  const usableW = Math.max(60, W - LEFT_MARGIN - RIGHT_MARGIN);
-  let cw = usableW / desired * 0.72; cw = Math.max(3, Math.min(18, cw));
-  const totalWidth = cw * desired; let gap = (usableW - totalWidth) / Math.max(1, desired - 1); if(gap < 1) gap = 1;
-  const arr = getVisibleSlice(desired, historyOffset); const arrLen = arr.length;
-  const slotsTotalWidth = (cw*desired) + ((desired - 1)*gap);
-  const slotsLeft = LEFT_MARGIN + Math.max(0, usableW - slotsTotalWidth);
-  const empty = desired - arrLen; const startX = slotsLeft + empty * (cw + gap);
-  let maxP = -Infinity, minP = Infinity;
-  if(arrLen === 0){ maxP = minP = currentMarket.price || 1.0; } else { for(let i=0;i<arrLen;i++){ const c=arr[i]; if(c.h>maxP) maxP=c.h; if(c.l<minP) minP=c.l; } }
-  const pad = (maxP-minP)*0.12 || 0.5; maxP += pad; minP -= pad;
-  function py(p){ if(maxP===minP) return H/2; return ((maxP-p)/(maxP-minP))*(H-40)+20; }
-  ctx.strokeStyle='rgba(255,255,255,0.03)'; ctx.lineWidth=1; ctx.beginPath(); for(let i=0;i<5;i++){ const y = 20 + i*(H-40)/4; ctx.moveTo(LEFT_MARGIN,y); ctx.lineTo(W-10,y); } ctx.stroke();
-  let x = startX;
-  for(let i=0;i<arrLen;i++){
-    const c = arr[i]; const up = c.c >= c.o; const colorUp = '#5de3a6', colorDn = '#ff7373';
-    const yO = py(c.o), yC = py(c.c), yH = py(c.h), yL = py(c.l);
-    ctx.strokeStyle = up ? colorUp : colorDn; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x + cw/2, yH); ctx.lineTo(x + cw/2, yL); ctx.stroke();
-    const top = Math.min(yO,yC), h = Math.max(1, Math.abs(yC - yO));
-    ctx.fillStyle = up ? colorUp : colorDn; ctx.fillRect(x, top, cw, h);
-    x += cw + gap;
-  }
-  ctx.fillStyle='rgba(255,255,255,0.06)'; ctx.fillRect(W-RIGHT_MARGIN+10,10,RIGHT_MARGIN-20,H-20);
-  ctx.fillStyle='#bcd7ff'; ctx.font='12px Arial'; ctx.textAlign='right';
-  for(let i=0;i<5;i++){ const v = minP + ((5-i-1)/4)*(maxP-minP); const y = 20 + i*(H-40)/4; ctx.fillText(Number(v).toFixed(2), W-14, y+4); }
-  ctx.strokeStyle='rgba(255,255,255,0.12)'; ctx.beginPath(); const yNow = py(currentMarket.price); ctx.moveTo(LEFT_MARGIN, yNow); ctx.lineTo(W-10,yNow); ctx.stroke();
-  ctx.fillStyle='#fff'; ctx.font='12px Arial'; ctx.textAlign='right'; ctx.fillText(formatPrice(currentMarket.price), W-14, yNow-6);
-  document.getElementById('visibleCount').innerText = `${arrLen}/${desired}`;
-}
-
-/* periodic housekeeping */
-setInterval(()=>{ draw(); updateRightHistoryUI(); }, 800);
-
-/* right history quick view (kept but will load from zcoin_balances txs in loadZTxHistory) */
-function updateRightHistoryUI(){
-  db.collectionGroup('trades').where('deviceId','==',deviceId).orderBy('ts','desc').limit(10).get().then(snap=>{
-    const el = document.getElementById('rightHistory'); el.innerHTML=''; snap.forEach(d=>{
-      const t = d.data(); const time = t.ts && t.ts.toDate ? t.ts.toDate().toLocaleString() : '';
-      const item = document.createElement('div'); item.className='list-item'; item.innerHTML = `<div><div style="font-weight:700">${t.type} ${t.shares}</div><div class="small muted">${formatPrice(t.price)} • ${time}</div></div>`; el.appendChild(item);
-    });
-  }).catch(()=>{});
-}
-
-/* ----------------- initial boot ----------------- */
-(async function init(){
-  await ensureZcoinMeta();
-  await ensureDefaultMarket();
-  await subscribeMarketsListRealtime();
-  subscribePositionsGroup();
-  await applyRemoteBalanceIfExists();
-  const prefer = await db.collection('markets').orderBy('createdAt','asc').limit(1).get();
-  if(prefer.docs[0]) selectMarket(prefer.docs[0].id);
-})();
-
-async function ensureDefaultMarket(){
-  const id = 'holez-IDR';
-  const ref = db.collection('markets').doc(id); const doc = await ref.get();
-  if(!doc.exists){
-    await ref.set({ name:'HOLEZ (index)', symbol:'HOLEZ/IDR', price:1000.00, volatility:1.0, description:'Perusahaan HOLEZ', ownerUID:null, createdAt: firebase.firestore.FieldValue.serverTimestamp(), lastUpdate: firebase.firestore.FieldValue.serverTimestamp() });
-  }
-}
-
-/* refresh events periodically */
-setInterval(async ()=>{ try{ for(const id in marketsCache) await loadEventsForMarket(id); }catch(e){} }, 60000);
-
-/* quick button page helpers */
-document.getElementById('btnMarkets').addEventListener('click', ()=> showPage('markets'));
-document.getElementById('btnPortfolio').addEventListener('click', ()=> showPage('portfolio'));
-document.getElementById('btnGotoPortfolio').addEventListener('click', ()=> showPage('portfolio'));
-document.getElementById('btnGotoMarket').addEventListener('click', ()=> { if(currentMarketId) selectMarket(currentMarketId); else alert('Pilih market dulu'); });
-
-/* ----------------- Deposit / Withdraw => buka halaman web (sesuai permintaan) ----------------- */
-document.getElementById('btnDeposit').addEventListener('click', ()=>{
-  window.open(DEPOSIT_URL, '_blank');
-});
-document.getElementById('btnWithdraw').addEventListener('click', ()=>{
-  window.open(WITHDRAW_URL, '_blank');
-});
-
-/* ----------------- Admin: Manage Balances modal (now uses zcoin_balances & updates meta) ----------------- */
-btnManageBalances.addEventListener('click', async ()=>{
-  if(!currentUser || currentUser.uid !== ADMIN_UID) return alert('Only admin');
-  const root = document.getElementById('modalRoot'); root.innerHTML=''; root.style.display='block';
-  const backdrop = document.createElement('div'); backdrop.className='modal-backdrop';
-  const modal = document.createElement('div'); modal.className='modal';
-  modal.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:800">Manage Balances (ZCoin)</div><button id="mb_close" class="btn btn-ghost">Tutup</button></div>
-    <div style="margin-top:10px">
-      <div style="display:flex;gap:8px;margin-bottom:8px">
-        <input id="mb_target" placeholder="Target (uid atau deviceId)" />
-        <input id="mb_amount" type="number" placeholder="Amount (angka)" />
-        <select id="mb_mode"><option value="set">Set</option><option value="add">Tambah</option><option value="sub">Kurangi</option></select>
-        <button id="mb_apply" class="btn btn-primary">Apply</button>
-      </div>
-      <div class="small muted">List balances (last 200)</div>
-      <div id="mb_list" style="margin-top:8px;max-height:320px;overflow:auto"></div>
-    </div>`;
-  backdrop.appendChild(modal); root.appendChild(backdrop);
-
-  modal.querySelector('#mb_close').addEventListener('click', ()=> { root.innerHTML=''; root.style.display='none'; });
-
-  async function refreshList(){
-    const listEl = modal.querySelector('#mb_list'); listEl.innerHTML = '';
-    const snap = await db.collection(ZCOIN_BALANCES_COLL).limit(200).get();
-    snap.forEach(d=>{
-      const data = d.data();
-      const id = d.id;
-      const row = document.createElement('div'); row.className='list-item';
-      row.innerHTML = `<div><div style="font-weight:700">${id}</div><div class="small muted">Amount: ${typeof data.amount==='number'?data.amount:0}</div></div>
-        <div style="text-align:right"><button class="btn btn-ghost" data-id="${id}" data-set>Set</button></div>`;
-      listEl.appendChild(row);
-      row.querySelector('button[data-set]').addEventListener('click', async ()=>{
-        const val = parseFloat(prompt('Set amount untuk ' + id, String(typeof data.amount==='number'?data.amount:0)));
-        if(isNaN(val)) return;
-        // run transaction: update balance and update meta.circulatingSupply by delta
-        const targetRef = db.collection(ZCOIN_BALANCES_COLL).doc(id);
-        const metaRef = zcoinMetaRef();
-        try{
-          await db.runTransaction(async tx=>{
-            const mSnap = await tx.get(metaRef);
-            if(!mSnap.exists) throw new Error('Meta not found');
-            const meta = mSnap.data();
-            const curSnap = await tx.get(targetRef);
-            const cur = curSnap.exists ? Number(curSnap.data().amount || 0) : 0;
-            const delta = val - cur;
-            const newCirc = (meta.circulatingSupply || 0) + delta;
-            if(newCirc < 0) throw new Error('Circulating supply cannot be negative');
-            if(newCirc > (meta.totalSupply || TOTAL_SUPPLY)) throw new Error('Exceeds total supply');
-            tx.set(targetRef, { amount: val, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), updatedBy: currentUser.uid }, { merge: true });
-            const txdoc = targetRef.collection('transactions').doc();
-            tx.set(txdoc, { timestamp: firebase.firestore.FieldValue.serverTimestamp(), amount: delta, type: delta>=0?'admin-mint':'admin-burn', reason:'admin-set' });
-            tx.update(metaRef, { circulatingSupply: newCirc });
+          tx.set(userRef, {
+            amount: INITIAL_AIRDROP,
+            displayName: displayName || '-',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
-          alert('Balance diset');
-          if(id === currentUser.uid){ balance = val; localStorage.setItem(balanceKey, balance); document.getElementById('bal').innerText = balance.toFixed(2); }
-          await refreshList();
-        }catch(e){ alert('Gagal: ' + (e.message||e)); }
+
+          const txDoc = userRef.collection('transactions').doc();
+          tx.set(txDoc, {
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            amount: INITIAL_AIRDROP,
+            type: 'airdrop',
+            note: 'onboarding-airdrop'
+          });
+
+          tx.update(ZCOIN_META_REF, { circulatingSupply: circ + INITIAL_AIRDROP });
+        });
+      } else {
+        await userRef.set({
+          amount: 0,
+          displayName: displayName || '-',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+    }
+
+    function subscribeUserBalance(uid){
+      const ref = db.collection(ZCOIN_BALANCES_COLL).doc(uid);
+      return ref.onSnapshot(snap=>{
+        if(!snap.exists) return setBalanceUI(0);
+        const amt = Number(snap.data().amount || 0);
+        setBalanceUI(amt);
+      });
+    }
+
+    async function loadZTxHistory(uid){
+      rightHistoryEl.innerHTML = '';
+      try{
+        const col = db.collection(ZCOIN_BALANCES_COLL).doc(uid).collection('transactions');
+        const snaps = await col.orderBy('timestamp','desc').limit(10).get();
+        snaps.forEach(d=>{
+          const t = d.data();
+          const time = t.timestamp && t.timestamp.toDate ? t.timestamp.toDate().toLocaleString() : '';
+          const div = document.createElement('div');
+          div.className = 'list-item';
+          div.innerHTML = `
+            <div>
+              <div style="font-weight:800">${t.amount>0?'+':''}${t.amount} koin</div>
+              <div class="small muted">${t.type || '-'} • ${time}</div>
+            </div>
+          `;
+          rightHistoryEl.appendChild(div);
+        });
+      }catch(e){}
+    }
+
+    /* ---------------- AUTH ---------------- */
+    let unsubscribeUserBal = null;
+
+    btnSignIn.addEventListener('click', ()=> window.open(SIGNIN_URL,'_blank'));
+    btnSignOut.addEventListener('click', ()=> auth.signOut());
+
+    auth.onAuthStateChanged(async user=>{
+      currentUser = user;
+
+      if(unsubscribeUserBal){
+        unsubscribeUserBal();
+        unsubscribeUserBal = null;
+      }
+
+      if(user){
+        userInfoEl.innerText = user.email || user.uid;
+        btnSignIn.style.display = 'none';
+        btnSignOut.style.display = 'inline-block';
+
+        await ensureZcoinMeta();
+        await ensureUserZBalance(user.uid, user.displayName || user.email || '-');
+
+        unsubscribeUserBal = subscribeUserBalance(user.uid);
+        await loadZTxHistory(user.uid);
+
+      } else {
+        userInfoEl.innerText = 'not signed';
+        btnSignIn.style.display = 'inline-block';
+        btnSignOut.style.display = 'none';
+        setBalanceUI(0);
+        rightHistoryEl.innerHTML = '';
+      }
+    });
+
+    /* ---------------- NAV ---------------- */
+    document.querySelectorAll('.nav-btn').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active');
+        showPage(b.dataset.page);
       });
     });
-  }
 
-  modal.querySelector('#mb_apply').addEventListener('click', async ()=>{
-    const target = modal.querySelector('#mb_target').value.trim();
-    const amt = parseFloat(modal.querySelector('#mb_amount').value);
-    const mode = modal.querySelector('#mb_mode').value;
-    if(!target || isNaN(amt)) return alert('Isi target dan amount');
-    const docRef = db.collection(ZCOIN_BALANCES_COLL).doc(target);
-    const metaRef = zcoinMetaRef();
-    try{
-      await db.runTransaction(async tx=>{
-        const mSnap = await tx.get(metaRef);
-        if(!mSnap.exists) throw new Error('Meta not found');
-        const meta = mSnap.data();
-        const dSnap = await tx.get(docRef);
-        const cur = dSnap.exists ? Number(dSnap.data().amount || 0) : 0;
-        let result = cur;
-        if(mode === 'set') result = amt;
-        else if(mode === 'add') result = cur + amt;
-        else if(mode === 'sub') result = cur - amt;
-        const delta = result - cur;
-        const newCirc = (meta.circulatingSupply || 0) + delta;
-        if(newCirc < 0) throw new Error('Circulating supply cannot be negative');
-        if(newCirc > (meta.totalSupply || TOTAL_SUPPLY)) throw new Error('Exceeds total supply');
-        tx.set(docRef, { amount: result, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), updatedBy: currentUser.uid }, { merge: true });
-        const txdoc = docRef.collection('transactions').doc();
-        tx.set(txdoc, { timestamp: firebase.firestore.FieldValue.serverTimestamp(), amount: delta, type: delta>=0?'admin-mint':'admin-burn', reason:'admin-adjust' });
-        tx.update(metaRef, { circulatingSupply: newCirc });
+    function showPage(name){
+      ['page-home','page-market','page-portfolio','page-events'].forEach(id=>{
+        document.getElementById(id).style.display='none';
       });
-      alert('Done');
-      if(target === currentUser.uid){ balance = (await db.collection(ZCOIN_BALANCES_COLL).doc(target).get()).data().amount; localStorage.setItem(balanceKey, balance); document.getElementById('bal').innerText = balance.toFixed(2); }
-      await refreshList();
-    }catch(e){ alert('Gagal: ' + (e.message||e)); }
-  });
+      if(name==='home') document.getElementById('page-home').style.display='block';
+      if(name==='markets') document.getElementById('page-market').style.display='block';
+      if(name==='portfolio') document.getElementById('page-portfolio').style.display='block';
+      if(name==='events') document.getElementById('page-events').style.display='block';
+    }
 
-  await refreshList();
-});
+    document.getElementById('btnGotoMarket').addEventListener('click', ()=> showPage('markets'));
+    document.getElementById('btnGotoPortfolio').addEventListener('click', ()=> showPage('portfolio'));
 
-/* ----------------- Admin: View All Trades & Lock/Unlock sells (kept same) ----------------- */
-btnViewAllTrades.addEventListener('click', async ()=>{
-  if(!currentUser || currentUser.uid !== ADMIN_UID) return alert('Only admin');
-  const root = document.getElementById('modalRoot'); root.innerHTML=''; root.style.display='block';
-  const backdrop = document.createElement('div'); backdrop.className='modal-backdrop';
-  const modal = document.createElement('div'); modal.className='modal';
-  modal.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:800">Admin - Realtime Trades & Positions</div><button id="at_close" class="btn btn-ghost">Tutup</button></div>
-    <div style="margin-top:10px;display:flex;gap:12px">
-      <div style="flex:1">
-        <div class="small muted">History Trades all (collectionGroup)</div>
-        <div id="at_trades" style="margin-top:8px;max-height:340px;overflow:auto"></div>
-      </div>
-      <div style="flex:1">
-        <div class="small muted">Posisi Terbuka all (collectionGroup)</div>
-        <div id="at_positions" style="margin-top:8px;max-height:340px;overflow:auto"></div>
-      </div>
-    </div>
-    <div style="margin-top:12px"><div class="small muted">Kunci (market_user)</div><div id="at_locks" style="margin-top:8px;max-height:180px;overflow:auto"></div></div>`;
-  backdrop.appendChild(modal); root.appendChild(backdrop);
+    /* ---------------- MARKETS LIST ---------------- */
+    function subscribeMarkets(){
+      if(unsubscribeMarkets) unsubscribeMarkets();
+      unsubscribeMarkets = db.collection('markets').onSnapshot(snap=>{
+        marketsCache = {};
+        marketListEl.innerHTML = '';
 
-  modal.querySelector('#at_close').addEventListener('click', ()=> {
-    if(adminTradesUnsub) adminTradesUnsub();
-    if(adminPositionsUnsub) adminPositionsUnsub();
-    root.innerHTML=''; root.style.display='none';
-  });
+        snap.forEach(doc=>{
+          const m = doc.data();
+          marketsCache[doc.id] = { ...m, id: doc.id };
 
-  const tradesEl = modal.querySelector('#at_trades');
-  const positionsEl = modal.querySelector('#at_positions');
-  const locksEl = modal.querySelector('#at_locks');
-
-  adminTradesUnsub = db.collectionGroup('trades').orderBy('ts','desc').limit(200).onSnapshot(snap=>{
-    tradesEl.innerHTML = '';
-    snap.forEach(d=>{
-      const t = d.data(); const who = t.userUID || t.deviceId || 'anon';
-      const marketId = d.ref.parent.parent.id;
-      const row = document.createElement('div'); row.className='list-item';
-      row.innerHTML = `<div><div style="font-weight:700">${t.type} ${t.shares} • ${marketId}</div><div class="small muted">${who} • ${formatPrice(t.price)} • ${t.ts && t.ts.toDate? t.ts.toDate().toLocaleString():''}</div></div>
-        <div style="text-align:right"><button class="btn btn-ghost" data-market="${marketId}" data-owner="${who}" data-lock>Lock Sell</button></div>`;
-      tradesEl.appendChild(row);
-      row.querySelector('button[data-lock]').addEventListener('click', async ()=>{
-        const owner = row.querySelector('button[data-lock]').dataset.owner;
-        const mid = row.querySelector('button[data-lock]').dataset.market;
-        await db.collection('locks').doc(`${mid}_${owner}`).set({ locked:true, by: currentUser.uid, at: firebase.firestore.FieldValue.serverTimestamp() });
-        alert('Sell locked for ' + owner + ' on ' + mid);
-        refreshLocks();
+          const el = document.createElement('div');
+          el.className = 'list-item';
+          el.innerHTML = `
+            <div>
+              <div style="font-weight:800">${m.name || doc.id}</div>
+              <div class="small muted">${m.symbol || doc.id}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-weight:900">${formatPrice(m.price)}</div>
+              <div style="margin-top:6px">
+                <button class="btn btn-ghost">View</button>
+              </div>
+            </div>
+          `;
+          el.querySelector('button').addEventListener('click', ()=> selectMarket(doc.id));
+          marketListEl.appendChild(el);
+        });
       });
-    });
-  });
+    }
+    subscribeMarkets();
 
-  adminPositionsUnsub = db.collectionGroup('positions').where('status','==','open').orderBy('createdAt','desc').limit(200).onSnapshot(snap=>{
-    positionsEl.innerHTML = '';
-    snap.forEach(d=>{
-      const p = d.data(); const who = p.userUID || p.deviceId || 'anon';
-      const marketId = p.marketId || (d.ref.parent.parent.id);
-      const row = document.createElement('div'); row.className='list-item';
-      row.innerHTML = `<div><div style="font-weight:700">${p.shares} lembar • ${marketId}</div><div class="small muted">${who} • Avg ${formatPrice(p.avgPrice)} • Opened ${p.createdAt && p.createdAt.toDate? p.createdAt.toDate().toLocaleString():''}</div></div>
-        <div style="text-align:right"><button class="btn btn-ghost" data-market="${marketId}" data-owner="${who}" data-lock>Lock Sell</button></div>`;
-      positionsEl.appendChild(row);
-      row.querySelector('button[data-lock]').addEventListener('click', async ()=>{
-        const owner = row.querySelector('button[data-lock]').dataset.owner;
-        const mid = row.querySelector('button[data-lock]').dataset.market;
-        await db.collection('locks').doc(`${mid}_${owner}`).set({ locked:true, by: currentUser.uid, at: firebase.firestore.FieldValue.serverTimestamp() });
-        alert('Sell locked for ' + owner + ' on ' + mid);
-        refreshLocks();
+    /* ---------------- SELECT MARKET ---------------- */
+    function selectMarket(marketId){
+      currentMarketId = marketId;
+      if(unsubscribeMarket) unsubscribeMarket();
+
+      unsubscribeMarket = db.collection('markets').doc(marketId).onSnapshot(doc=>{
+        if(!doc.exists) return;
+        const m = doc.data();
+        currentMarket = { ...m, id: doc.id };
+
+        document.getElementById('marketName').innerText = m.name || doc.id;
+        document.getElementById('marketSymbol').innerText = m.symbol || doc.id;
+        document.getElementById('marketDesc').innerText = m.description || '';
+        document.getElementById('marketPrice').innerText = formatPrice(m.price);
+        document.getElementById('marketVolDisplay').innerText = 'Vol x' + (m.volatility || 1);
       });
-    });
-  });
 
-  async function refreshLocks(){
-    locksEl.innerHTML = '';
-    const snap = await db.collection('locks').get();
-    snap.forEach(d=>{
-      const key = d.id;
-      const data = d.data();
-      const row = document.createElement('div'); row.className='list-item';
-      row.innerHTML = `<div><div style="font-weight:700">${key}</div><div class="small muted">locked: ${data.locked ? 'yes' : 'no'} • by: ${data.by || ''}</div></div>
-        <div style="text-align:right"><button class="btn btn-ghost" data-id="${key}" data-unlock>Unlock</button></div>`;
-      locksEl.appendChild(row);
-      row.querySelector('button[data-unlock]').addEventListener('click', async ()=>{
-        const id = row.querySelector('button[data-unlock]').dataset.id;
-        await db.collection('locks').doc(id).delete();
-        alert('Unlocked ' + id);
-        refreshLocks();
+      showPage('markets');
+    }
+
+    /* ---------------- POSITIONS (simple) ---------------- */
+    let unsubscribePositions = null;
+
+    function subscribePositions(){
+      if(unsubscribePositions) unsubscribePositions();
+
+      unsubscribePositions = db.collectionGroup('positions').onSnapshot(snap=>{
+        const my = [];
+        snap.forEach(d=>{
+          const p = d.data();
+          if(currentUser && p.userUID === currentUser.uid) my.push(p);
+        });
+
+        renderPositions(my);
       });
-    });
-  }
+    }
 
-  await refreshLocks();
-});
+    function renderPositions(list){
+      positionsListEl.innerHTML = '';
+      positionsListEl2.innerHTML = '';
 
-/* ----------------- recompute PnL regularly ----------------- */
-setInterval(()=>{ computeAndRenderPnL(); }, 1000);
+      if(!currentUser){
+        positionsListEl.innerHTML = `<div class="small muted">Login dulu buat lihat posisi.</div>`;
+        positionsListEl2.innerHTML = `<div class="small muted">Login dulu buat lihat posisi.</div>`;
+        return;
+      }
+
+      if(list.length === 0){
+        positionsListEl.innerHTML = `<div class="small muted">Belum ada posisi.</div>`;
+        positionsListEl2.innerHTML = `<div class="small muted">Belum ada posisi.</div>`;
+        return;
+      }
+
+      list.slice(0,10).forEach(p=>{
+        const el = document.createElement('div');
+        el.className = 'list-item';
+        el.innerHTML = `
+          <div>
+            <div style="font-weight:800">${p.marketName || p.marketId} • ${p.shares} lembar</div>
+            <div class="small muted">Avg ${formatPrice(p.avgPrice)}</div>
+          </div>
+        `;
+        positionsListEl.appendChild(el);
+      });
+
+      list.slice(0,50).forEach(p=>{
+        const el = document.createElement('div');
+        el.className = 'list-item';
+        el.innerHTML = `
+          <div>
+            <div style="font-weight:800">${p.marketName || p.marketId}</div>
+            <div class="small muted">${p.shares} lembar • Avg ${formatPrice(p.avgPrice)}</div>
+          </div>
+        `;
+        positionsListEl2.appendChild(el);
+      });
+    }
+
+    subscribePositions();
+
+    /* ---------------- BUY / SELL (CONNECTED TO ZCOIN) ---------------- */
+    document.getElementById('btnBuy').addEventListener('click', buyShares);
+    document.getElementById('btnSell').addEventListener('click', sellShares);
+
+    async function buyShares(){
+      if(!mustLogin()) return;
+      if(!currentMarketId || !currentMarket) return alert('Pilih market dulu');
+
+      const shares = Math.floor(Number(document.getElementById('buyShares').value || 0));
+      if(!shares || shares < 100) return alert('Minimal pembelian 100 lembar');
+
+      const cost = shares * Number(currentMarket.price || 0);
+      if(cost <= 0) return alert('Harga market invalid');
+      if(cost > balance) return alert('Saldo ZCoin tidak cukup');
+
+      const userRef = db.collection(ZCOIN_BALANCES_COLL).doc(currentUser.uid);
+
+      try{
+        await db.runTransaction(async tx=>{
+          const uSnap = await tx.get(userRef);
+          if(!uSnap.exists) throw new Error('Wallet ZCoin tidak ditemukan');
+
+          const cur = Number(uSnap.data().amount || 0);
+          if(cur < cost) throw new Error('Saldo ZCoin tidak cukup');
+
+          // deduct wallet
+          tx.update(userRef, {
+            amount: cur - cost,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+
+          // write wallet tx history
+          const txDoc = userRef.collection('transactions').doc();
+          tx.set(txDoc, {
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            amount: -cost,
+            type: 'market-buy',
+            marketId: currentMarketId,
+            shares: shares,
+            price: Number(currentMarket.price || 0)
+          });
+
+          // add position
+          const posRef = db.collection('markets').doc(currentMarketId).collection('positions').doc();
+          tx.set(posRef, {
+            userUID: currentUser.uid,
+            marketId: currentMarketId,
+            marketName: currentMarket.name || currentMarketId,
+            shares: shares,
+            avgPrice: Number(currentMarket.price || 0),
+            status: 'open',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+
+          // add trade log
+          const tradeRef = db.collection('markets').doc(currentMarketId).collection('trades').doc();
+          tx.set(tradeRef, {
+            type: 'BUY',
+            userUID: currentUser.uid,
+            shares: shares,
+            price: Number(currentMarket.price || 0),
+            ts: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        });
+
+        await loadZTxHistory(currentUser.uid);
+        alert(`Beli ${shares} lembar @ ${formatPrice(currentMarket.price)} sukses (saldo kepotong ZCoin).`);
+
+      }catch(e){
+        alert('Gagal buy: ' + (e.message || e));
+      }
+    }
+
+    async function sellShares(){
+      if(!mustLogin()) return;
+      if(!currentMarketId || !currentMarket) return alert('Pilih market dulu');
+
+      const sharesToSell = Math.floor(Number(document.getElementById('buyShares').value || 0));
+      if(!sharesToSell || sharesToSell < 100) return alert('Minimal jual 100 lembar');
+
+      const userRef = db.collection(ZCOIN_BALANCES_COLL).doc(currentUser.uid);
+      const posColl = db.collection('markets').doc(currentMarketId).collection('positions');
+
+      try{
+        // ambil posisi open milik user
+        const snap = await posColl.where('status','==','open').where('userUID','==',currentUser.uid).get();
+        if(snap.empty) return alert('Lu belum punya posisi open di market ini');
+
+        // total available shares
+        let available = 0;
+        const positions = [];
+        snap.forEach(d=>{
+          const p = d.data();
+          positions.push({ ref: d.ref, data: p });
+          available += Number(p.shares || 0);
+        });
+
+        if(available < sharesToSell) return alert('Lembar tidak cukup untuk dijual');
+
+        const sellPrice = Number(currentMarket.price || 0);
+        const credit = sharesToSell * sellPrice;
+
+        await db.runTransaction(async tx=>{
+          // credit wallet
+          const uSnap = await tx.get(userRef);
+          if(!uSnap.exists) throw new Error('Wallet ZCoin tidak ditemukan');
+
+          const cur = Number(uSnap.data().amount || 0);
+          tx.update(userRef, {
+            amount: cur + credit,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+
+          const txDoc = userRef.collection('transactions').doc();
+          tx.set(txDoc, {
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            amount: +credit,
+            type: 'market-sell',
+            marketId: currentMarketId,
+            shares: sharesToSell,
+            price: sellPrice
+          });
+
+          // close/reduce positions FIFO
+          let remaining = sharesToSell;
+          for(const item of positions){
+            if(remaining <= 0) break;
+            const have = Number(item.data.shares || 0);
+            const take = Math.min(have, remaining);
+            const left = have - take;
+
+            if(left <= 0){
+              tx.update(item.ref, {
+                shares: 0,
+                status: 'closed',
+                closedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                closePrice: sellPrice
+              });
+            } else {
+              tx.update(item.ref, {
+                shares: left
+              });
+            }
+
+            remaining -= take;
+          }
+
+          // trade log
+          const tradeRef = db.collection('markets').doc(currentMarketId).collection('trades').doc();
+          tx.set(tradeRef, {
+            type: 'SELL',
+            userUID: currentUser.uid,
+            shares: sharesToSell,
+            price: sellPrice,
+            ts: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        });
+
+        await loadZTxHistory(currentUser.uid);
+        alert(`Jual ${sharesToSell} lembar @ ${formatPrice(sellPrice)} sukses (saldo masuk ZCoin).`);
+
+      }catch(e){
+        alert('Gagal sell: ' + (e.message || e));
+      }
+    }
+
+    /* ---------------- CANVAS SIMPLE PLACEHOLDER ---------------- */
+    const canvas = document.getElementById('chartCanvas');
+    const ctx = canvas.getContext('2d');
+    function resizeCanvas(){
+      const r = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.floor(r.width * dpr);
+      canvas.height = Math.floor(r.height * dpr);
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      draw();
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function draw(){
+      const w = canvas.getBoundingClientRect().width;
+      const h = canvas.getBoundingClientRect().height;
+      ctx.clearRect(0,0,w,h);
+      ctx.fillStyle = 'rgba(255,255,255,0.06)';
+      ctx.font = '14px Arial';
+      ctx.fillText('Chart placeholder (lu bisa sambung engine lama lu lagi)', 10, 24);
+    }
   </script>
 </body>
 </html>
