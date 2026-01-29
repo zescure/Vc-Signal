@@ -77,6 +77,12 @@
           <div id="bal" class="bal-val">0.00</div>
         </div>
 
+        <!-- NEW: Deposit / Withdraw buttons -->
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+          <button id="btnDeposit" class="btn-ghost">➕ Deposit</button>
+          <button id="btnWithdraw" class="btn-ghost">➖ Withdraw</button>
+        </div>
+
         <div style="display:flex;gap:8px;align-items:center">
           <div class="user-row">
             <div id="userInfo" class="user-info">not signed</div>
@@ -219,6 +225,10 @@
     /* ------------------ CONFIG URL ------------------ */
     const SIGNIN_URL = '/register-login';
 
+    // NEW: deposit & withdraw pages (ubah sesuai route lu)
+    const DEPOSIT_URL = '/deposit.html';
+    const WITHDRAW_URL = '/withdraw.html';
+
     /* FIREBASE CONFIG */
     const firebaseConfig = {
       apiKey: "AIzaSyDVUEZ3ZVmH4ld7LVnEq_L368wEJpEs-l8",
@@ -258,6 +268,9 @@
     const btnSignIn = document.getElementById('btnSignIn');
     const btnSignOut = document.getElementById('btnSignOut');
 
+    const btnDeposit = document.getElementById('btnDeposit');
+    const btnWithdraw = document.getElementById('btnWithdraw');
+
     const marketListEl = document.getElementById('marketList');
     const positionsListEl = document.getElementById('positionsList');
     const positionsListEl2 = document.getElementById('positionsList2');
@@ -266,6 +279,7 @@
 
     /* ---------------- HELPERS ---------------- */
     function formatPrice(p){ return Number(p || 0).toFixed(2); }
+
     function mustLogin(){
       if(!currentUser) {
         alert('Lu harus login dulu biar saldo nyambung ke ZCoin.');
@@ -280,16 +294,33 @@
       balEl.innerText = balance.toFixed(2);
     }
 
+    function clampNumber(n){
+      n = Number(n || 0);
+      if(!isFinite(n)) return 0;
+      return n;
+    }
+
+    /* ---------------- NEW: ECONOMY HELPERS ---------------- */
     async function ensureZcoinMeta(){
       const snap = await ZCOIN_META_REF.get();
       if(!snap.exists){
         await ZCOIN_META_REF.set({
           totalSupply: TOTAL_SUPPLY,
           circulatingSupply: 0,
+          lockedSupply: TOTAL_SUPPLY, // NEW
           dynamicRatePer10: 10,
           bankLiquidityIDR: 100000,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
+      } else {
+        // migrate if lockedSupply not exist
+        const data = snap.data() || {};
+        if(typeof data.lockedSupply === 'undefined'){
+          const total = data.totalSupply || TOTAL_SUPPLY;
+          const circ = data.circulatingSupply || 0;
+          const locked = Math.max(0, total - circ);
+          await ZCOIN_META_REF.update({ lockedSupply: locked });
+        }
       }
     }
 
@@ -306,8 +337,9 @@
 
           const total = meta.totalSupply || TOTAL_SUPPLY;
           const circ = meta.circulatingSupply || 0;
-          const free = total - circ;
-          if(INITIAL_AIRDROP > free) throw new Error('Supply tidak cukup untuk airdrop');
+          const locked = typeof meta.lockedSupply === 'number' ? meta.lockedSupply : (total - circ);
+
+          if(INITIAL_AIRDROP > locked) throw new Error('Locked supply tidak cukup untuk airdrop');
 
           tx.set(userRef, {
             amount: INITIAL_AIRDROP,
@@ -323,7 +355,10 @@
             note: 'onboarding-airdrop'
           });
 
-          tx.update(ZCOIN_META_REF, { circulatingSupply: circ + INITIAL_AIRDROP });
+          tx.update(ZCOIN_META_REF, {
+            circulatingSupply: circ + INITIAL_AIRDROP,
+            lockedSupply: locked - INITIAL_AIRDROP
+          });
         });
       } else {
         await userRef.set({
@@ -355,7 +390,7 @@
           div.className = 'list-item';
           div.innerHTML = `
             <div>
-              <div style="font-weight:800">${t.amount>0?'+':''}${t.amount} koin</div>
+              <div style="font-weight:800">${t.amount>0?'+':''}${Number(t.amount||0).toFixed(2)} koin</div>
               <div class="small muted">${t.type || '-'} • ${time}</div>
             </div>
           `;
@@ -363,6 +398,16 @@
         });
       }catch(e){}
     }
+
+    // NEW: open deposit/withdraw page
+    btnDeposit.addEventListener('click', ()=>{
+      if(!mustLogin()) return;
+      window.open(DEPOSIT_URL, '_blank');
+    });
+    btnWithdraw.addEventListener('click', ()=>{
+      if(!mustLogin()) return;
+      window.open(WITHDRAW_URL, '_blank');
+    });
 
     /* ---------------- AUTH ---------------- */
     let unsubscribeUserBal = null;
@@ -532,7 +577,7 @@
 
     subscribePositions();
 
-    /* ---------------- BUY / SELL (CONNECTED TO ZCOIN) ---------------- */
+    /* ---------------- BUY / SELL (CONNECTED TO ZCOIN + PROFIT/LOSS ECONOMY) ---------------- */
     document.getElementById('btnBuy').addEventListener('click', buyShares);
     document.getElementById('btnSell').addEventListener('click', sellShares);
 
@@ -543,7 +588,9 @@
       const shares = Math.floor(Number(document.getElementById('buyShares').value || 0));
       if(!shares || shares < 100) return alert('Minimal pembelian 100 lembar');
 
-      const cost = shares * Number(currentMarket.price || 0);
+      const price = clampNumber(currentMarket.price);
+      const cost = shares * price;
+
       if(cost <= 0) return alert('Harga market invalid');
       if(cost > balance) return alert('Saldo ZCoin tidak cukup');
 
@@ -554,7 +601,7 @@
           const uSnap = await tx.get(userRef);
           if(!uSnap.exists) throw new Error('Wallet ZCoin tidak ditemukan');
 
-          const cur = Number(uSnap.data().amount || 0);
+          const cur = clampNumber(uSnap.data().amount);
           if(cur < cost) throw new Error('Saldo ZCoin tidak cukup');
 
           // deduct wallet
@@ -571,7 +618,7 @@
             type: 'market-buy',
             marketId: currentMarketId,
             shares: shares,
-            price: Number(currentMarket.price || 0)
+            price: price
           });
 
           // add position
@@ -581,7 +628,7 @@
             marketId: currentMarketId,
             marketName: currentMarket.name || currentMarketId,
             shares: shares,
-            avgPrice: Number(currentMarket.price || 0),
+            avgPrice: price,
             status: 'open',
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
@@ -592,13 +639,13 @@
             type: 'BUY',
             userUID: currentUser.uid,
             shares: shares,
-            price: Number(currentMarket.price || 0),
+            price: price,
             ts: firebase.firestore.FieldValue.serverTimestamp()
           });
         });
 
         await loadZTxHistory(currentUser.uid);
-        alert(`Beli ${shares} lembar @ ${formatPrice(currentMarket.price)} sukses (saldo kepotong ZCoin).`);
+        alert(`Beli ${shares} lembar @ ${formatPrice(price)} sukses (saldo kepotong ZCoin).`);
 
       }catch(e){
         alert('Gagal buy: ' + (e.message || e));
@@ -631,36 +678,117 @@
 
         if(available < sharesToSell) return alert('Lembar tidak cukup untuk dijual');
 
-        const sellPrice = Number(currentMarket.price || 0);
-        const credit = sharesToSell * sellPrice;
+        const sellPrice = clampNumber(currentMarket.price);
+        if(sellPrice <= 0) return alert('Harga market invalid');
+
+        // ====== PROFIT/LOSS CALC (FIFO) ======
+        // profit = (sellPrice - avgPrice) * shares
+        let remaining = sharesToSell;
+        let totalProfit = 0; // bisa minus juga
+        for(const item of positions){
+          if(remaining <= 0) break;
+          const have = clampNumber(item.data.shares);
+          const take = Math.min(have, remaining);
+          const avg = clampNumber(item.data.avgPrice);
+          const pnl = (sellPrice - avg) * take;
+          totalProfit += pnl;
+          remaining -= take;
+        }
+
+        // credit principal dari jual saham (ini uang hasil jual)
+        const creditPrincipal = sharesToSell * sellPrice;
 
         await db.runTransaction(async tx=>{
-          // credit wallet
+          const metaSnap = await tx.get(ZCOIN_META_REF);
+          if(!metaSnap.exists) throw new Error('ZCoin meta not found');
+          const meta = metaSnap.data() || {};
+          const total = meta.totalSupply || TOTAL_SUPPLY;
+          const circ = clampNumber(meta.circulatingSupply);
+          const locked = typeof meta.lockedSupply === 'number' ? clampNumber(meta.lockedSupply) : Math.max(0, total - circ);
+
           const uSnap = await tx.get(userRef);
           if(!uSnap.exists) throw new Error('Wallet ZCoin tidak ditemukan');
+          const curBal = clampNumber(uSnap.data().amount);
 
-          const cur = Number(uSnap.data().amount || 0);
+          // 1) principal always masuk saldo (seperti sebelumnya)
+          let newBal = curBal + creditPrincipal;
+
+          // 2) apply profit/loss ke ekonomi koin
+          // - profit: ambil dari lockedSupply -> masuk user
+          // - loss: ambil dari user -> masuk lockedSupply
+          let newCirc = circ;
+          let newLocked = locked;
+
+          const profitRounded = Number(totalProfit.toFixed(2)); // biar stabil
+
+          if(profitRounded > 0){
+            if(profitRounded > newLocked) throw new Error('Locked supply tidak cukup buat bayar profit user');
+            newBal += profitRounded;
+            newCirc += profitRounded;
+            newLocked -= profitRounded;
+
+            // log wallet profit
+            const profitDoc = userRef.collection('transactions').doc();
+            tx.set(profitDoc, {
+              timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+              amount: +profitRounded,
+              type: 'trade-profit',
+              marketId: currentMarketId,
+              shares: sharesToSell,
+              closePrice: sellPrice
+            });
+          }
+
+          if(profitRounded < 0){
+            const lossAbs = Math.abs(profitRounded);
+            // NOTE: loss diambil dari saldo user
+            if(lossAbs > newBal) throw new Error('Saldo tidak cukup buat menutup loss (koin ditarik balik ke locked supply)');
+            newBal -= lossAbs;
+            newCirc -= lossAbs;
+            newLocked += lossAbs;
+
+            // log wallet loss
+            const lossDoc = userRef.collection('transactions').doc();
+            tx.set(lossDoc, {
+              timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+              amount: -lossAbs,
+              type: 'trade-loss',
+              marketId: currentMarketId,
+              shares: sharesToSell,
+              closePrice: sellPrice
+            });
+          }
+
+          // update user wallet final
           tx.update(userRef, {
-            amount: cur + credit,
+            amount: newBal,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           });
 
+          // log sell principal
           const txDoc = userRef.collection('transactions').doc();
           tx.set(txDoc, {
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-            amount: +credit,
+            amount: +creditPrincipal,
             type: 'market-sell',
             marketId: currentMarketId,
             shares: sharesToSell,
             price: sellPrice
           });
 
+          // update meta economy
+          tx.update(ZCOIN_META_REF, {
+            circulatingSupply: newCirc,
+            lockedSupply: newLocked
+          });
+
           // close/reduce positions FIFO
-          let remaining = sharesToSell;
+          let remainingClose = sharesToSell;
           for(const item of positions){
-            if(remaining <= 0) break;
-            const have = Number(item.data.shares || 0);
-            const take = Math.min(have, remaining);
+            if(remainingClose <= 0) break;
+
+            const have = clampNumber(item.data.shares);
+            const take = Math.min(have, remainingClose);
             const left = have - take;
 
             if(left <= 0){
@@ -668,7 +796,8 @@
                 shares: 0,
                 status: 'closed',
                 closedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                closePrice: sellPrice
+                closePrice: sellPrice,
+                realizedPnl: Number(((sellPrice - clampNumber(item.data.avgPrice)) * take).toFixed(2))
               });
             } else {
               tx.update(item.ref, {
@@ -676,7 +805,7 @@
               });
             }
 
-            remaining -= take;
+            remainingClose -= take;
           }
 
           // trade log
@@ -686,12 +815,15 @@
             userUID: currentUser.uid,
             shares: sharesToSell,
             price: sellPrice,
+            realizedPnl: Number(profitRounded.toFixed(2)),
             ts: firebase.firestore.FieldValue.serverTimestamp()
           });
         });
 
         await loadZTxHistory(currentUser.uid);
-        alert(`Jual ${sharesToSell} lembar @ ${formatPrice(sellPrice)} sukses (saldo masuk ZCoin).`);
+
+        const pnlTxt = totalProfit >= 0 ? `+${formatPrice(totalProfit)}` : `${formatPrice(totalProfit)}`;
+        alert(`Jual ${sharesToSell} lembar @ ${formatPrice(sellPrice)} sukses.\nRealized P/L: ${pnlTxt} ZCoin\n(Ekonomi locked/circulating auto update)`);
 
       }catch(e){
         alert('Gagal sell: ' + (e.message || e));
