@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>HOLEZ Login/Register</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins&display=swap">
+  <style>
+    :root {
+      --bg: #0b0f1a;
+      --card: #121829;
+      --accent: #1e88e5;
+      --accent-light: #42a5f5;
+      --text: #fff;
+      --muted: #888;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
+    body,html { width:100%; height:100%; background:var(--bg); color:var(--text); }
+    .screen { display:none; width:100%; max-width:400px; margin:0 auto; padding:20px; }
+    .screen.active { display:block; }
+    .card { background:var(--card); border-radius:12px; padding:30px 20px; box-shadow:0 4px 12px rgba(0,0,0,0.5); }
+    h1,h2 { text-align:center; margin-bottom:20px; }
+
+    /* Banner explore */
+    .banner {
+      background: var(--accent);
+      border-radius:12px;
+      padding:20px;
+      text-align:center;
+      margin-bottom:30px;
+    }
+    .banner h2 { margin-bottom:10px; }
+
+    .btn, .btn-primary {
+      display:block;
+      width:100%;
+      text-align:center;
+      padding:12px;
+      border:none;
+      border-radius:6px;
+      cursor:pointer;
+      font-size:16px;
+      margin-top:15px;
+    }
+    .btn-primary { background:var(--accent-light); color:var(--bg); }
+
+    .btn-circle {
+      width:48px; height:48px;
+      border-radius:50%;
+      background:var(--text);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      margin:0 10px;
+      cursor:pointer;
+    }
+
+    .input-group {
+      position:relative;
+      margin-bottom:20px;
+    }
+    .input-group input {
+      width:100%;
+      padding:12px 44px;
+      border:none; border-radius:6px;
+      background:#1f2a40;
+      color:var(--text);
+    }
+    .input-group .icon-left,
+    .input-group .icon-right {
+      position:absolute;
+      top:50%; transform:translateY(-50%);
+      width:24px; height:24px;
+      opacity:0.7;
+    }
+    .input-group .icon-left { left:12px; }
+    .input-group .icon-right { right:12px; cursor:pointer; }
+
+    .toggle { text-align:center; margin-top:20px; font-size:14px; }
+    .toggle a { color:var(--accent-light); text-decoration:underline; cursor:pointer; }
+
+    .alert {
+      margin-top:10px;
+      color:#f44336;
+      font-size:13px;
+      height:20px;
+      text-align:center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN SCREEN -->
+  <section id="loginScreen" class="screen active">
+    <div class="card">
+      <h1>Login</h1>
+      <div class="input-group">
+        <img class="icon-left" src="https://img.icons8.com/ios-filled/50/ffffff/new-post.png"/>
+        <input type="email" id="email" placeholder="Email address" />
+      </div>
+      <div class="input-group">
+        <img class="icon-left" src="https://img.icons8.com/ios-filled/50/ffffff/lock-2.png"/>
+        <input type="password" id="password" placeholder="Password" />
+        <img class="icon-right" id="togglePwd" src="https://img.icons8.com/ios-glyphs/30/ffffff/visible.png"/>
+      </div>
+      <button class="btn-primary" id="submitLogin">Login</button>
+
+      <div style="text-align:center; margin-top:15px;">
+        <div class="btn-circle" id="loginGoogle">
+          <img src="https://img.icons8.com/color/24/000000/google-logo.png"/>
+        </div>
+        <div class="btn-circle" id="loginApple">
+          <img src="https://img.icons8.com/ios-filled/24/000000/mac-os.png"/>
+        </div>
+      </div>
+
+      <div class="toggle">
+        Belum punya akun? <a id="goRegister">Register</a>
+      </div>
+
+      <div class="alert" id="alertText"></div>
+    </div>
+  </section>
+
+  <!-- REGISTER SCREEN + BANNER -->
+  <section id="exploreScreen" class="screen">
+    <div class="banner">
+      <h2>Explore HOLEZ</h2>
+      <p>Dapatkan Return Investasi Internal HOLEZ CAPITAL produk.</p>
+    </div>
+    <div class="card">
+      <h2>Register</h2>
+      <div class="input-group">
+        <img class="icon-left" src="https://img.icons8.com/ios-filled/50/ffffff/new-post.png"/>
+        <input type="email" id="regEmail" placeholder="Email address" />
+      </div>
+      <div class="input-group">
+        <img class="icon-left" src="https://img.icons8.com/ios-filled/50/ffffff/lock-2.png"/>
+        <input type="password" id="regPassword" placeholder="Password" />
+        <img class="icon-right" id="togglePwdReg" src="https://img.icons8.com/ios-glyphs/30/ffffff/visible.png"/>
+      </div>
+      <button class="btn-primary" id="submitRegister">Register</button>
+
+      <div style="text-align:center; margin-top:15px;">
+        <div class="btn-circle" id="regGoogle">
+          <img src="https://img.icons8.com/color/24/000000/google-logo.png"/>
+        </div>
+        <div class="btn-circle" id="regApple">
+          <img src="https://img.icons8.com/ios-filled/24/000000/mac-os.png"/>
+        </div>
+      </div>
+
+      <div class="toggle">
+        Sudah punya akun? <a id="goLogin">Login</a>
+      </div>
+
+      <div class="alert" id="alertTextReg"></div>
+    </div>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9953411399547795"
+     crossorigin="anonymous"></script>
+
+  </section>
+
+  <!-- Firebase JS -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      signInWithPopup,
+      GoogleAuthProvider,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDVUEZ3ZVmH4ld7LVnEq_L368wEJpEs-l8",
+      authDomain: "zeepaylater-93a94.firebaseapp.com",
+      projectId: "zeepaylater-93a94",
+      storageBucket: "zeepaylater-93a94.appspot.com",
+      messagingSenderId: "358065954807",
+      appId: "1:358065954807:web:66619211fea82a4b2518f2"
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    // === Helper: Pastikan dokumen user & referral ===
+    async function ensureUserDocuments(user){
+      const uid  = user.uid;
+      const code = uid.slice(0,6).toUpperCase();
+      const uRef  = doc(db, 'users', uid);
+      const uSnap = await getDoc(uRef);
+      if (!uSnap.exists()) {
+        await setDoc(uRef, {
+          coinBalance: 0,
+          referralCode: code,
+          createdAt: serverTimestamp()
+        });
+      } else if (!uSnap.data().referralCode) {
+        await updateDoc(uRef, { referralCode: code });
+      }
+
+      const rRef  = doc(db, 'referralCodes', code);
+      const rSnap = await getDoc(rRef);
+      if (!rSnap.exists()) {
+        await setDoc(rRef, {
+          owner: uid,
+          count: 0,
+          createdAt: serverTimestamp()
+        });
+      }
+    }
+
+    // Jika user login, redirect
+    onAuthStateChanged(auth, async (user)=>{
+      if (user) {
+        try { await ensureUserDocuments(user); } 
+        catch(e) { console.error('ensureUserDocuments error:', e); }
+        window.location.href = "https://zestore.netlify.app/home";
+      }
+    });
+
+    // DOM Elemen
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const regEmailInput = document.getElementById('regEmail');
+    const regPasswordInput = document.getElementById('regPassword');
+    const alertText = document.getElementById('alertText');
+    const alertTextReg = document.getElementById('alertTextReg');
+
+    // Login email
+    document.getElementById('submitLogin').addEventListener('click', async () => {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+      alertText.textContent = "";
+      if (!email || !password) {
+        alertText.textContent = "Isi semua kolom.";
+        return;
+      }
+      try {
+        const { user } = await signInWithEmailAndPassword(auth, email, password);
+        await ensureUserDocuments(user);
+        window.location.href = "https://zestore.netlify.app/home";
+      } catch (err) {
+        alertText.textContent = err.message;
+      }
+    });
+
+    // Register email
+    document.getElementById('submitRegister').addEventListener('click', async () => {
+      const email = regEmailInput.value.trim();
+      const password = regPasswordInput.value.trim();
+      alertTextReg.textContent = "";
+      if (!email || !password) {
+        alertTextReg.textContent = "Isi semua kolom.";
+        return;
+      }
+      try {
+        const { user } = await createUserWithEmailAndPassword(auth, email, password);
+        await ensureUserDocuments(user);
+        window.location.href = "https://zestore.netlify.app/home";
+      } catch (err) {
+        alertTextReg.textContent = err.message;
+      }
+    });
+
+    // Google login
+    document.getElementById('loginGoogle').addEventListener('click', async () => {
+      const provider = new GoogleAuthProvider();
+      try {
+        const { user } = await signInWithPopup(auth, provider);
+        await ensureUserDocuments(user);
+        window.location.href = "https://zestore.netlify.app/home";
+      } catch (err) {
+        alertText.textContent = err.message;
+      }
+    });
+
+    document.getElementById('regGoogle').addEventListener('click', async () => {
+      const provider = new GoogleAuthProvider();
+      try {
+        const { user } = await signInWithPopup(auth, provider);
+        await ensureUserDocuments(user);
+        window.location.href = "https://zestore.netlify.app/home";
+      } catch (err) {
+        alertTextReg.textContent = err.message;
+      }
+    });
+
+    // Toggle screen
+    document.getElementById('goRegister').onclick = () => {
+      document.getElementById('loginScreen').classList.remove('active');
+      document.getElementById('exploreScreen').classList.add('active');
+    };
+    document.getElementById('goLogin').onclick = () => {
+      document.getElementById('exploreScreen').classList.remove('active');
+      document.getElementById('loginScreen').classList.add('active');
+    };
+
+    // Toggle password
+    document.getElementById('togglePwd').onclick = () => {
+      const inp = document.getElementById('password');
+      const vis = inp.type === 'password';
+      inp.type = vis ? 'text' : 'password';
+      document.getElementById('togglePwd').src = vis
+        ? 'https://img.icons8.com/ios-glyphs/30/ffffff/hide.png'
+        : 'https://img.icons8.com/ios-glyphs/30/ffffff/visible.png';
+    };
+    document.getElementById('togglePwdReg').onclick = () => {
+      const inp = document.getElementById('regPassword');
+      const vis = inp.type === 'password';
+      inp.type = vis ? 'text' : 'password';
+      document.getElementById('togglePwdReg').src = vis
+        ? 'https://img.icons8.com/ios-glyphs/30/ffffff/hide.png'
+        : 'https://img.icons8.com/ios-glyphs/30/ffffff/visible.png';
+    };
+  </script>
+</body>
+</html>
