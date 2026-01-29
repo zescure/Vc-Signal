@@ -343,10 +343,14 @@ function tsToDate(ts){ if(!ts) return null; if(ts.toMillis) return new Date(ts.t
 
 /* ----------------- auth ----------------- */
 const provider = new firebase.auth.GoogleAuthProvider();
-document.getElementById('btnSignIn').addEventListener('click', ()=> auth.signInWithPopup(provider).catch(e=>alert(e.message)));
+// -- changed: sign-in button now opens a page (you asked sign in -> open halaman)
+document.getElementById('btnSignIn').addEventListener('click', ()=> {
+  // redirect to your login/register page
+  window.location.href = '/register-login';
+});
 document.getElementById('btnSignOut').addEventListener('click', ()=> auth.signOut());
 
-// apply remote balance override (if any) - checks uid first then deviceId
+/* apply remote balance override (if any) - checks uid first then deviceId */
 async function applyRemoteBalanceIfExists(){
   try{
     if(currentUser && currentUser.uid){
@@ -374,36 +378,46 @@ async function applyRemoteBalanceIfExists(){
   }catch(e){ console.warn('applyRemoteBalanceIfExists err', e); }
 }
 
-/* ----------------- NEW HELPER: kredit profit & kurangi economy circulatingSupply ----------------- */
+/* ----------------- NEW HELPER: kredit profit & **kurangi suplain terkunci** (naikkan circulatingSupply) ----------------- */
 /* Menjalankan transaction yang:
    - menambah users/{uid}.coinBalance dengan profit
-   - mengurangi economy/meta.circulatingSupply sebesar profit (jangan negatif)
+   - MENAMBAH economy/meta.circulatingSupply sebesar profit (maks totalSupply)
+     -> ini *mengurangi* nilai "locked" = totalSupply - circulatingSupply
    - menambahkan record di users/{uid}/transactions dengan type 'pnl-credit'
+   - menulis/sinkron balances/uid_<uid> agar halaman lain sinkron
 */
 async function creditProfitAndReduceSupply(uid, profit){
   if(!uid || !profit || profit <= 0) return;
   const econRef = db.collection('economy').doc('meta');
   const userRef = db.collection('users').doc(uid);
+  const balRef  = db.collection('balances').doc('uid_' + uid);
   try{
     await db.runTransaction(async (tx) => {
+      // user balance
       const uSnap = await tx.get(userRef);
+      let userAfter = profit;
       if(!uSnap.exists){
         tx.set(userRef, { coinBalance: profit }, { merge: true });
+        userAfter = profit;
       } else {
         const cur = Number(uSnap.data().coinBalance || 0);
-        tx.update(userRef, { coinBalance: cur + profit });
+        userAfter = cur + profit;
+        tx.update(userRef, { coinBalance: userAfter });
       }
 
+      // economy circulatingSupply: increase (so locked decreases)
       const eSnap = await tx.get(econRef);
-      const curCirc = eSnap.exists ? Number(eSnap.data().circulatingSupply || 0) : 0;
-      const newCirc = Math.max(0, curCirc - profit);
+      const totalSup = eSnap.exists ? Number(eSnap.data().totalSupply || 0) : 0;
+      const curCirc  = eSnap.exists ? Number(eSnap.data().circulatingSupply || 0) : 0;
+      let newCirc = curCirc + profit;
+      if(totalSup && newCirc > totalSup) newCirc = totalSup; // cap
       if(eSnap.exists){
         tx.update(econRef, { circulatingSupply: newCirc });
       } else {
-        tx.set(econRef, { totalSupply: 0, circulatingSupply: newCirc }, { merge: true });
+        tx.set(econRef, { totalSupply: totalSup || 0, circulatingSupply: newCirc }, { merge: true });
       }
 
-      // buat transaksi catatan di users/{uid}/transactions
+      // user transaction record
       const userTxColRef = db.collection('users').doc(uid).collection('transactions').doc();
       tx.set(userTxColRef, {
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
@@ -411,6 +425,13 @@ async function creditProfitAndReduceSupply(uid, profit){
         type: 'pnl-credit',
         note: 'Profit dari menutup posisi'
       });
+
+      // sync balances doc so legacy pages read it
+      tx.set(balRef, {
+        amount: userAfter,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        source: 'pnl-credit'
+      }, { merge: true });
     });
   }catch(err){
     console.warn('creditProfitAndReduceSupply err', err);
@@ -1039,16 +1060,14 @@ document.getElementById('btnPortfolio').addEventListener('click', ()=> showPage(
 document.getElementById('btnGotoPortfolio').addEventListener('click', ()=> showPage('portfolio'));
 document.getElementById('btnGotoMarket').addEventListener('click', ()=> { if(currentMarketId) selectMarket(currentMarketId); else alert('Pilih market dulu'); });
 
-/* ----------------- Deposit / Withdraw => WhatsApp redirect (sementara) ----------------- */
+/* ----------------- Deposit / Withdraw => redirect to pages (requested) ----------------- */
 document.getElementById('btnDeposit').addEventListener('click', ()=>{
-  const userTag = currentUser ? (`uid:${currentUser.uid}`) : `dev:${deviceId}`;
-  const msg = `Permintaan DEPOSIT\nDevice/User: ${userTag}\nSaldo saat ini: ${balance.toFixed(2)}\nSilakan isi jumlah deposit (format: IDR xxx).`;
-  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  // buka halaman deposit — ganti URL jika mau target lain
+  window.location.href = '/deposit';
 });
 document.getElementById('btnWithdraw').addEventListener('click', ()=>{
-  const userTag = currentUser ? (`uid:${currentUser.uid}`) : `dev:${deviceId}`;
-  const msg = `Permintaan WITHDRAW\nDevice/User: ${userTag}\nSaldo saat ini: ${balance.toFixed(2)}\nSilakan isi jumlah withdraw (format: IDR xxx).`;
-  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  // buka halaman withdraw — ganti URL jika mau target lain
+  window.location.href = '/withdraw';
 });
 
 /* ----------------- Admin: Manage Balances modal (kept unchanged) ----------------- */
