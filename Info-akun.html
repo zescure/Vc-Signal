@@ -21,27 +21,6 @@
     ul{list-style:none;padding-left:0;}
     .btn-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
     .btn-row button{flex:1;min-width:140px;}
-
-    .pill{
-      display:inline-block;
-      padding:4px 8px;
-      border-radius:999px;
-      font-size:12px;
-      background:#0f1724;
-      border:1px solid #1e2537;
-      color:#ccc;
-    }
-    .pill.pending{border-color:#f1c40f;color:#f1c40f;}
-    .pill.approved{border-color:#2ecc71;color:#2ecc71;}
-    .pill.rejected{border-color:#e74c3c;color:#e74c3c;}
-    .row{display:flex;justify-content:space-between;gap:10px;align-items:center;}
-    .mini{font-size:12px;color:#9aa;}
-    .divider{border:none;border-top:1px solid #1e2537;margin:10px 0;}
-
-    .list-item{
-      padding:10px 0;
-      border-bottom:1px solid #1e2537;
-    }
   </style>
 </head>
 <body>
@@ -73,7 +52,8 @@
     </div>
 
     <p class="muted" style="margin-top:8px;">
-      Deposit/Penarikan sekarang <b>PENDING</b> sampai admin approve.
+      Deposit = ambil dari suplai terkunci → masuk saldo user. <br/>
+      Penarikan = saldo user → balik ke suplai terkunci.
     </p>
   </div>
 
@@ -83,7 +63,7 @@
     <div class="economy-row"><span>Suplai Beredar</span><strong id="circulatingSupply">0</strong></div>
     <div class="economy-row"><span>Suplai Terkunci</span><strong id="lockedSupply">0</strong></div>
     <div class="economy-row"><span>Kurs Dinamis (10 koin)</span><strong id="dynamicRate">Rp 0</strong></div>
-    <p class="muted" style="margin-top:8px;">Catatan: sistem menyimpan koin di koleksi <code>zcoin_balances</code>.</p>
+    <p class="muted" style="margin-top:8px;">Catatan: sistem menyimpan koin baru di koleksi <code>zcoin_balances</code>.</p>
   </div>
 
   <!-- Deposit/Withdraw popup -->
@@ -98,7 +78,7 @@
       <p class="muted" id="dwMsg" style="margin-top:8px;"></p>
 
       <div style="display:flex;gap:8px;margin-top:10px;">
-        <button id="dwConfirm" class="primary">Kirim Request</button>
+        <button id="dwConfirm" class="primary">Proses</button>
         <button id="dwCancel" class="danger">Batal</button>
       </div>
     </div>
@@ -126,24 +106,6 @@
     <ul id="txHistory"></ul>
   </div>
 
-  <!-- Requests -->
-  <div class="card">
-    <h3>Request Deposit / Penarikan</h3>
-    <p class="muted" style="margin-top:6px;">
-      Ini daftar request kamu yang masih pending / sudah diproses admin.
-    </p>
-    <ul id="reqHistory" style="margin-top:10px;"></ul>
-  </div>
-
-  <!-- CLOSED TRADES / REALIZED PNL (OUTPUT SYMBOL + PRICE + PNL) -->
-  <div class="card">
-    <h3>Histori Perdagangan Tertutup (Realized PnL)</h3>
-    <p class="muted" style="margin-top:6px;">
-      Output: <b>Symbol</b>, <b>Close Price</b>, <b>Last Price</b>, dan <b>Realized PnL</b>.
-    </p>
-    <ul id="closedTrades" style="margin-top:10px;"></ul>
-  </div>
-
   <!-- Admin (hidden default) -->
   <div class="card" id="adminBox" style="display:none;">
     <h2>Admin - ZCoin</h2>
@@ -154,14 +116,7 @@
       <ul id="admTop"></ul>
     </div>
 
-    <hr class="divider">
-
-    <h3>Pending Request (Deposit / Withdraw)</h3>
-    <p class="muted">Admin approve dulu baru saldo beneran pindah.</p>
-    <ul id="admReqList" style="margin-top:10px;"></ul>
-    <p class="muted" id="admReqStatus" style="margin-top:8px;"></p>
-
-    <hr class="divider">
+    <hr style="border:none;border-top:1px solid #1e2537;margin:10px 0;">
 
     <h3>Mint / Burn (Admin)</h3>
     <label>UID target</label>
@@ -183,7 +138,7 @@
     import {
       getFirestore, doc, getDoc, setDoc, updateDoc, collection,
       getDocs, query, orderBy, limit, runTransaction, serverTimestamp,
-      onSnapshot, addDoc, where
+      onSnapshot
     } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
     const firebaseConfig = {
@@ -198,7 +153,7 @@
     const auth = getAuth(app);
     const db   = getFirestore(app);
 
-    // -------------------- CONFIG --------------------
+    // -------------------- ECONOMY CONFIG --------------------
     const TOTAL_SUPPLY = 500_000_000_000;
     const ZCOIN_META_REF = doc(db, 'zcoin', 'meta');
     const ZCOIN_BALANCES = 'zcoin_balances';
@@ -206,13 +161,6 @@
     const RATE_IDR_PER_10 = 10;
     const ADMIN_UID = 'viCOsJo4wHVFmhtpmMx1Wd4sDF52';
     const FEE_RECEIVER_UID = ADMIN_UID;
-
-    // NEW collections
-    const REQUESTS_COL = 'zcoin_requests';
-
-    // NEW: MARKET + POSITIONS (buat output symbol + price + realized pnl)
-    const MARKETS_COL = 'markets';     // db/markets/{marketId}
-    const POSITIONS_COL = 'positions'; // db/zcoin_balances/{uid}/positions/{posId} (atau global, lihat catatan)
 
     // -------------------- DOM --------------------
     const displayNameEl = document.getElementById('displayName');
@@ -243,10 +191,6 @@
     const dwConfirm = document.getElementById('dwConfirm');
     const dwCancel = document.getElementById('dwCancel');
 
-    // request history + closed trades
-    const reqHistoryUl = document.getElementById('reqHistory');
-    const closedTradesUl = document.getElementById('closedTrades');
-
     // admin
     const adminBox      = document.getElementById('adminBox');
     const admTotalUser  = document.getElementById('admTotalUser');
@@ -259,34 +203,11 @@
     const admRefresh    = document.getElementById('admRefresh');
     const admStatus     = document.getElementById('admStatus');
 
-    // admin pending request list
-    const admReqList = document.getElementById('admReqList');
-    const admReqStatus = document.getElementById('admReqStatus');
-
     let currentUser = null;
     let unsubMeta = null;
 
-    // NEW: caches + unsub
-    let marketsCache = {};               // { marketId: {symbol, price, name} }
-    let positionsSnapshotCache = [];     // array of positions
-    let unsubMarkets = null;
-    let unsubPositions = null;
-
     // -------------------- HELPERS --------------------
     const nf = n => (n||0).toLocaleString('id-ID');
-    const safeNum = v => Number.isFinite(Number(v)) ? Number(v) : 0;
-
-    function formatPrice(x){
-      const n = Number(x);
-      if(!Number.isFinite(n)) return '—';
-      // biar rapi (emas biasanya 2 desimal)
-      return n.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-
-    function pill(status){
-      const s = (status || 'pending').toLowerCase();
-      return `<span class="pill ${s}">${s.toUpperCase()}</span>`;
-    }
 
     async function ensureZcoinMeta(){
       const snap = await getDoc(ZCOIN_META_REF);
@@ -314,7 +235,7 @@
         if(!snap.exists()) return;
         const d = snap.data();
         totalSupplyEl.textContent = nf(d.totalSupply || TOTAL_SUPPLY);
-        const circ = safeNum(d.circulatingSupply || 0);
+        const circ = Number(d.circulatingSupply || 0);
         circSupplyEl.textContent = nf(circ);
         lockedEl.textContent = nf((d.totalSupply || TOTAL_SUPPLY) - circ);
         dynamicRateEl.textContent = `Rp ${nf(d.dynamicRatePer10 || RATE_IDR_PER_10)} (10 koin)`;
@@ -332,8 +253,8 @@
           if(!metaSnap.exists()) throw new Error('ZCoin meta missing.');
           const meta = metaSnap.data();
 
-          const total = safeNum(meta.totalSupply || TOTAL_SUPPLY);
-          const circ = safeNum(meta.circulatingSupply || 0);
+          const total = meta.totalSupply || TOTAL_SUPPLY;
+          const circ = meta.circulatingSupply || 0;
           const locked = total - circ;
 
           if(INITIAL_AIRDROP > locked) throw new Error('Tidak cukup supply untuk airdrop awal.');
@@ -360,22 +281,16 @@
 
     async function getDynamicRatePer10(){
       const snap = await getDoc(ZCOIN_META_REF);
-      return snap.exists() ? safeNum(snap.data().dynamicRatePer10 || RATE_IDR_PER_10) : RATE_IDR_PER_10;
+      return snap.exists() ? Number(snap.data().dynamicRatePer10 || RATE_IDR_PER_10) : RATE_IDR_PER_10;
     }
 
     async function loadZBalance(uid){
       const balRef = doc(db, ZCOIN_BALANCES, uid);
       const snap = await getDoc(balRef);
-      const amt = snap.exists() ? safeNum(snap.data().amount || 0) : 0;
+      const amt = snap.exists() ? Number(snap.data().amount || 0) : 0;
       coinEl.textContent = nf(amt);
       coinIDREl.textContent = nf(Math.round((amt/10) * (await getDynamicRatePer10())));
-
       await loadTxHistory(uid);
-      await loadRequestHistory(uid);
-
-      // closed trades render bakal realtime dari subscribePositionsRealtime()
-      // tapi kita trigger juga sekali biar ga kosong pas awal
-      renderClosedTrades();
     }
 
     async function loadTxHistory(uid){
@@ -389,174 +304,17 @@
         snaps.forEach(d=>{
           const t = d.data();
           const dt = t.timestamp?.toDate?.().toLocaleString('id-ID') || '-';
-          const amt = safeNum(t.amount || 0);
+          const amt = Number(t.amount || 0);
           const cls = amt>0 ? 'color: #2ecc71;' : 'color: #e74c3c;';
-          txHistoryUl.innerHTML += `<li style="${cls}padding:6px 0;border-bottom:1px solid #1e2537;">
-            ${dt} → ${amt>0?'+':''}${nf(amt)} koin
-            <small style="color:#999">(${t.type||'-'})</small>
-          </li>`;
+          txHistoryUl.innerHTML += `<li style="${cls}padding:6px 0;border-bottom:1px solid #1e2537;">${dt} → ${amt>0?'+':''}${nf(amt)} koin <small style="color:#999">(${t.type||'-'})</small></li>`;
         });
       }catch(e){
         txHistoryUl.innerHTML = `<li class="muted">Gagal memuat: ${e.message || e}</li>`;
       }
     }
 
-    // -------------------- REQUEST HISTORY --------------------
-    async function loadRequestHistory(uid){
-      reqHistoryUl.innerHTML = '<li class="muted">Memuat...</li>';
-      try{
-        const colRef = collection(db, REQUESTS_COL);
-        const q = query(colRef, where('uid','==',uid), orderBy('createdAt','desc'), limit(30));
-        const snaps = await getDocs(q);
-
-        reqHistoryUl.innerHTML = '';
-        if(snaps.empty){
-          reqHistoryUl.innerHTML = '<li class="muted">Belum ada request</li>';
-          return;
-        }
-
-        snaps.forEach(s=>{
-          const r = s.data();
-          const dt = r.createdAt?.toDate?.().toLocaleString('id-ID') || '-';
-          const amount = safeNum(r.amount || 0);
-          const type = r.type || '-';
-          const status = r.status || 'pending';
-          const note = r.note || '';
-
-          reqHistoryUl.innerHTML += `
-            <li style="padding:10px 0;border-bottom:1px solid #1e2537;">
-              <div class="row">
-                <div>
-                  <b>${type.toUpperCase()}</b> ${pill(status)}
-                  <div class="mini">${dt}</div>
-                </div>
-                <div style="text-align:right;">
-                  <b>${nf(amount)}</b> <span class="mini">koin</span>
-                </div>
-              </div>
-              <div class="mini" style="margin-top:6px;color:#9aa;">
-                ID: ${s.id}<br/>
-                ${note ? ('Note: ' + note) : ''}
-              </div>
-            </li>
-          `;
-        });
-      }catch(e){
-        reqHistoryUl.innerHTML = `<li class="muted">Gagal memuat request: ${e.message || e}</li>`;
-      }
-    }
-
-    // ==================== NEW: MARKETS + POSITIONS REALTIME ====================
-    function subscribeMarketsRealtime(){
-      if(unsubMarkets) unsubMarkets();
-
-      const colRef = collection(db, MARKETS_COL);
-
-      unsubMarkets = onSnapshot(colRef, (snap)=>{
-        const tmp = {};
-        snap.forEach(docu=>{
-          const d = docu.data() || {};
-          tmp[docu.id] = {
-            symbol: d.symbol || d.name || docu.id,
-            name: d.name || d.symbol || docu.id,
-            price: safeNum(d.price || 0),
-          };
-        });
-
-        marketsCache = tmp;
-        renderClosedTrades();
-      }, (err)=>{
-        console.log('markets snapshot error', err);
-      });
-    }
-
-    function subscribePositionsRealtime(uid){
-      if(unsubPositions) unsubPositions();
-
-      // Ini ngikutin pattern: positions ada di subcollection wallet user
-      // zcoin_balances/{uid}/positions/{posId}
-      const colRef = collection(doc(db, ZCOIN_BALANCES, uid), POSITIONS_COL);
-
-      unsubPositions = onSnapshot(colRef, (snap)=>{
-        const arr = [];
-        snap.forEach(docu=>{
-          const d = docu.data() || {};
-          arr.push({ id: docu.id, ...d });
-        });
-
-        // simpen cache
-        positionsSnapshotCache = arr;
-
-        // render ulang
-        renderClosedTrades();
-      }, (err)=>{
-        console.log('positions snapshot error', err);
-      });
-    }
-
-    function renderClosedTrades(){
-      if(!closedTradesUl) return;
-
-      // filter closed
-      const closed = (positionsSnapshotCache || []).filter(p => (p.status || '').toLowerCase() !== 'open');
-
-      closedTradesUl.innerHTML = '';
-
-      if(!closed.length){
-        closedTradesUl.innerHTML = `<li class="muted">Belum ada histori closed trade</li>`;
-        return;
-      }
-
-      // sort newest first
-      closed.sort((a,b)=>{
-        const ta = a.closedAt?.seconds ? a.closedAt.seconds : 0;
-        const tb = b.closedAt?.seconds ? b.closedAt.seconds : 0;
-        return tb - ta;
-      });
-
-      closed.slice(0,60).forEach(p=>{
-        const m = marketsCache[p.marketId] || null;
-
-        const symbol = (m && m.symbol) ? m.symbol : (p.marketName || p.marketId || 'UNKNOWN');
-        const closePrice = (typeof p.closePrice === "number") ? p.closePrice : null;
-        const lastPrice  = (m && typeof m.price === "number") ? m.price : null;
-
-        // realized pnl
-        const pnl = safeNum(p.pl || p.pnl || 0);
-
-        const closedAt = p.closedAt?.toDate?.().toLocaleString('id-ID')
-          || (p.closedAt?.seconds ? new Date(p.closedAt.seconds*1000).toLocaleString('id-ID') : '-');
-
-        const pnlHtml = pnl >= 0
-          ? `<span style="color:#2ecc71;font-weight:700;">+${pnl.toFixed(2)}</span>`
-          : `<span style="color:#e74c3c;font-weight:700;">${pnl.toFixed(2)}</span>`;
-
-        const li = document.createElement('li');
-        li.className = 'list-item';
-
-        li.innerHTML = `
-          <div class="row">
-            <div>
-              <div style="font-weight:800">${symbol}</div>
-              <div class="mini">
-                Close: <b>${closePrice !== null ? formatPrice(closePrice) : "—"}</b>
-                • Last: <b>${lastPrice !== null ? formatPrice(lastPrice) : "—"}</b>
-              </div>
-              <div class="mini">Closed: ${closedAt}</div>
-            </div>
-            <div style="text-align:right;">
-              <div class="mini">Realized</div>
-              <div>${pnlHtml}</div>
-            </div>
-          </div>
-        `;
-
-        closedTradesUl.appendChild(li);
-      });
-    }
-
-    // -------------------- DEPOSIT / WITHDRAW REQUEST (PENDING) --------------------
-    let dwMode = 'deposit';
+    // -------------------- DEPOSIT / WITHDRAW (NEW) --------------------
+    let dwMode = 'deposit'; // 'deposit' | 'withdraw'
 
     function openDW(mode){
       dwMode = mode;
@@ -566,13 +324,13 @@
 
       if(mode === 'deposit'){
         dwTitle.textContent = 'Deposit ZCoin';
-        dwDesc.textContent = 'Kirim request deposit (pending). Admin harus approve.';
-        dwConfirm.textContent = 'Kirim Request Deposit';
+        dwDesc.textContent = 'Dump top up dulu (simulasi). Deposit akan memindahkan supply terkunci → saldo user.';
+        dwConfirm.textContent = 'Deposit';
         dwConfirm.className = 'primary';
       } else {
         dwTitle.textContent = 'Penarikan ZCoin';
-        dwDesc.textContent = 'Kirim request penarikan (pending). Admin harus approve.';
-        dwConfirm.textContent = 'Kirim Request Withdraw';
+        dwDesc.textContent = 'Dump withdraw dulu (simulasi). Penarikan akan memindahkan saldo user → supply terkunci.';
+        dwConfirm.textContent = 'Tarik';
         dwConfirm.className = 'danger';
       }
     }
@@ -597,208 +355,66 @@
         return;
       }
 
-      dwMsg.textContent = 'Mengirim request...';
+      const uid = currentUser.uid;
+      const userRef = doc(db, ZCOIN_BALANCES, uid);
+      const metaRef = ZCOIN_META_REF;
+
+      dwMsg.textContent = 'Memproses...';
 
       try{
-        await addDoc(collection(db, REQUESTS_COL), {
-          uid: currentUser.uid,
-          type: dwMode,
-          amount: qty,
-          status: 'pending',
-          note: 'simulated',
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
+        await runTransaction(db, async tx=>{
+          const metaSnap = await tx.get(metaRef);
+          const userSnap = await tx.get(userRef);
+
+          if(!metaSnap.exists()) throw new Error('Meta ZCoin tidak ditemukan.');
+          if(!userSnap.exists()) throw new Error('Wallet user tidak ditemukan.');
+
+          const meta = metaSnap.data();
+          const total = Number(meta.totalSupply || TOTAL_SUPPLY);
+          const circ  = Number(meta.circulatingSupply || 0);
+          const locked = total - circ;
+
+          const curBal = Number(userSnap.data().amount || 0);
+
+          if(dwMode === 'deposit'){
+            // Deposit: locked -> user, circulating++
+            if(qty > locked) throw new Error('Locked supply tidak cukup untuk deposit segitu.');
+
+            tx.update(userRef, { amount: curBal + qty, updatedAt: serverTimestamp() });
+            tx.set(doc(collection(userRef, 'transactions')), {
+              timestamp: serverTimestamp(),
+              amount: +qty,
+              type: 'deposit',
+              note: 'simulated-topup'
+            });
+            tx.update(metaRef, { circulatingSupply: circ + qty });
+
+          } else {
+            // Withdraw: user -> locked, circulating--
+            if(curBal < qty) throw new Error('Saldo user tidak cukup untuk penarikan segitu.');
+
+            tx.update(userRef, { amount: curBal - qty, updatedAt: serverTimestamp() });
+            tx.set(doc(collection(userRef, 'transactions')), {
+              timestamp: serverTimestamp(),
+              amount: -qty,
+              type: 'withdraw',
+              note: 'simulated-withdraw'
+            });
+            tx.update(metaRef, { circulatingSupply: circ - qty });
+          }
         });
 
-        dwMsg.textContent = 'Request terkirim. Tunggu admin approve.';
-        await loadRequestHistory(currentUser.uid);
-        setTimeout(()=> closeDW(), 700);
+        dwMsg.textContent = 'Sukses.';
+        await loadZBalance(currentUser.uid);
+        if(currentUser.uid === ADMIN_UID) await loadAdminDashboard();
+
+        setTimeout(()=> closeDW(), 500);
       }catch(e){
         dwMsg.textContent = 'Error: ' + (e?.message || e);
       }
     };
 
-    // -------------------- ADMIN: LOAD PENDING REQUESTS --------------------
-    async function loadAdminPendingRequests(){
-      if(!currentUser || currentUser.uid !== ADMIN_UID) return;
-
-      admReqList.innerHTML = '<li class="muted">Memuat pending request...</li>';
-      admReqStatus.textContent = '';
-
-      try{
-        const colRef = collection(db, REQUESTS_COL);
-        const q = query(colRef, where('status','==','pending'), orderBy('createdAt','desc'), limit(50));
-        const snaps = await getDocs(q);
-
-        admReqList.innerHTML = '';
-        if(snaps.empty){
-          admReqList.innerHTML = '<li class="muted">Tidak ada request pending</li>';
-          return;
-        }
-
-        snaps.forEach(s=>{
-          const r = s.data();
-          const dt = r.createdAt?.toDate?.().toLocaleString('id-ID') || '-';
-          const amount = safeNum(r.amount || 0);
-          const type = (r.type || '-').toUpperCase();
-          const uid = r.uid || '-';
-
-          const li = document.createElement('li');
-          li.style.padding = '10px 0';
-          li.style.borderBottom = '1px solid #1e2537';
-
-          li.innerHTML = `
-            <div class="row">
-              <div>
-                <b>${type}</b> ${pill('pending')}
-                <div class="mini">${dt}</div>
-                <div class="mini">UID: ${uid}</div>
-                <div class="mini">ID: ${s.id}</div>
-              </div>
-              <div style="text-align:right;">
-                <b>${nf(amount)}</b> <span class="mini">koin</span>
-              </div>
-            </div>
-
-            <div class="btn-row" style="margin-top:10px;">
-              <button class="primary" data-act="approve" data-id="${s.id}">Approve</button>
-              <button class="danger" data-act="reject" data-id="${s.id}">Reject</button>
-            </div>
-          `;
-
-          li.querySelectorAll('button').forEach(btn=>{
-            btn.onclick = async ()=>{
-              const act = btn.getAttribute('data-act');
-              const id = btn.getAttribute('data-id');
-              if(act === 'approve') await adminApproveRequest(id);
-              if(act === 'reject') await adminRejectRequest(id);
-            };
-          });
-
-          admReqList.appendChild(li);
-        });
-      }catch(e){
-        admReqList.innerHTML = `<li class="muted">Gagal muat pending: ${e.message || e}</li>`;
-      }
-    }
-
-    async function adminApproveRequest(requestId){
-      if(!currentUser || currentUser.uid !== ADMIN_UID){
-        admReqStatus.textContent = 'Bukan admin.';
-        return;
-      }
-
-      admReqStatus.textContent = 'Approve diproses...';
-
-      const reqRef = doc(db, REQUESTS_COL, requestId);
-
-      try{
-        await runTransaction(db, async tx=>{
-          const reqSnap = await tx.get(reqRef);
-          if(!reqSnap.exists()) throw new Error('Request tidak ditemukan.');
-
-          const req = reqSnap.data();
-          if(req.status !== 'pending') throw new Error('Request sudah diproses.');
-
-          const uid = req.uid;
-          const amount = safeNum(req.amount || 0);
-          const type = req.type;
-
-          if(!uid || !amount || amount <= 0) throw new Error('Data request invalid.');
-
-          const userRef = doc(db, ZCOIN_BALANCES, uid);
-          const metaRef = ZCOIN_META_REF;
-
-          const [userSnap, metaSnap] = await Promise.all([tx.get(userRef), tx.get(metaRef)]);
-          if(!userSnap.exists()) throw new Error('Wallet user tidak ditemukan.');
-          if(!metaSnap.exists()) throw new Error('Meta ZCoin tidak ditemukan.');
-
-          const userBal = safeNum(userSnap.data().amount || 0);
-          const meta = metaSnap.data();
-
-          const total = safeNum(meta.totalSupply || TOTAL_SUPPLY);
-          const circ  = safeNum(meta.circulatingSupply || 0);
-          const locked = total - circ;
-
-          if(type === 'deposit'){
-            if(amount > locked) throw new Error('Locked supply tidak cukup untuk approve deposit.');
-            tx.update(userRef, { amount: userBal + amount, updatedAt: serverTimestamp() });
-            tx.set(doc(collection(userRef, 'transactions')), {
-              timestamp: serverTimestamp(),
-              amount: +amount,
-              type: 'deposit-approved',
-              note: 'approved-by-admin',
-              requestId
-            });
-            tx.update(metaRef, { circulatingSupply: circ + amount });
-          }
-          else if(type === 'withdraw'){
-            if(userBal < amount) throw new Error('Saldo user tidak cukup untuk approve withdraw.');
-            tx.update(userRef, { amount: userBal - amount, updatedAt: serverTimestamp() });
-            tx.set(doc(collection(userRef, 'transactions')), {
-              timestamp: serverTimestamp(),
-              amount: -amount,
-              type: 'withdraw-approved',
-              note: 'approved-by-admin',
-              requestId
-            });
-            tx.update(metaRef, { circulatingSupply: circ - amount });
-          }
-          else{
-            throw new Error('Tipe request tidak valid.');
-          }
-
-          tx.update(reqRef, {
-            status: 'approved',
-            approvedBy: currentUser.uid,
-            approvedAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
-          });
-        });
-
-        admReqStatus.textContent = 'Approve sukses.';
-        await loadAdminPendingRequests();
-        await loadAdminDashboard();
-
-        if(currentUser?.uid) await loadZBalance(currentUser.uid);
-
-      }catch(e){
-        admReqStatus.textContent = 'Gagal approve: ' + (e?.message || e);
-      }
-    }
-
-    async function adminRejectRequest(requestId){
-      if(!currentUser || currentUser.uid !== ADMIN_UID){
-        admReqStatus.textContent = 'Bukan admin.';
-        return;
-      }
-
-      admReqStatus.textContent = 'Reject diproses...';
-
-      try{
-        await runTransaction(db, async tx=>{
-          const reqRef = doc(db, REQUESTS_COL, requestId);
-          const reqSnap = await tx.get(reqRef);
-          if(!reqSnap.exists()) throw new Error('Request tidak ditemukan.');
-          const req = reqSnap.data();
-          if(req.status !== 'pending') throw new Error('Request sudah diproses.');
-
-          tx.update(reqRef, {
-            status: 'rejected',
-            rejectedBy: currentUser.uid,
-            rejectedAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
-          });
-        });
-
-        admReqStatus.textContent = 'Reject sukses.';
-        await loadAdminPendingRequests();
-      }catch(e){
-        admReqStatus.textContent = 'Gagal reject: ' + (e?.message || e);
-      }
-    }
-
-    // -------------------- ADMIN DASHBOARD --------------------
+    // -------------------- ADMIN --------------------
     async function loadAdminDashboard(){
       try{
         const col = collection(db, ZCOIN_BALANCES);
@@ -809,7 +425,7 @@
         snaps.forEach(s=>{
           totalUsers++;
           const d = s.data();
-          const amt = safeNum(d.amount || 0);
+          const amt = Number(d.amount || 0);
           totalCoins += amt;
           arr.push({ uid: s.id, amount: amt, displayName: d.displayName || '-' });
         });
@@ -827,7 +443,6 @@
       }
     }
 
-    // Mint/Burn
     admApply.onclick = async ()=>{
       if(!currentUser || currentUser.uid !== ADMIN_UID){
         admStatus.textContent = 'Bukan admin.';
@@ -850,11 +465,11 @@
           const metaSnap = await tx.get(metaRef);
           if(!metaSnap.exists()) throw new Error('ZCoin meta tidak ditemukan.');
           const meta = metaSnap.data();
-          const circ = safeNum(meta.circulatingSupply || 0);
-          const locked = (safeNum(meta.totalSupply || TOTAL_SUPPLY)) - circ;
+          const circ = Number(meta.circulatingSupply || 0);
+          const locked = (meta.totalSupply || TOTAL_SUPPLY) - circ;
 
           const tSnap = await tx.get(targetRef);
-          const curBal = tSnap.exists() ? safeNum(tSnap.data().amount || 0) : 0;
+          const curBal = tSnap.exists() ? Number(tSnap.data().amount || 0) : 0;
 
           if(qty > 0){
             if(qty > locked) throw new Error('Tidak cukup supply terkunci untuk mint.');
@@ -889,10 +504,7 @@
       }
     };
 
-    admRefresh.onclick = async ()=>{
-      await loadAdminDashboard();
-      await loadAdminPendingRequests();
-    };
+    admRefresh.onclick = ()=>loadAdminDashboard();
 
     // -------------------- TRANSFER --------------------
     openTransfer.onclick = ()=>{ transferPopup.style.display='flex'; transferMsg.textContent=''; };
@@ -921,9 +533,9 @@
           if(!tsnap.exists()) throw new Error('Penerima tidak ditemukan.');
           if(!fsnapFee.exists()) throw new Error('Fee receiver belum tersedia.');
 
-          const fromBal = safeNum(fsnap.data().amount || 0);
-          const toBal   = safeNum(tsnap.data().amount || 0);
-          const feeBal  = safeNum(fsnapFee.data().amount || 0);
+          const fromBal = Number(fsnap.data().amount || 0);
+          const toBal   = Number(tsnap.data().amount || 0);
+          const feeBal  = Number(fsnapFee.data().amount || 0);
 
           if(fromBal - amt - fee < 10) throw new Error('Saldo tidak cukup (minimal sisa 10 koin).');
 
@@ -939,10 +551,7 @@
         transferMsg.textContent = 'Transfer sukses!';
         await loadZBalance(currentUser.uid);
         transferPopup.style.display = 'none';
-        if(currentUser.uid === ADMIN_UID){
-          await loadAdminDashboard();
-          await loadAdminPendingRequests();
-        }
+        if(currentUser.uid === ADMIN_UID) await loadAdminDashboard();
       }catch(e){
         transferMsg.textContent = 'Error: ' + (e?.message || e);
       }
@@ -963,14 +572,9 @@
       await ensureUserZBalance(user.uid, user.displayName || user.email || '-');
       await loadZBalance(user.uid);
 
-      // NEW realtime subs (market + positions)
-      subscribeMarketsRealtime();
-      subscribePositionsRealtime(user.uid);
-
       if(user.uid === ADMIN_UID){
         adminBox.style.display = 'block';
         await loadAdminDashboard();
-        await loadAdminPendingRequests();
       } else {
         adminBox.style.display = 'none';
       }
@@ -987,11 +591,11 @@
         const metaSnap = await getDoc(ZCOIN_META_REF);
         if(!metaSnap.exists()) return;
         const meta = metaSnap.data();
-        const bank = safeNum(meta.bankLiquidityIDR || 0);
-        const circ = safeNum(meta.circulatingSupply || 0);
+        const bank = Number(meta.bankLiquidityIDR || 0);
+        const circ = Number(meta.circulatingSupply || 0);
         let per10 = RATE_IDR_PER_10;
         if(circ > 0) per10 = Math.max(1, Math.round((bank / circ) * 10));
-        if(per10 !== safeNum(meta.dynamicRatePer10 || 0)){
+        if(per10 !== (meta.dynamicRatePer10 || 0)){
           await updateDoc(ZCOIN_META_REF, { dynamicRatePer10: per10 });
         }
       }catch(e){}
