@@ -130,6 +130,16 @@
       <button id="admRefresh" class="muted">Refresh</button>
     </div>
     <p class="muted" id="admStatus"></p>
+
+    <hr style="border:none;border-top:1px solid #1e2537;margin:10px 0;">
+
+    <h3>Admin Actions</h3>
+    <p class="muted">Aksi berikut hanya boleh dijalankan oleh ADMIN UID.</p>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button id="admDrainLocked" class="primary">Drain: Move all locked → ADMIN</button>
+      <button id="admRefresh2" class="muted">Refresh</button>
+    </div>
+    <p class="muted" id="admDrainStatus"></p>
   </div>
 
   <script type="module">
@@ -138,7 +148,7 @@
     import {
       getFirestore, doc, getDoc, setDoc, updateDoc, collection,
       getDocs, query, orderBy, limit, runTransaction, serverTimestamp,
-      onSnapshot
+      onSnapshot, increment
     } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
     const firebaseConfig = {
@@ -202,6 +212,9 @@
     const admApply      = document.getElementById('admApply');
     const admRefresh    = document.getElementById('admRefresh');
     const admStatus     = document.getElementById('admStatus');
+    const admDrainLocked = document.getElementById('admDrainLocked');
+    const admDrainStatus = document.getElementById('admDrainStatus');
+    const admRefresh2 = document.getElementById('admRefresh2');
 
     let currentUser = null;
     let unsubMeta = null;
@@ -410,6 +423,7 @@
 
         setTimeout(()=> closeDW(), 500);
       }catch(e){
+        console.error('DW Error:', e);
         dwMsg.textContent = 'Error: ' + (e?.message || e);
       }
     };
@@ -417,11 +431,13 @@
     // -------------------- ADMIN --------------------
     async function loadAdminDashboard(){
       try{
-        const col = collection(db, ZCOIN_BALANCES);
-        const snaps = await getDocs(col);
+        // gunakan query terbatas agar gak ngerusak quota kalau banyak user
+        const q = query(collection(db, ZCOIN_BALANCES), orderBy('amount','desc'), limit(200));
+        const snaps = await getDocs(q);
         const arr = [];
         let totalCoins = 0;
         let totalUsers = 0;
+        // Note: query limited, totalUsers may be undercount if banyak pengguna.
         snaps.forEach(s=>{
           totalUsers++;
           const d = s.data();
@@ -439,6 +455,7 @@
           admTop.appendChild(li);
         });
       }catch(e){
+        console.error('Admin load error:', e);
         admStatus.textContent = 'Gagal muat admin: ' + (e?.message || e);
       }
     }
@@ -500,15 +517,62 @@
         admStatus.textContent = 'Sukses.';
         await loadAdminDashboard();
       }catch(e){
+        console.error('Admin apply error:', e);
         admStatus.textContent = 'Gagal: ' + (e?.message || e);
       }
     };
 
     admRefresh.onclick = ()=>loadAdminDashboard();
+    admRefresh2.onclick = ()=>loadAdminDashboard();
+
+    // -------------------- DRAIN LOCKED -> ADMIN (NEW) --------------------
+    admDrainLocked.onclick = async ()=>{
+      admDrainStatus.textContent = '';
+      if(!currentUser || currentUser.uid !== ADMIN_UID){
+        admDrainStatus.textContent = 'Bukan admin.';
+        return;
+      }
+      admDrainStatus.textContent = 'Memproses transfer seluruh suplai terkunci ke ADMIN...';
+      try{
+        await runTransaction(db, async tx=>{
+          const metaSnap = await tx.get(ZCOIN_META_REF);
+          if(!metaSnap.exists()) throw new Error('Meta ZCoin tidak ditemukan.');
+          const meta = metaSnap.data();
+          const total = Number(meta.totalSupply || TOTAL_SUPPLY);
+          const circ = Number(meta.circulatingSupply || 0);
+          const locked = total - circ;
+
+          if(locked <= 0) throw new Error('Tidak ada suplai terkunci (locked = 0).');
+
+          const adminRef = doc(db, ZCOIN_BALANCES, ADMIN_UID);
+          const adminSnap = await tx.get(adminRef);
+          const adminCur = adminSnap.exists() ? Number(adminSnap.data().amount || 0) : 0;
+
+          // update admin balance and transactions
+          tx.set(adminRef, { amount: adminCur + locked, updatedAt: serverTimestamp() }, { merge: true });
+          tx.set(doc(collection(adminRef, 'transactions')), {
+            timestamp: serverTimestamp(),
+            amount: +locked,
+            type: 'release-locked-to-admin',
+            note: 'admin-drain-locked'
+          });
+
+          // update circulating supply: circ += locked
+          tx.update(ZCOIN_META_REF, { circulatingSupply: circ + locked });
+        });
+
+        admDrainStatus.textContent = `Sukses: seluruh suplai terkunci telah dipindah ke ${ADMIN_UID}.`;
+        console.log('Drain locked -> admin completed');
+        await loadAdminDashboard();
+      }catch(e){
+        console.error('Drain locked error:', e);
+        admDrainStatus.textContent = 'Gagal: ' + (e?.message || e) + (e?.code ? ` (code: ${e.code})` : '');
+      }
+    };
 
     // -------------------- TRANSFER --------------------
     openTransfer.onclick = ()=>{ transferPopup.style.display='flex'; transferMsg.textContent=''; };
-    closeTransfer.onclick = ()=>{ transferPopup.style.display='none'; };
+    closeTransfer.onclick = ()=>{ transferPopup.style.display = 'none'; };
 
     transferBtn.onclick = async ()=>{
       transferMsg.textContent = '';
@@ -553,6 +617,7 @@
         transferPopup.style.display = 'none';
         if(currentUser.uid === ADMIN_UID) await loadAdminDashboard();
       }catch(e){
+        console.error('Transfer error:', e);
         transferMsg.textContent = 'Error: ' + (e?.message || e);
       }
     };
@@ -588,6 +653,8 @@
     // -------------------- DYNAMIC RATE (optional) --------------------
     async function recalcDynamicRate(){
       try{
+        // optional: only admin should run this client-side; better run via Cloud Function in production
+        if(!currentUser || currentUser.uid !== ADMIN_UID) return;
         const metaSnap = await getDoc(ZCOIN_META_REF);
         if(!metaSnap.exists()) return;
         const meta = metaSnap.data();
@@ -598,9 +665,11 @@
         if(per10 !== (meta.dynamicRatePer10 || 0)){
           await updateDoc(ZCOIN_META_REF, { dynamicRatePer10: per10 });
         }
-      }catch(e){}
+      }catch(e){
+        console.error('recalcDynamicRate error:', e);
+      }
     }
-    setInterval(recalcDynamicRate, 10_000);
+    setInterval(recalcDynamicRate, 30_000);
   </script>
 </body>
 </html>
