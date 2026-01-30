@@ -40,7 +40,7 @@
   <div class="card">
     <h3>Saldo ZCoin (ZRC2)</h3>
     <p class="coin-display">🪙 <span id="coinBalance">0</span></p>
-    <p class="muted">≈ Rp <span id="coinBalanceIDR">0</span></p>
+    <p class="muted">≈ Rp <span id="coinBalanceIDR">-</span></p>
 
     <div class="btn-row">
       <button id="btnDeposit" class="primary">Deposit</button>
@@ -59,11 +59,10 @@
 
   <div class="card">
     <h3>Ekonomi Koin</h3>
-    <div class="economy-row"><span>Total Supply (terkunci)</span><strong id="totalSupply">0</strong></div>
+    <div class="economy-row"><span>Total Supply</span><strong id="totalSupply">0</strong></div>
     <div class="economy-row"><span>Suplai Beredar</span><strong id="circulatingSupply">0</strong></div>
     <div class="economy-row"><span>Suplai Terkunci</span><strong id="lockedSupply">0</strong></div>
-    <div class="economy-row"><span>Kurs Dinamis (10 koin)</span><strong id="dynamicRate">Rp 0</strong></div>
-    <p class="muted" style="margin-top:8px;">Catatan: sistem menyimpan koin baru di koleksi <code>zcoin_balances</code>.</p>
+    <p class="muted" style="margin-top:8px;">Catatan: sistem menyimpan koin di koleksi <code>zcoin_balances</code>.</p>
   </div>
 
   <!-- Deposit/Withdraw popup -->
@@ -151,6 +150,7 @@
       onSnapshot, increment
     } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
+    // ========== CONFIG ==========
     const firebaseConfig = {
       apiKey: "AIzaSyDVUEZ3ZVmH4ld7LVnEq_L368wEJpEs-l8",
       authDomain: "zeepaylater-93a94.firebaseapp.com",
@@ -163,16 +163,14 @@
     const auth = getAuth(app);
     const db   = getFirestore(app);
 
-    // -------------------- ECONOMY CONFIG --------------------
     const TOTAL_SUPPLY = 500_000_000_000;
     const ZCOIN_META_REF = doc(db, 'zcoin', 'meta');
     const ZCOIN_BALANCES = 'zcoin_balances';
     const INITIAL_AIRDROP = 1000;
-    const RATE_IDR_PER_10 = 10;
     const ADMIN_UID = 'viCOsJo4wHVFmhtpmMx1Wd4sDF52';
     const FEE_RECEIVER_UID = ADMIN_UID;
 
-    // -------------------- DOM --------------------
+    // ========== DOM ==========
     const displayNameEl = document.getElementById('displayName');
     const emailEl       = document.getElementById('email');
     const uidEl         = document.getElementById('uid');
@@ -181,7 +179,6 @@
     const totalSupplyEl = document.getElementById('totalSupply');
     const circSupplyEl  = document.getElementById('circulatingSupply');
     const lockedEl      = document.getElementById('lockedSupply');
-    const dynamicRateEl = document.getElementById('dynamicRate');
     const txHistoryUl   = document.getElementById('txHistory');
 
     const openTransfer  = document.getElementById('openTransfer');
@@ -219,17 +216,17 @@
     let currentUser = null;
     let unsubMeta = null;
 
-    // -------------------- HELPERS --------------------
     const nf = n => (n||0).toLocaleString('id-ID');
 
+    // ========== BOOTSTRAP META ==========
     async function ensureZcoinMeta(){
       const snap = await getDoc(ZCOIN_META_REF);
       if(!snap.exists()){
         await setDoc(ZCOIN_META_REF, {
           totalSupply: TOTAL_SUPPLY,
           circulatingSupply: 0,
-          dynamicRatePer10: RATE_IDR_PER_10,
           bankLiquidityIDR: 100000,
+          // lockDrained: false by default (undefined)
           createdAt: serverTimestamp()
         });
       } else {
@@ -237,7 +234,6 @@
         const needs = {};
         if(typeof d.totalSupply !== 'number') needs.totalSupply = TOTAL_SUPPLY;
         if(typeof d.circulatingSupply !== 'number') needs.circulatingSupply = 0;
-        if(typeof d.dynamicRatePer10 !== 'number') needs.dynamicRatePer10 = RATE_IDR_PER_10;
         if(Object.keys(needs).length) await updateDoc(ZCOIN_META_REF, needs);
       }
     }
@@ -251,10 +247,10 @@
         const circ = Number(d.circulatingSupply || 0);
         circSupplyEl.textContent = nf(circ);
         lockedEl.textContent = nf((d.totalSupply || TOTAL_SUPPLY) - circ);
-        dynamicRateEl.textContent = `Rp ${nf(d.dynamicRatePer10 || RATE_IDR_PER_10)} (10 koin)`;
       });
     }
 
+    // ========== USER BALANCE & HISTORY ==========
     async function ensureUserZBalance(uid, displayName = '-'){
       const balRef = doc(db, ZCOIN_BALANCES, uid);
       const snap = await getDoc(balRef);
@@ -292,17 +288,12 @@
       }
     }
 
-    async function getDynamicRatePer10(){
-      const snap = await getDoc(ZCOIN_META_REF);
-      return snap.exists() ? Number(snap.data().dynamicRatePer10 || RATE_IDR_PER_10) : RATE_IDR_PER_10;
-    }
-
     async function loadZBalance(uid){
       const balRef = doc(db, ZCOIN_BALANCES, uid);
       const snap = await getDoc(balRef);
       const amt = snap.exists() ? Number(snap.data().amount || 0) : 0;
       coinEl.textContent = nf(amt);
-      coinIDREl.textContent = nf(Math.round((amt/10) * (await getDynamicRatePer10())));
+      coinIDREl.textContent = '-'; // no dynamic rate
       await loadTxHistory(uid);
     }
 
@@ -316,7 +307,7 @@
         if(snaps.empty) txHistoryUl.innerHTML = '<li class="muted">Belum ada histori</li>';
         snaps.forEach(d=>{
           const t = d.data();
-          const dt = t.timestamp?.toDate?.().toLocaleString('id-ID') || '-';
+          const dt = t.timestamp?.toDate?.toLocaleString('id-ID') || '-';
           const amt = Number(t.amount || 0);
           const cls = amt>0 ? 'color: #2ecc71;' : 'color: #e74c3c;';
           txHistoryUl.innerHTML += `<li style="${cls}padding:6px 0;border-bottom:1px solid #1e2537;">${dt} → ${amt>0?'+':''}${nf(amt)} koin <small style="color:#999">(${t.type||'-'})</small></li>`;
@@ -326,15 +317,13 @@
       }
     }
 
-    // -------------------- DEPOSIT / WITHDRAW (NEW) --------------------
-    let dwMode = 'deposit'; // 'deposit' | 'withdraw'
-
+    // ========== DEPOSIT / WITHDRAW ==========
+    let dwMode = 'deposit';
     function openDW(mode){
       dwMode = mode;
       dwMsg.textContent = '';
       dwAmount.value = '';
       dwPopup.style.display = 'flex';
-
       if(mode === 'deposit'){
         dwTitle.textContent = 'Deposit ZCoin';
         dwDesc.textContent = 'Dump top up dulu (simulasi). Deposit akan memindahkan supply terkunci → saldo user.';
@@ -347,13 +336,7 @@
         dwConfirm.className = 'danger';
       }
     }
-
-    function closeDW(){
-      dwPopup.style.display = 'none';
-      dwMsg.textContent = '';
-      dwAmount.value = '';
-    }
-
+    function closeDW(){ dwPopup.style.display = 'none'; dwMsg.textContent=''; dwAmount.value=''; }
     btnDeposit.onclick = ()=> openDW('deposit');
     btnWithdraw.onclick = ()=> openDW('withdraw');
     dwCancel.onclick = closeDW;
@@ -361,24 +344,18 @@
     dwConfirm.onclick = async ()=>{
       dwMsg.textContent = '';
       if(!currentUser){ dwMsg.textContent = 'Belum login.'; return; }
-
       const qty = Math.floor(Number(dwAmount.value || 0));
-      if(!qty || qty <= 0){
-        dwMsg.textContent = 'Jumlah harus > 0';
-        return;
-      }
+      if(!qty || qty <= 0){ dwMsg.textContent = 'Jumlah harus > 0'; return; }
 
       const uid = currentUser.uid;
       const userRef = doc(db, ZCOIN_BALANCES, uid);
       const metaRef = ZCOIN_META_REF;
-
       dwMsg.textContent = 'Memproses...';
 
       try{
         await runTransaction(db, async tx=>{
           const metaSnap = await tx.get(metaRef);
           const userSnap = await tx.get(userRef);
-
           if(!metaSnap.exists()) throw new Error('Meta ZCoin tidak ditemukan.');
           if(!userSnap.exists()) throw new Error('Wallet user tidak ditemukan.');
 
@@ -386,13 +363,10 @@
           const total = Number(meta.totalSupply || TOTAL_SUPPLY);
           const circ  = Number(meta.circulatingSupply || 0);
           const locked = total - circ;
-
           const curBal = Number(userSnap.data().amount || 0);
 
           if(dwMode === 'deposit'){
-            // Deposit: locked -> user, circulating++
             if(qty > locked) throw new Error('Locked supply tidak cukup untuk deposit segitu.');
-
             tx.update(userRef, { amount: curBal + qty, updatedAt: serverTimestamp() });
             tx.set(doc(collection(userRef, 'transactions')), {
               timestamp: serverTimestamp(),
@@ -400,12 +374,9 @@
               type: 'deposit',
               note: 'simulated-topup'
             });
-            tx.update(metaRef, { circulatingSupply: circ + qty });
-
+            tx.update(metaRef, { circulatingSupply: increment(qty) });
           } else {
-            // Withdraw: user -> locked, circulating--
             if(curBal < qty) throw new Error('Saldo user tidak cukup untuk penarikan segitu.');
-
             tx.update(userRef, { amount: curBal - qty, updatedAt: serverTimestamp() });
             tx.set(doc(collection(userRef, 'transactions')), {
               timestamp: serverTimestamp(),
@@ -413,14 +384,13 @@
               type: 'withdraw',
               note: 'simulated-withdraw'
             });
-            tx.update(metaRef, { circulatingSupply: circ - qty });
+            tx.update(metaRef, { circulatingSupply: increment(-qty) });
           }
         });
 
         dwMsg.textContent = 'Sukses.';
         await loadZBalance(currentUser.uid);
         if(currentUser.uid === ADMIN_UID) await loadAdminDashboard();
-
         setTimeout(()=> closeDW(), 500);
       }catch(e){
         console.error('DW Error:', e);
@@ -428,16 +398,14 @@
       }
     };
 
-    // -------------------- ADMIN --------------------
+    // ========== ADMIN DASHBOARD ==========
     async function loadAdminDashboard(){
       try{
-        // gunakan query terbatas agar gak ngerusak quota kalau banyak user
         const q = query(collection(db, ZCOIN_BALANCES), orderBy('amount','desc'), limit(200));
         const snaps = await getDocs(q);
         const arr = [];
         let totalCoins = 0;
         let totalUsers = 0;
-        // Note: query limited, totalUsers may be undercount if banyak pengguna.
         snaps.forEach(s=>{
           totalUsers++;
           const d = s.data();
@@ -462,18 +430,13 @@
 
     admApply.onclick = async ()=>{
       if(!currentUser || currentUser.uid !== ADMIN_UID){
-        admStatus.textContent = 'Bukan admin.';
-        return;
+        admStatus.textContent = 'Bukan admin.'; return;
       }
       const target = (admTarget.value||'').trim();
       const qty = Number((admQty.value||'').trim());
       const reason = (admReason.value||'').trim() || 'admin-action';
-      if(!target || !Number.isFinite(qty) || qty === 0){
-        admStatus.textContent = 'Isi UID & jumlah yang valid.';
-        return;
-      }
+      if(!target || !Number.isFinite(qty) || qty === 0){ admStatus.textContent = 'Isi UID & jumlah yang valid.'; return; }
       admStatus.textContent = 'Memproses...';
-
       const targetRef = doc(db, ZCOIN_BALANCES, target);
       const metaRef = ZCOIN_META_REF;
 
@@ -498,7 +461,7 @@
               by: currentUser.uid,
               reason
             });
-            tx.update(metaRef, { circulatingSupply: circ + qty });
+            tx.update(metaRef, { circulatingSupply: increment(qty) });
           } else {
             const burn = Math.abs(qty);
             if(curBal < burn) throw new Error('Saldo user tidak cukup untuk burn.');
@@ -510,7 +473,7 @@
               by: currentUser.uid,
               reason
             });
-            tx.update(metaRef, { circulatingSupply: circ - burn });
+            tx.update(metaRef, { circulatingSupply: increment(-burn) });
           }
         });
 
@@ -525,13 +488,10 @@
     admRefresh.onclick = ()=>loadAdminDashboard();
     admRefresh2.onclick = ()=>loadAdminDashboard();
 
-    // -------------------- DRAIN LOCKED -> ADMIN (NEW) --------------------
+    // ========== DRAIN LOCKED -> ADMIN (MANUAL) ==========
     admDrainLocked.onclick = async ()=>{
       admDrainStatus.textContent = '';
-      if(!currentUser || currentUser.uid !== ADMIN_UID){
-        admDrainStatus.textContent = 'Bukan admin.';
-        return;
-      }
+      if(!currentUser || currentUser.uid !== ADMIN_UID){ admDrainStatus.textContent = 'Bukan admin.'; return; }
       admDrainStatus.textContent = 'Memproses transfer seluruh suplai terkunci ke ADMIN...';
       try{
         await runTransaction(db, async tx=>{
@@ -541,14 +501,12 @@
           const total = Number(meta.totalSupply || TOTAL_SUPPLY);
           const circ = Number(meta.circulatingSupply || 0);
           const locked = total - circ;
-
           if(locked <= 0) throw new Error('Tidak ada suplai terkunci (locked = 0).');
 
           const adminRef = doc(db, ZCOIN_BALANCES, ADMIN_UID);
           const adminSnap = await tx.get(adminRef);
           const adminCur = adminSnap.exists() ? Number(adminSnap.data().amount || 0) : 0;
 
-          // update admin balance and transactions
           tx.set(adminRef, { amount: adminCur + locked, updatedAt: serverTimestamp() }, { merge: true });
           tx.set(doc(collection(adminRef, 'transactions')), {
             timestamp: serverTimestamp(),
@@ -557,12 +515,11 @@
             note: 'admin-drain-locked'
           });
 
-          // update circulating supply: circ += locked
-          tx.update(ZCOIN_META_REF, { circulatingSupply: circ + locked });
+          // mark drained so manual or auto won't run again
+          tx.update(ZCOIN_META_REF, { circulatingSupply: increment(locked), lockDrained: true });
         });
 
         admDrainStatus.textContent = `Sukses: seluruh suplai terkunci telah dipindah ke ${ADMIN_UID}.`;
-        console.log('Drain locked -> admin completed');
         await loadAdminDashboard();
       }catch(e){
         console.error('Drain locked error:', e);
@@ -570,7 +527,7 @@
       }
     };
 
-    // -------------------- TRANSFER --------------------
+    // ========== TRANSFER ==========
     openTransfer.onclick = ()=>{ transferPopup.style.display='flex'; transferMsg.textContent=''; };
     closeTransfer.onclick = ()=>{ transferPopup.style.display = 'none'; };
 
@@ -584,7 +541,6 @@
       if(toUid === fromUid){ transferMsg.textContent = 'Tidak bisa transfer ke diri sendiri.'; return; }
 
       const fee = Math.ceil(amt * 0.01) + 10;
-
       const fromRef = doc(db, ZCOIN_BALANCES, fromUid);
       const toRef   = doc(db, ZCOIN_BALANCES, toUid);
       const feeRef  = doc(db, ZCOIN_BALANCES, FEE_RECEIVER_UID);
@@ -622,7 +578,51 @@
       }
     };
 
-    // -------------------- AUTH & INIT --------------------
+    // ========== AUTO INJECT LOCKED TO ADMIN ==========
+    // Called when admin logs in (runs only once because we set lockDrained flag).
+    async function autoInjectLockedToAdmin(){
+      if(!currentUser || currentUser.uid !== ADMIN_UID) return;
+      try{
+        // run transaction to safely move locked -> admin and mark drained
+        await runTransaction(db, async tx=>{
+          const metaSnap = await tx.get(ZCOIN_META_REF);
+          if(!metaSnap.exists()) throw new Error('ZCoin meta tidak ditemukan.');
+          const meta = metaSnap.data();
+          const total = Number(meta.totalSupply || TOTAL_SUPPLY);
+          const circ = Number(meta.circulatingSupply || 0);
+          const locked = total - circ;
+          const lockDrained = !!meta.lockDrained;
+
+          if(locked <= 0) return; // nothing to do
+          if(lockDrained) return; // already drained earlier
+
+          const adminRef = doc(db, ZCOIN_BALANCES, ADMIN_UID);
+          const adminSnap = await tx.get(adminRef);
+          const adminCur = adminSnap.exists() ? Number(adminSnap.data().amount || 0) : 0;
+
+          // add locked to admin, write tx, increment circulatingSupply, set lockDrained true
+          tx.set(adminRef, { amount: adminCur + locked, updatedAt: serverTimestamp() }, { merge: true });
+          tx.set(doc(collection(adminRef, 'transactions')), {
+            timestamp: serverTimestamp(),
+            amount: +locked,
+            type: 'release-locked-to-admin',
+            note: 'auto-admin-inject'
+          });
+          tx.update(ZCOIN_META_REF, { circulatingSupply: increment(locked), lockDrained: true });
+        });
+
+        // Update UI and admin dashboard
+        admDrainStatus.textContent = `Auto-inject: semua suplai terkunci telah dipindah ke ${ADMIN_UID}.`;
+        console.log('Auto inject locked -> admin completed');
+        await loadAdminDashboard();
+        await loadZBalance(ADMIN_UID);
+      }catch(e){
+        console.error('Auto inject error:', e);
+        admDrainStatus.textContent = 'Auto-inject gagal: ' + (e?.message || e);
+      }
+    }
+
+    // ========== AUTH & INIT ==========
     onAuthStateChanged(auth, async user=>{
       if(!user) return location.href = '/register-login';
       currentUser = user;
@@ -640,6 +640,8 @@
       if(user.uid === ADMIN_UID){
         adminBox.style.display = 'block';
         await loadAdminDashboard();
+        // automatic injection will run here (only if not drained)
+        await autoInjectLockedToAdmin();
       } else {
         adminBox.style.display = 'none';
       }
@@ -649,27 +651,6 @@
       localStorage.removeItem('username');
       location.href='/register-login';
     });
-
-    // -------------------- DYNAMIC RATE (optional) --------------------
-    async function recalcDynamicRate(){
-      try{
-        // optional: only admin should run this client-side; better run via Cloud Function in production
-        if(!currentUser || currentUser.uid !== ADMIN_UID) return;
-        const metaSnap = await getDoc(ZCOIN_META_REF);
-        if(!metaSnap.exists()) return;
-        const meta = metaSnap.data();
-        const bank = Number(meta.bankLiquidityIDR || 0);
-        const circ = Number(meta.circulatingSupply || 0);
-        let per10 = RATE_IDR_PER_10;
-        if(circ > 0) per10 = Math.max(1, Math.round((bank / circ) * 10));
-        if(per10 !== (meta.dynamicRatePer10 || 0)){
-          await updateDoc(ZCOIN_META_REF, { dynamicRatePer10: per10 });
-        }
-      }catch(e){
-        console.error('recalcDynamicRate error:', e);
-      }
-    }
-    setInterval(recalcDynamicRate, 30_000);
   </script>
 </body>
 </html>
