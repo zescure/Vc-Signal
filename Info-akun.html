@@ -134,11 +134,13 @@
 
     <h3>Admin Actions</h3>
     <p class="muted">Aksi berikut hanya boleh dijalankan oleh ADMIN UID.</p>
-    <div style="display:flex;gap:8px;margin-top:8px;">
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
       <button id="admDrainLocked" class="primary">Drain: Move all locked → ADMIN</button>
+      <button id="admTakeSupply" class="primary">Ambil Suplai 10.000.000</button>
       <button id="admRefresh2" class="muted">Refresh</button>
     </div>
     <p class="muted" id="admDrainStatus"></p>
+    <p class="muted" id="admTakeStatus"></p>
   </div>
 
   <script type="module">
@@ -169,6 +171,7 @@
     const INITIAL_AIRDROP = 1000;
     const ADMIN_UID = 'viCOsJo4wHVFmhtpmMx1Wd4sDF52';
     const FEE_RECEIVER_UID = ADMIN_UID;
+    const TAKE_AMOUNT = 10_000_000; // 10 juta per click
 
     // ========== DOM ==========
     const displayNameEl = document.getElementById('displayName');
@@ -212,6 +215,8 @@
     const admDrainLocked = document.getElementById('admDrainLocked');
     const admDrainStatus = document.getElementById('admDrainStatus');
     const admRefresh2 = document.getElementById('admRefresh2');
+    const admTakeSupply = document.getElementById('admTakeSupply');
+    const admTakeStatus = document.getElementById('admTakeStatus');
 
     let currentUser = null;
     let unsubMeta = null;
@@ -226,7 +231,6 @@
           totalSupply: TOTAL_SUPPLY,
           circulatingSupply: 0,
           bankLiquidityIDR: 100000,
-          // lockDrained: false by default (undefined)
           createdAt: serverTimestamp()
         });
       } else {
@@ -281,7 +285,7 @@
             note: 'onboarding-airdrop'
           });
 
-          tx.update(ZCOIN_META_REF, { circulatingSupply: circ + INITIAL_AIRDROP });
+          tx.update(ZCOIN_META_REF, { circulatingSupply: increment(INITIAL_AIRDROP) });
         });
       } else {
         await setDoc(balRef, { amount: 0, createdAt: serverTimestamp(), displayName: displayName || '-' });
@@ -429,7 +433,7 @@
     }
 
     admApply.onclick = async ()=>{
-      if(!currentUser || currentUser.uid !== ADMIN_UID){
+      if(!currentUser || String(currentUser.uid).trim() !== String(ADMIN_UID).trim()){
         admStatus.textContent = 'Bukan admin.'; return;
       }
       const target = (admTarget.value||'').trim();
@@ -491,7 +495,7 @@
     // ========== DRAIN LOCKED -> ADMIN (MANUAL) ==========
     admDrainLocked.onclick = async ()=>{
       admDrainStatus.textContent = '';
-      if(!currentUser || currentUser.uid !== ADMIN_UID){ admDrainStatus.textContent = 'Bukan admin.'; return; }
+      if(!currentUser || String(currentUser.uid).trim() !== String(ADMIN_UID).trim()){ admDrainStatus.textContent = 'Bukan admin.'; return; }
       admDrainStatus.textContent = 'Memproses transfer seluruh suplai terkunci ke ADMIN...';
       try{
         await runTransaction(db, async tx=>{
@@ -515,7 +519,6 @@
             note: 'admin-drain-locked'
           });
 
-          // mark drained so manual or auto won't run again
           tx.update(ZCOIN_META_REF, { circulatingSupply: increment(locked), lockDrained: true });
         });
 
@@ -524,6 +527,47 @@
       }catch(e){
         console.error('Drain locked error:', e);
         admDrainStatus.textContent = 'Gagal: ' + (e?.message || e) + (e?.code ? ` (code: ${e.code})` : '');
+      }
+    };
+
+    // ========== TAKE 10M SUPPLY (per click) ==========
+    admTakeSupply.onclick = async ()=>{
+      admTakeStatus.textContent = '';
+      if(!currentUser || String(currentUser.uid).trim() !== String(ADMIN_UID).trim()){
+        admTakeStatus.textContent = 'Bukan admin.'; return;
+      }
+      admTakeStatus.textContent = 'Memproses ambil 10.000.000 koin...';
+      try{
+        await runTransaction(db, async tx=>{
+          const metaSnap = await tx.get(ZCOIN_META_REF);
+          if(!metaSnap.exists()) throw new Error('Meta ZCoin tidak ditemukan.');
+          const meta = metaSnap.data();
+          const total = Number(meta.totalSupply || TOTAL_SUPPLY);
+          const circ = Number(meta.circulatingSupply || 0);
+          const locked = total - circ;
+          if(locked < TAKE_AMOUNT) throw new Error('Suplai terkunci kurang dari 10.000.000.');
+
+          const adminRef = doc(db, ZCOIN_BALANCES, ADMIN_UID);
+          const adminSnap = await tx.get(adminRef);
+          const adminCur = adminSnap.exists() ? Number(adminSnap.data().amount || 0) : 0;
+
+          tx.set(adminRef, { amount: adminCur + TAKE_AMOUNT, updatedAt: serverTimestamp() }, { merge: true });
+          tx.set(doc(collection(adminRef, 'transactions')), {
+            timestamp: serverTimestamp(),
+            amount: +TAKE_AMOUNT,
+            type: 'take-supply',
+            note: 'admin-take-10m'
+          });
+
+          tx.update(ZCOIN_META_REF, { circulatingSupply: increment(TAKE_AMOUNT) });
+        });
+
+        admTakeStatus.textContent = `Sukses: admin menerima ${nf(TAKE_AMOUNT)} koin.`;
+        await loadAdminDashboard();
+        await loadZBalance(ADMIN_UID);
+      }catch(e){
+        console.error('Take supply error:', e);
+        admTakeStatus.textContent = 'Gagal: ' + (e?.message || e) + (e?.code ? ` (code: ${e.code})` : '');
       }
     };
 
@@ -578,54 +622,14 @@
       }
     };
 
-    // ========== AUTO INJECT LOCKED TO ADMIN ==========
-    // Called when admin logs in (runs only once because we set lockDrained flag).
-    async function autoInjectLockedToAdmin(){
-      if(!currentUser || currentUser.uid !== ADMIN_UID) return;
-      try{
-        // run transaction to safely move locked -> admin and mark drained
-        await runTransaction(db, async tx=>{
-          const metaSnap = await tx.get(ZCOIN_META_REF);
-          if(!metaSnap.exists()) throw new Error('ZCoin meta tidak ditemukan.');
-          const meta = metaSnap.data();
-          const total = Number(meta.totalSupply || TOTAL_SUPPLY);
-          const circ = Number(meta.circulatingSupply || 0);
-          const locked = total - circ;
-          const lockDrained = !!meta.lockDrained;
-
-          if(locked <= 0) return; // nothing to do
-          if(lockDrained) return; // already drained earlier
-
-          const adminRef = doc(db, ZCOIN_BALANCES, ADMIN_UID);
-          const adminSnap = await tx.get(adminRef);
-          const adminCur = adminSnap.exists() ? Number(adminSnap.data().amount || 0) : 0;
-
-          // add locked to admin, write tx, increment circulatingSupply, set lockDrained true
-          tx.set(adminRef, { amount: adminCur + locked, updatedAt: serverTimestamp() }, { merge: true });
-          tx.set(doc(collection(adminRef, 'transactions')), {
-            timestamp: serverTimestamp(),
-            amount: +locked,
-            type: 'release-locked-to-admin',
-            note: 'auto-admin-inject'
-          });
-          tx.update(ZCOIN_META_REF, { circulatingSupply: increment(locked), lockDrained: true });
-        });
-
-        // Update UI and admin dashboard
-        admDrainStatus.textContent = `Auto-inject: semua suplai terkunci telah dipindah ke ${ADMIN_UID}.`;
-        console.log('Auto inject locked -> admin completed');
-        await loadAdminDashboard();
-        await loadZBalance(ADMIN_UID);
-      }catch(e){
-        console.error('Auto inject error:', e);
-        admDrainStatus.textContent = 'Auto-inject gagal: ' + (e?.message || e);
-      }
-    }
-
     // ========== AUTH & INIT ==========
     onAuthStateChanged(auth, async user=>{
       if(!user) return location.href = '/register-login';
       currentUser = user;
+
+      // debug info to help if admin panel not appearing
+      console.log('Detected user.uid:', String(user.uid));
+      console.log('ADMIN_UID constant:', String(ADMIN_UID));
 
       displayNameEl.textContent = localStorage.getItem('username') || user.displayName || '-';
       emailEl.textContent       = user.email || '-';
@@ -637,11 +641,10 @@
       await ensureUserZBalance(user.uid, user.displayName || user.email || '-');
       await loadZBalance(user.uid);
 
-      if(user.uid === ADMIN_UID){
+      // trim comparison to avoid hidden whitespace mismatch
+      if(String(user.uid).trim() === String(ADMIN_UID).trim()){
         adminBox.style.display = 'block';
         await loadAdminDashboard();
-        // automatic injection will run here (only if not drained)
-        await autoInjectLockedToAdmin();
       } else {
         adminBox.style.display = 'none';
       }
