@@ -1,155 +1,102 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>ZESTORE - ZCoin (zcoin4)</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ZESTORE - Saldo Sederhana</title>
   <style>
-    *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif;}
-    body{background:#0a0a0f;color:#fff;display:flex;flex-direction:column;align-items:center;padding:20px;}
-    header{width:100%;max-width:500px;background:#111927;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #222;margin-bottom:20px;}
-    .logo{font-size:20px;color:#00bfff;font-weight:bold;}
-    .card{width:100%;max-width:500px;background:#141b2d;padding:20px;border:1px solid #2c3e50;border-radius:10px;margin-bottom:16px;}
-    .coin-display{font-size:2rem;color:#ffd700;text-align:center;}
-    button{cursor:pointer;border:none;border-radius:6px;padding:10px 12px;}
-    .primary{background:#4c8bf5;color:#fff;}
-    .danger{background:#e74c3c;color:#fff;}
-    .muted{color:#ccc;font-size:.9rem;}
-    .economy-row{display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid #1e2537;}
-    input{width:100%;padding:8px;border-radius:6px;border:none;margin-top:6px;}
-    .admin-mini{background:#0f1724;padding:12px;border-radius:8px;margin-top:8px;}
-    ul{list-style:none;padding-left:0;}
-    .btn-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
-    .btn-row button{flex:1;min-width:140px;}
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,Segoe UI,system-ui;}
+    body{background:#071021;color:#e6eef8;padding:20px;display:flex;flex-direction:column;align-items:center;}
+    .card{width:100%;max-width:720px;background:#0f1724;padding:18px;border-radius:10px;border:1px solid #112034;margin-bottom:14px;}
+    h1,h2{color:#8fd1ff;margin-bottom:10px}
+    p.muted{color:#9fb4c9;font-size:.95rem}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    label{display:block;color:#cfe9ff;margin-top:8px;font-size:.9rem}
+    input[type="text"],input[type="number"]{width:100%;padding:8px;border-radius:8px;border:1px solid #172433;background:#071223;color:#e6eef8}
+    button{padding:8px 12px;border-radius:8px;border:none;cursor:pointer}
+    .btn-primary{background:#2b8cff;color:white}
+    .btn-danger{background:#ff6b6b;color:white}
+    ul{list-style:none;padding-left:0;max-height:240px;overflow:auto}
+    li.tx{padding:8px;border-bottom:1px solid #0d2433;color:#cfe9ff}
+    small.meta{color:#9fb4c9}
+    .muted-box{background:#09121a;padding:10px;border-radius:8px;border:1px solid #0d2533;color:#9fb4c9}
+    .flex-between{display:flex;justify-content:space-between;align-items:center}
+    .center{display:flex;justify-content:center}
   </style>
 </head>
 <body>
-  <header>
-    <div class="logo">ZESTORE.ID - ZCoin (zcoin4)</div>
-    <div class="muted">Beta</div>
-  </header>
-
   <div class="card">
-    <h2>Info Akun</h2>
-    <p><strong>Username:</strong> <span id="displayName">–</span></p>
-    <p><strong>Email:</strong> <span id="email">–</span></p>
-    <p><strong>UID:</strong> <span id="uid">–</span></p>
-    <button id="logoutBtn" class="danger">Logout</button>
-  </div>
-
-  <div class="card">
-    <h3>Saldo ZCoin (zcoin4)</h3>
-    <p class="coin-display">🪙 <span id="coinBalance">0</span></p>
-    <p class="muted">≈ Rp <span id="coinBalanceIDR">-</span></p>
-
-    <div class="btn-row">
-      <button id="btnDeposit" class="primary">Deposit (ambil dari bank)</button>
-      <button id="btnWithdraw" class="danger">Penarikan (kembali ke bank)</button>
+    <div class="flex-between">
+      <h1>ZESTORE — Saldo (Firestore)</h1>
+      <div><small class="muted">Simple balance system — no device storage</small></div>
     </div>
 
-    <div class="btn-row">
-      <button id="openTransfer" class="primary">Transfer Koin</button>
+    <div id="info" class="muted-box">
+      <div><strong>Username:</strong> <span id="displayName">-</span></div>
+      <div><strong>Email:</strong> <span id="email">-</span></div>
+      <div><strong>UID:</strong> <span id="uid">-</span></div>
     </div>
 
-    <p class="muted" style="margin-top:8px;">
-      Model zcoin4: tidak ada "locked". Ada <strong>bankSupply (di admin)</strong> dan <strong>circulatingSupply</strong>.
-    </p>
   </div>
 
   <div class="card">
-    <h3>Ekonomi Koin (zcoin4)</h3>
-    <div class="economy-row"><span>Total Supply</span><strong id="totalSupply">0</strong></div>
-    <div class="economy-row"><span>Suplai Beredar</span><strong id="circulatingSupply">0</strong></div>
-    <div class="economy-row"><span>Suplai Bank (admin)</span><strong id="bankSupply">0</strong></div>
-    <p class="muted" style="margin-top:8px;">Catatan: saldo disimpan di koleksi <code>zcoin_balances</code>. Meta ada di <code>zcoin/meta</code> (versi zcoin4).</p>
+    <h2>Saldo Kamu</h2>
+    <p style="font-size:2rem">🪙 <span id="balanceDisplay">0</span></p>
+    <p class="muted">Histori transaksi (terbaru 50):</p>
+    <ul id="txList"><li class="muted">Memuat...</li></ul>
   </div>
 
-  <!-- Deposit/Withdraw popup -->
-  <div id="dwPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);align-items:center;justify-content:center;z-index:999;">
-    <div style="background:#141828;padding:18px;border-radius:10px;width:340px;">
-      <h3 id="dwTitle">Deposit</h3>
-      <p class="muted" style="margin-top:6px" id="dwDesc">Sumber: bank (admin UID).</p>
+  <div class="card" id="adminCard" style="display:none">
+    <h2>Admin — Adjust Saldo & Lihat Histori UID</h2>
 
-      <label style="margin-top:10px;display:block;">Jumlah (koin)</label>
-      <input id="dwAmount" type="number" placeholder="contoh: 500" />
+    <div class="row">
+      <div style="flex:1">
+        <label>UID target</label>
+        <input id="admUid" type="text" placeholder="Masukkan UID target (contoh: viCOs...)" />
+      </div>
 
-      <p class="muted" id="dwMsg" style="margin-top:8px;"></p>
+      <div style="width:180px">
+        <label>Jumlah (+ / -)</label>
+        <input id="admAmount" type="number" placeholder="contoh: 1000 atau -500" />
+      </div>
 
-      <div style="display:flex;gap:8px;margin-top:10px;">
-        <button id="dwConfirm" class="primary">Proses</button>
-        <button id="dwCancel" class="danger">Batal</button>
+      <div style="width:220px">
+        <label>Alasan</label>
+        <input id="admReason" type="text" placeholder="misal: koreksi / refund / bonus" />
       </div>
     </div>
-  </div>
 
-  <!-- Transfer popup -->
-  <div id="transferPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);align-items:center;justify-content:center;z-index:999;">
-    <div style="background:#141828;padding:18px;border-radius:10px;width:320px;">
-      <h3>Transfer ZCoin</h3>
-      <label>UID Penerima</label>
-      <input id="transferUid" placeholder="uid penerima" />
-      <label>Jumlah (koin)</label>
-      <input id="transferAmt" type="number" placeholder="Jumlah" />
-      <p class="muted" id="transferMsg"></p>
-      <div style="display:flex;gap:8px;margin-top:10px;">
-        <button id="transferBtn" class="primary">Kirim</button>
-        <button id="closeTransfer" class="danger">Batal</button>
+    <div style="margin-top:10px" class="row">
+      <button id="admApply" class="btn-primary">Proses Adjust</button>
+      <button id="admView" class="btn-primary" style="background:#3bd67a">Lihat Saldo & Histori UID</button>
+      <button id="admRefresh" class="btn-danger">Refresh Statistik</button>
+    </div>
+
+    <div style="margin-top:12px">
+      <p class="muted">Statistik singkat:</p>
+      <div class="row">
+        <div class="muted-box" style="flex:1"><strong>Total akun:</strong> <span id="admTotalUsers">-</span></div>
+        <div class="muted-box" style="flex:1"><strong>Jumlah saldo total:</strong> <span id="admTotalBalances">-</span></div>
       </div>
     </div>
+
+    <div style="margin-top:12px">
+      <p class="muted">Histori UID yang dilihat:</p>
+      <ul id="admTxList"><li class="muted">Belum memilih UID</li></ul>
+    </div>
   </div>
 
-  <!-- History -->
-  <div class="card">
-    <h3>Histori ZCoin</h3>
-    <ul id="txHistory"></ul>
-  </div>
-
-  <!-- Admin (hidden default) -->
-  <div class="card" id="adminBox" style="display:none;">
-    <h2>Admin - ZCoin</h2>
-    <div class="admin-mini">
-      <p>Total user terdaftar: <span id="admTotalUser">0</span></p>
-      <p>Total koin beredar (sum balances): <span id="admTotalCoins">0</span></p>
-      <p class="muted">Top holders:</p>
-      <ul id="admTop"></ul>
-    </div>
-
-    <hr style="border:none;border-top:1px solid #1e2537;margin:10px 0;">
-
-    <h3>Mint / Burn (Admin)</h3>
-    <label>UID target</label>
-    <input id="admTarget" placeholder="uid target" />
-    <label>Jumlah (+mint / -burn)</label>
-    <input id="admQty" type="number" placeholder="contoh: 1000 atau -500" />
-    <label>Alasan</label>
-    <input id="admReason" placeholder="alasan" />
-    <div style="display:flex;gap:8px;margin-top:8px;">
-      <button id="admApply" class="primary">Proses</button>
-      <button id="admRefresh" class="muted">Refresh</button>
-    </div>
-    <p class="muted" id="admStatus"></p>
-
-    <hr style="border:none;border-top:1px solid #1e2537;margin:10px 0;">
-
-    <h3>Admin Actions</h3>
-    <p class="muted">Aksi berikut hanya boleh dijalankan oleh ADMIN UID.</p>
-    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
-      <button id="admTakeSupply" class="primary">Tambah Suplai Bank 10.000.000 (mint)</button>
-      <button id="admRefresh2" class="muted">Refresh</button>
-    </div>
-    <p class="muted" id="admTakeStatus"></p>
-  </div>
-
+  <!-- Firebase + logic -->
   <script type="module">
+    // jangan pake localStorage untuk saldo. Semua di Firestore.
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
     import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
     import {
       getFirestore, doc, getDoc, setDoc, updateDoc, collection,
-      getDocs, query, orderBy, limit, runTransaction, serverTimestamp,
-      onSnapshot, increment
+      getDocs, query, orderBy, limit, runTransaction, serverTimestamp
     } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-    // ========== CONFIG ==========
+    // CONFIG - ganti kalau perlu
     const firebaseConfig = {
       apiKey: "AIzaSyDVUEZ3ZVmH4ld7LVnEq_L368wEJpEs-l8",
       authDomain: "zeepaylater-93a94.firebaseapp.com",
@@ -160,503 +107,211 @@
     };
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db   = getFirestore(app);
+    const db = getFirestore(app);
 
-    // zcoin4 replaces old zcoin (we keep meta path zcoin/meta but versioned to 'zcoin4')
-    const ZCOIN_META_REF = doc(db, 'zcoin', 'meta'); // reused place
-    const ZCOIN_BALANCES = 'zcoin_balances';
-    const ZCOIN4_TOTAL = 10_000_000; // total supply initially
-    const ZCOIN4_ADMIN_BANK = 10_000_000; // admin bank start
-    const INITIAL_AIRDROP = 1000;
+    // Ubah sesuai UID admin lo
     const ADMIN_UID = 'viCOsJo4wHVFmhtpmMx1Wd4sDF52';
-    const FEE_RECEIVER_UID = ADMIN_UID;
-    const TAKE_AMOUNT = 10_000_000; // admin mint per click
 
-    // ========== DOM ==========
+    // DOM
     const displayNameEl = document.getElementById('displayName');
-    const emailEl       = document.getElementById('email');
-    const uidEl         = document.getElementById('uid');
-    const coinEl        = document.getElementById('coinBalance');
-    const coinIDREl     = document.getElementById('coinBalanceIDR');
-    const totalSupplyEl = document.getElementById('totalSupply');
-    const circSupplyEl  = document.getElementById('circulatingSupply');
-    const bankSupplyEl  = document.getElementById('bankSupply');
-    const txHistoryUl   = document.getElementById('txHistory');
+    const emailEl = document.getElementById('email');
+    const uidEl = document.getElementById('uid');
+    const balanceDisplay = document.getElementById('balanceDisplay');
+    const txList = document.getElementById('txList');
 
-    const openTransfer  = document.getElementById('openTransfer');
-    const transferPopup = document.getElementById('transferPopup');
-    const closeTransfer = document.getElementById('closeTransfer');
-    const transferBtn   = document.getElementById('transferBtn');
-    const transferMsg   = document.getElementById('transferMsg');
-
-    // Deposit/Withdraw UI
-    const btnDeposit = document.getElementById('btnDeposit');
-    const btnWithdraw = document.getElementById('btnWithdraw');
-    const dwPopup = document.getElementById('dwPopup');
-    const dwTitle = document.getElementById('dwTitle');
-    const dwDesc = document.getElementById('dwDesc');
-    const dwAmount = document.getElementById('dwAmount');
-    const dwMsg = document.getElementById('dwMsg');
-    const dwConfirm = document.getElementById('dwConfirm');
-    const dwCancel = document.getElementById('dwCancel');
-
-    // admin
-    const adminBox      = document.getElementById('adminBox');
-    const admTotalUser  = document.getElementById('admTotalUser');
-    const admTotalCoins = document.getElementById('admTotalCoins');
-    const admTop        = document.getElementById('admTop');
-    const admTarget     = document.getElementById('admTarget');
-    const admQty        = document.getElementById('admQty');
-    const admReason     = document.getElementById('admReason');
-    const admApply      = document.getElementById('admApply');
-    const admRefresh    = document.getElementById('admRefresh');
-    const admStatus     = document.getElementById('admStatus');
-    const admRefresh2   = document.getElementById('admRefresh2');
-    const admTakeSupply = document.getElementById('admTakeSupply');
-    const admTakeStatus = document.getElementById('admTakeStatus');
+    const adminCard = document.getElementById('adminCard');
+    const admUid = document.getElementById('admUid');
+    const admAmount = document.getElementById('admAmount');
+    const admReason = document.getElementById('admReason');
+    const admApply = document.getElementById('admApply');
+    const admView = document.getElementById('admView');
+    const admRefresh = document.getElementById('admRefresh');
+    const admTotalUsers = document.getElementById('admTotalUsers');
+    const admTotalBalances = document.getElementById('admTotalBalances');
+    const admTxList = document.getElementById('admTxList');
 
     let currentUser = null;
-    let unsubMeta = null;
 
-    const nf = n => (n||0).toLocaleString('id-ID');
+    // helper format
+    const nf = v => (Number(v)||0).toLocaleString('id-ID');
 
-    // ========== INITIALIZE META AS zcoin4 (overwrite) ==========
-    // This function forces meta to be zcoin4 and creates admin bank balance (idempotent-ish).
-    async function ensureZcoin4Meta(){
-      // We intentionally overwrite/initialize meta to zcoin4 settings.
-      await runTransaction(db, async tx=>{
-        const metaSnap = await tx.get(ZCOIN_META_REF);
-        // set meta to zcoin4 defaults (overwrite)
-        tx.set(ZCOIN_META_REF, {
-          version: 'zcoin4',
-          totalSupply: ZCOIN4_TOTAL,
-          circulatingSupply: 0,
-          bankSupply: ZCOIN4_ADMIN_BANK,
+    // ensure a balance doc exists for a uid (with amount 0)
+    async function ensureBalanceDoc(uid, displayName = '-'){
+      const ref = doc(db, 'balances', uid);
+      const snap = await getDoc(ref);
+      if(!snap.exists()){
+        await setDoc(ref, {
+          amount: 0,
+          displayName: displayName || '-',
           createdAt: serverTimestamp()
         });
-
-        // ensure admin wallet holds bank amount (overwrite to bank amount)
-        const adminRef = doc(db, ZCOIN_BALANCES, ADMIN_UID);
-        tx.set(adminRef, {
-          amount: ZCOIN4_ADMIN_BANK,
-          createdAt: serverTimestamp(),
-          displayName: 'ADMIN (bank)'
-        });
-
-        // write initial admin transaction
-        tx.set(doc(collection(adminRef, 'transactions')), {
-          timestamp: serverTimestamp(),
-          amount: +ZCOIN4_ADMIN_BANK,
-          type: 'initial-bank',
-          note: 'zcoin4 initial bank allocation'
-        });
-      });
-    }
-
-    function subscribeMetaRealtime(){
-      if(unsubMeta) unsubMeta();
-      unsubMeta = onSnapshot(ZCOIN_META_REF, snap=>{
-        if(!snap.exists()){
-          totalSupplyEl.textContent = '-';
-          circSupplyEl.textContent = '-';
-          bankSupplyEl.textContent = '-';
-          return;
-        }
-        const d = snap.data();
-        totalSupplyEl.textContent = nf(d.totalSupply || 0);
-        circSupplyEl.textContent = nf(d.circulatingSupply || 0);
-        bankSupplyEl.textContent = nf(d.bankSupply || 0);
-      });
-    }
-
-    // ========== USER BALANCE & HISTORY ==========
-    // Onboarding a user: give INITIAL_AIRDROP from admin bank, if bank has enough
-    async function ensureUserZBalance(uid, displayName = '-'){
-      const balRef = doc(db, ZCOIN_BALANCES, uid);
-      const snap = await getDoc(balRef);
-      if(snap.exists()) return;
-
-      if(INITIAL_AIRDROP > 0){
-        await runTransaction(db, async tx=>{
-          const metaSnap = await tx.get(ZCOIN_META_REF);
-          if(!metaSnap.exists()) throw new Error('ZCoin meta missing.');
-          const meta = metaSnap.data();
-
-          const adminRef = doc(db, ZCOIN_BALANCES, ADMIN_UID);
-          const adminSnap = await tx.get(adminRef);
-          if(!adminSnap.exists()) throw new Error('Admin bank wallet missing.');
-
-          const adminCur = Number(adminSnap.data().amount || 0);
-          const bank = Number(meta.bankSupply || 0);
-
-          if(INITIAL_AIRDROP > adminCur) throw new Error('Bank (admin) saldo tidak cukup untuk airdrop.');
-          if(INITIAL_AIRDROP > bank) throw new Error('Meta bankSupply tidak cukup untuk airdrop.');
-
-          // create user balance
-          tx.set(balRef, {
-            amount: INITIAL_AIRDROP,
-            createdAt: serverTimestamp(),
-            displayName: displayName || '-'
-          });
-
-          // user tx
-          tx.set(doc(collection(balRef, 'transactions')), {
-            timestamp: serverTimestamp(),
-            amount: INITIAL_AIRDROP,
-            type: 'airdrop',
-            note: 'onboarding-airdrop'
-          });
-
-          // deduct from admin wallet and meta.bankSupply, add to circulatingSupply
-          tx.update(adminRef, { amount: adminCur - INITIAL_AIRDROP, updatedAt: serverTimestamp() });
-          tx.update(ZCOIN_META_REF, { bankSupply: increment(-INITIAL_AIRDROP), circulatingSupply: increment(INITIAL_AIRDROP) });
-        });
-      } else {
-        await setDoc(balRef, { amount: 0, createdAt: serverTimestamp(), displayName: displayName || '-' });
       }
     }
 
-    async function loadZBalance(uid){
-      const balRef = doc(db, ZCOIN_BALANCES, uid);
-      const snap = await getDoc(balRef);
-      const amt = snap.exists() ? Number(snap.data().amount || 0) : 0;
-      coinEl.textContent = nf(amt);
-      coinIDREl.textContent = '-';
-      await loadTxHistory(uid);
-    }
-
-    async function loadTxHistory(uid){
-      txHistoryUl.innerHTML = '<li class="muted">Memuat...</li>';
+    // load current user's balance & history
+    async function loadMyBalanceAndHistory(uid){
+      balanceDisplay.textContent = '...';
+      txList.innerHTML = '<li class="muted">Memuat...</li>';
       try{
-        const txCol = collection(doc(db, ZCOIN_BALANCES, uid), 'transactions');
+        const bRef = doc(db, 'balances', uid);
+        const bSnap = await getDoc(bRef);
+        const amt = bSnap.exists() ? Number(bSnap.data().amount || 0) : 0;
+        balanceDisplay.textContent = nf(amt);
+
+        // load last 50 tx
+        const txCol = collection(bRef, 'transactions');
         const q = query(txCol, orderBy('timestamp','desc'), limit(50));
         const snaps = await getDocs(q);
-        txHistoryUl.innerHTML = '';
-        if(snaps.empty) txHistoryUl.innerHTML = '<li class="muted">Belum ada histori</li>';
-        snaps.forEach(d=>{
-          const t = d.data();
-          const dt = t.timestamp?.toDate?.().toLocaleString('id-ID') || '-';
-          const amt = Number(t.amount || 0);
-          const cls = amt>0 ? 'color: #2ecc71;' : 'color: #e74c3c;';
-          txHistoryUl.innerHTML += `<li style="${cls}padding:6px 0;border-bottom:1px solid #1e2537;">${dt} → ${amt>0?'+':''}${nf(amt)} koin <small style="color:#999">(${t.type||'-'})</small></li>`;
+        txList.innerHTML = '';
+        if(snaps.empty) txList.innerHTML = '<li class="muted">Belum ada histori</li>';
+        snaps.forEach(s=>{
+          const d = s.data();
+          const ts = d.timestamp?.toDate ? d.timestamp.toDate().toLocaleString('id-ID') : '-';
+          const amt = Number(d.amount||0);
+          const who = d.by ? `by ${d.by}` : (d.source||'-');
+          txList.innerHTML += `<li class="tx"><strong>${amt>0?'+':''}${nf(amt)}</strong> — <small class="meta">${d.type||'adjust'} • ${who} • ${ts}</small><br/><small class="meta">${d.reason?('reason: '+d.reason):''}</small></li>`;
         });
       }catch(e){
-        txHistoryUl.innerHTML = `<li class="muted">Gagal memuat: ${e.message || e}</li>`;
+        console.error(e);
+        txList.innerHTML = `<li class="muted">Error memuat: ${e.message||e}</li>`;
       }
     }
 
-    // ========== DEPOSIT / WITHDRAW (bank model) ==========
-    // Deposit: ambil dari admin bank (admin wallet) -> user
-    let dwMode = 'deposit'; // 'deposit'|'withdraw'
-    function openDW(mode){
-      dwMode = mode;
-      dwMsg.textContent = '';
-      dwAmount.value = '';
-      dwPopup.style.display = 'flex';
-      if(mode === 'deposit'){
-        dwTitle.textContent = 'Deposit (ambil dari bank)';
-        dwDesc.textContent = 'Deposit mengambil koin dari bank (admin) dan menambah saldo user.';
-        dwConfirm.className = 'primary';
-        dwConfirm.textContent = 'Deposit';
-      } else {
-        dwTitle.textContent = 'Penarikan (kembali ke bank)';
-        dwDesc.textContent = 'Penarikan mengembalikan koin user ke bank (admin).';
-        dwConfirm.className = 'danger';
-        dwConfirm.textContent = 'Tarik';
-      }
-    }
-    function closeDW(){ dwPopup.style.display = 'none'; dwMsg.textContent=''; dwAmount.value=''; }
-    btnDeposit.onclick = ()=> openDW('deposit');
-    btnWithdraw.onclick = ()=> openDW('withdraw');
-    dwCancel.onclick = closeDW;
+    // admin: adjust target uid balance by delta (positive/negative). logs transaction
+    async function adminAdjust(targetUid, delta, reason = ''){
+      if(!currentUser || currentUser.uid !== ADMIN_UID) throw new Error('Bukan admin.');
+      if(!targetUid) throw new Error('Masukkan UID target.');
+      if(!Number.isFinite(delta) || delta === 0) throw new Error('Jumlah harus bukan 0.');
 
-    dwConfirm.onclick = async ()=>{
-      dwMsg.textContent = '';
-      if(!currentUser){ dwMsg.textContent = 'Belum login.'; return; }
-      const qty = Math.floor(Number(dwAmount.value || 0));
-      if(!qty || qty <= 0){ dwMsg.textContent = 'Jumlah harus > 0'; return; }
+      const targetRef = doc(db, 'balances', targetUid);
+      await runTransaction(db, async tx=>{
+        const tSnap = await tx.get(targetRef);
+        if(!tSnap.exists()){
+          // create doc when missing
+          tx.set(targetRef, { amount: 0, displayName: '-', createdAt: serverTimestamp() });
+        }
+        const cur = (await tx.get(targetRef)).data().amount || 0;
+        const after = Number(cur) + Number(delta);
+        if(after < 0) throw new Error('Operasi akan membuat saldo negatif (dilarang).');
 
-      const uid = currentUser.uid;
-      const userRef = doc(db, ZCOIN_BALANCES, uid);
-      const adminRef = doc(db, ZCOIN_BALANCES, ADMIN_UID);
-      const metaRef = ZCOIN_META_REF;
+        // update balance
+        tx.update(targetRef, { amount: after, updatedAt: serverTimestamp() });
 
-      dwMsg.textContent = 'Memproses...';
-
-      try{
-        await runTransaction(db, async tx=>{
-          const metaSnap = await tx.get(metaRef);
-          const userSnap = await tx.get(userRef);
-          const adminSnap = await tx.get(adminRef);
-
-          if(!metaSnap.exists()) throw new Error('Meta ZCoin tidak ditemukan.');
-          if(!adminSnap.exists()) throw new Error('Admin bank tidak ditemukan.');
-          if(!userSnap.exists()) {
-            // create user wallet if missing
-            tx.set(userRef, { amount: 0, createdAt: serverTimestamp(), displayName: currentUser.displayName || currentUser.email || '-' });
-          }
-
-          const meta = metaSnap.data();
-          const bank = Number(meta.bankSupply || 0);
-          const circ = Number(meta.circulatingSupply || 0);
-          const adminCur = Number(adminSnap.data().amount || 0);
-          const userCur = (await tx.get(userRef)).exists ? Number((await tx.get(userRef)).data().amount || 0) : 0;
-
-          if(dwMode === 'deposit'){
-            // take from admin bank -> user
-            if(qty > adminCur) throw new Error('Bank (admin) saldo tidak cukup untuk deposit.');
-            if(qty > bank) throw new Error('Meta bankSupply tidak cukup.');
-
-            tx.update(adminRef, { amount: adminCur - qty, updatedAt: serverTimestamp() });
-            tx.update(userRef, { amount: userCur + qty, updatedAt: serverTimestamp() });
-            tx.set(doc(collection(userRef,'transactions')), { timestamp: serverTimestamp(), amount: +qty, type: 'deposit', note: 'from-bank' });
-            tx.update(metaRef, { bankSupply: increment(-qty), circulatingSupply: increment(qty) });
-
-          } else {
-            // withdraw: user -> admin bank
-            if(userCur < qty) throw new Error('Saldo user tidak cukup untuk penarikan.');
-            tx.update(userRef, { amount: userCur - qty, updatedAt: serverTimestamp() });
-            tx.update(adminRef, { amount: adminCur + qty, updatedAt: serverTimestamp() });
-            tx.set(doc(collection(userRef,'transactions')), { timestamp: serverTimestamp(), amount: -qty, type: 'withdraw', note: 'to-bank' });
-            tx.update(metaRef, { bankSupply: increment(qty), circulatingSupply: increment(-qty) });
-          }
+        // add transaction record
+        tx.set(doc(collection(targetRef, 'transactions')), {
+          timestamp: serverTimestamp(),
+          amount: delta,
+          type: 'admin-adjust',
+          by: currentUser.uid,
+          reason: reason || ''
         });
+      });
+    }
 
-        dwMsg.textContent = 'Sukses.';
-        await loadZBalance(currentUser.uid);
-        if(currentUser.uid === ADMIN_UID) await loadAdminDashboard();
-        setTimeout(()=> closeDW(), 500);
-      }catch(e){
-        console.error('DW Error:', e);
-        dwMsg.textContent = 'Error: ' + (e?.message || e);
-      }
-    };
-
-    // ========== ADMIN DASHBOARD ==========
-    async function loadAdminDashboard(){
+    // admin: load stats (count users and sum balances) - note: costs read of many docs
+    async function adminLoadStats(){
+      admTotalUsers.textContent = '...';
+      admTotalBalances.textContent = '...';
       try{
-        // minimal query to avoid quota problems
-        const q = query(collection(db, ZCOIN_BALANCES), orderBy('amount','desc'), limit(200));
-        const snaps = await getDocs(q);
-        const arr = [];
-        let totalCoins = 0;
+        const col = collection(db, 'balances');
+        const snaps = await getDocs(col);
         let totalUsers = 0;
+        let totalBalances = 0;
         snaps.forEach(s=>{
           totalUsers++;
-          const d = s.data();
-          const amt = Number(d.amount || 0);
-          totalCoins += amt;
-          arr.push({ uid: s.id, amount: amt, displayName: d.displayName || '-' });
+          totalBalances += Number(s.data().amount || 0);
         });
-        arr.sort((a,b)=>b.amount - a.amount);
-        admTotalUser.textContent = nf(totalUsers);
-        admTotalCoins.textContent = nf(totalCoins);
-        admTop.innerHTML = '';
-        arr.slice(0,20).forEach(u=>{
-          const li = document.createElement('li');
-          li.innerHTML = `${u.uid} — ${nf(u.amount)} koin`;
-          admTop.appendChild(li);
-        });
+        admTotalUsers.textContent = nf(totalUsers);
+        admTotalBalances.textContent = nf(totalBalances);
       }catch(e){
-        console.error('Admin load error:', e);
-        admStatus.textContent = 'Gagal muat admin: ' + (e?.message || e);
+        console.error(e);
+        admTotalUsers.textContent = '-';
+        admTotalBalances.textContent = 'Error';
       }
     }
 
-    // admin mint/burn (for zcoin4)
-    admApply.onclick = async ()=>{
-      if(!currentUser || String(currentUser.uid).trim() !== String(ADMIN_UID).trim()){
-        admStatus.textContent = 'Bukan admin.'; return;
-      }
-      const target = (admTarget.value||'').trim();
-      const qty = Number((admQty.value||'').trim());
-      const reason = (admReason.value||'').trim() || 'admin-action';
-      if(!target || !Number.isFinite(qty) || qty === 0){ admStatus.textContent = 'Isi UID & jumlah yang valid.'; return; }
-      admStatus.textContent = 'Memproses...';
-      const targetRef = doc(db, ZCOIN_BALANCES, target);
-      const metaRef = ZCOIN_META_REF;
-
+    // admin: view target uid balance + last 100 transactions
+    async function adminViewUid(targetUid){
+      admTxList.innerHTML = '<li class="muted">Memuat...</li>';
+      if(!targetUid){ admTxList.innerHTML = '<li class="muted">Masukkan UID dulu.</li>'; return; }
       try{
-        await runTransaction(db, async tx=>{
-          const metaSnap = await tx.get(metaRef);
-          if(!metaSnap.exists()) throw new Error('ZCoin meta tidak ditemukan.');
-          const meta = metaSnap.data();
-          const bank = Number(meta.bankSupply || 0);
+        const tRef = doc(db, 'balances', targetUid);
+        const snap = await getDoc(tRef);
+        if(!snap.exists()){ admTxList.innerHTML = '<li class="muted">UID tidak ditemukan.</li>'; return; }
 
-          const tSnap = await tx.get(targetRef);
-          const curBal = tSnap.exists() ? Number(tSnap.data().amount || 0) : 0;
+        const bal = Number(snap.data().amount || 0);
+        admTxList.innerHTML = `<li class="muted">Saldo sekarang: <strong>${nf(bal)}</strong></li>`;
 
-          if(qty > 0){
-            // Mint to target -> decrease bankSupply & admin wallet (admin is the bank)
-            // If bank doesn't have enough, allow admin to mint into bank only via admTakeSupply.
-            if(qty > bank) throw new Error('Bank (meta.bankSupply) tidak cukup. Gunakan "Tambah Suplai Bank" untuk menambah supply.');
-            // perform transfer bank -> target
-            const adminRef = doc(db, ZCOIN_BALANCES, ADMIN_UID);
-            const adminSnap = await tx.get(adminRef);
-            const adminCur = adminSnap.exists() ? Number(adminSnap.data().amount || 0) : 0;
-            if(qty > adminCur) throw new Error('Admin wallet tidak cukup (bank).');
-
-            tx.update(adminRef, { amount: adminCur - qty, updatedAt: serverTimestamp() });
-            tx.set(doc(collection(targetRef, 'transactions')), {
-              timestamp: serverTimestamp(),
-              amount: qty,
-              type: 'mint-from-bank',
-              by: currentUser.uid,
-              reason
-            });
-            tx.set(targetRef, { amount: curBal + qty, updatedAt: serverTimestamp() }, { merge: true });
-            tx.update(metaRef, { bankSupply: increment(-qty), circulatingSupply: increment(qty) });
-
-          } else {
-            // burn from target -> decrease circulating supply & totalSupply
-            const burn = Math.abs(qty);
-            if(curBal < burn) throw new Error('Saldo user tidak cukup untuk burn.');
-            tx.update(targetRef, { amount: curBal - burn, updatedAt: serverTimestamp() });
-            tx.set(doc(collection(targetRef, 'transactions')), {
-              timestamp: serverTimestamp(),
-              amount: -burn,
-              type: 'burn',
-              by: currentUser.uid,
-              reason
-            });
-            tx.update(metaRef, { circulatingSupply: increment(-burn), totalSupply: increment(-burn) });
-          }
+        const q = query(collection(tRef, 'transactions'), orderBy('timestamp','desc'), limit(100));
+        const txSnaps = await getDocs(q);
+        if(txSnaps.empty){ admTxList.innerHTML += '<li class="muted">Belum ada histori</li>'; return; }
+        txSnaps.forEach(ts=>{
+          const d = ts.data();
+          const time = d.timestamp?.toDate ? d.timestamp.toDate().toLocaleString('id-ID') : '-';
+          admTxList.innerHTML += `<li class="tx">${d.amount>0?'+':''}${nf(d.amount)} — <small class="meta">${d.type||'tx'} • ${d.by||d.source||'-'} • ${time}</small><br/><small class="meta">${d.reason||''}</small></li>`;
         });
-
-        admStatus.textContent = 'Sukses.';
-        await loadAdminDashboard();
       }catch(e){
-        console.error('Admin apply error:', e);
-        admStatus.textContent = 'Gagal: ' + (e?.message || e);
+        console.error(e);
+        admTxList.innerHTML = `<li class="muted">Error: ${e.message||e}</li>`;
       }
-    };
+    }
 
-    admRefresh.onclick = ()=>loadAdminDashboard();
-    admRefresh2.onclick = ()=>loadAdminDashboard();
-
-    // ========== ADM: Tambah Suplai Bank (mint into bank) ==========
-    admTakeSupply.onclick = async ()=>{
-      admTakeStatus.textContent = '';
-      if(!currentUser || String(currentUser.uid).trim() !== String(ADMIN_UID).trim()){
-        admTakeStatus.textContent = 'Bukan admin.'; return;
-      }
-      admTakeStatus.textContent = 'Memproses tambah suplai bank (mint) 10.000.000...';
+    // --- UI events
+    admApply.addEventListener('click', async ()=>{
+      const target = admUid.value.trim();
+      const amount = Number(admAmount.value || 0);
+      const reason = admReason.value.trim();
+      if(!target){ alert('Isi UID target'); return; }
+      if(!amount){ alert('Isi jumlah (bukan 0)'); return; }
+      if(!confirm(`Yakin ${amount>0?'TAMBAH':'KURANGI'} ${nf(amount)} ke UID ${target}?`)) return;
       try{
-        await runTransaction(db, async tx=>{
-          const metaSnap = await tx.get(ZCOIN_META_REF);
-          if(!metaSnap.exists()) throw new Error('Meta ZCoin tidak ditemukan.');
-          const meta = metaSnap.data();
-
-          // increment totalSupply and bankSupply then credit admin wallet
-          tx.update(ZCOIN_META_REF, { totalSupply: increment(TAKE_AMOUNT), bankSupply: increment(TAKE_AMOUNT) });
-
-          const adminRef = doc(db, ZCOIN_BALANCES, ADMIN_UID);
-          const adminSnap = await tx.get(adminRef);
-          const adminCur = adminSnap.exists() ? Number(adminSnap.data().amount || 0) : 0;
-          tx.set(adminRef, { amount: adminCur + TAKE_AMOUNT, updatedAt: serverTimestamp() }, { merge: true });
-          tx.set(doc(collection(adminRef, 'transactions')), {
-            timestamp: serverTimestamp(),
-            amount: +TAKE_AMOUNT,
-            type: 'mint-to-bank',
-            note: 'admin mint to bank'
-          });
-        });
-
-        admTakeStatus.textContent = `Sukses: bank ditambah ${nf(TAKE_AMOUNT)} koin.`;
-        await loadAdminDashboard();
+        await adminAdjust(target, amount, reason);
+        alert('Sukses adjust saldo.');
+        admAmount.value = '';
+        admReason.value = '';
+        await adminLoadStats();
+        // kalau admin melihat UID yang sama, refresh
+        if(admUid.value.trim() === target) await adminViewUid(target);
       }catch(e){
-        console.error('Take supply error:', e);
-        admTakeStatus.textContent = 'Gagal: ' + (e?.message || e) + (e?.code ? ` (code: ${e.code})` : '');
+        alert('Gagal: ' + (e.message || e));
       }
-    };
+    });
 
-    // ========== TRANSFER (user -> user) ==========
-    openTransfer.onclick = ()=>{ transferPopup.style.display='flex'; transferMsg.textContent=''; };
-    closeTransfer.onclick = ()=>{ transferPopup.style.display = 'none'; };
+    admView.addEventListener('click', async ()=>{
+      const target = admUid.value.trim();
+      await adminViewUid(target);
+    });
 
-    transferBtn.onclick = async ()=>{
-      transferMsg.textContent = '';
-      if(!currentUser) { transferMsg.textContent = 'Belum login.'; return; }
-      const fromUid = currentUser.uid;
-      const toUid = (document.getElementById('transferUid').value||'').trim();
-      const amt = Math.floor(Number(document.getElementById('transferAmt').value||0));
-      if(!toUid || !amt || amt <= 0){ transferMsg.textContent = 'Isi UID & jumlah benar.'; return; }
-      if(toUid === fromUid){ transferMsg.textContent = 'Tidak bisa transfer ke diri sendiri.'; return; }
+    admRefresh.addEventListener('click', adminLoadStats);
 
-      const fee = Math.ceil(amt * 0.01) + 10;
-      const fromRef = doc(db, ZCOIN_BALANCES, fromUid);
-      const toRef   = doc(db, ZCOIN_BALANCES, toUid);
-      const feeRef  = doc(db, ZCOIN_BALANCES, FEE_RECEIVER_UID);
-
-      transferMsg.textContent = 'Memproses transfer...';
-      try{
-        await runTransaction(db, async tx=>{
-          const [fsnap, tsnap, fsnapFee] = await Promise.all([tx.get(fromRef), tx.get(toRef), tx.get(feeRef)]);
-          if(!fsnap.exists()) throw new Error('Pengirim belum punya saldo ZCoin (cek onboarding).');
-          if(!tsnap.exists()) throw new Error('Penerima tidak ditemukan.');
-          if(!fsnapFee.exists()) throw new Error('Fee receiver belum tersedia.');
-
-          const fromBal = Number(fsnap.data().amount || 0);
-          const toBal   = Number(tsnap.data().amount || 0);
-          const feeBal  = Number(fsnapFee.data().amount || 0);
-
-          if(fromBal - amt - fee < 10) throw new Error('Saldo tidak cukup (minimal sisa 10 koin).');
-
-          tx.update(fromRef, { amount: fromBal - amt - fee, updatedAt: serverTimestamp() });
-          tx.update(toRef,   { amount: toBal + amt, updatedAt: serverTimestamp() });
-          tx.update(feeRef,  { amount: feeBal + fee, updatedAt: serverTimestamp() });
-
-          tx.set(doc(collection(fromRef, 'transactions')), { timestamp: serverTimestamp(), amount: -(amt+fee), to: toUid, type: 'transfer-out' });
-          tx.set(doc(collection(toRef, 'transactions')),   { timestamp: serverTimestamp(), amount: +amt, from: fromUid, type: 'transfer-in' });
-          tx.set(doc(collection(feeRef, 'transactions')),  { timestamp: serverTimestamp(), amount: +fee, from: fromUid, type: 'fee' });
-        });
-
-        transferMsg.textContent = 'Transfer sukses!';
-        await loadZBalance(currentUser.uid);
-        transferPopup.style.display = 'none';
-        if(currentUser.uid === ADMIN_UID) await loadAdminDashboard();
-      }catch(e){
-        console.error('Transfer error:', e);
-        transferMsg.textContent = 'Error: ' + (e?.message || e);
-      }
-    };
-
-    // ========== AUTH & INIT ==========
+    // --- auth
     onAuthStateChanged(auth, async user=>{
       if(!user) return location.href = '/register-login';
       currentUser = user;
 
-      displayNameEl.textContent = localStorage.getItem('username') || user.displayName || '-';
-      emailEl.textContent       = user.email || '-';
-      uidEl.textContent         = user.uid;
+      displayNameEl.textContent = user.displayName || '-';
+      emailEl.textContent = user.email || '-';
+      uidEl.textContent = user.uid;
 
-      // show admin box quickly if UID matches
-      if(String(user.uid).trim() === String(ADMIN_UID).trim()){
-        adminBox.style.display = 'block';
+      // ensure user doc exists
+      await ensureBalanceDoc(user.uid, user.displayName || user.email || '-');
+
+      // show admin UI if admin
+      if(user.uid === ADMIN_UID) {
+        adminCard.style.display = 'block';
+        await adminLoadStats();
       } else {
-        adminBox.style.display = 'none';
+        adminCard.style.display = 'none';
       }
 
-      // Initialize/overwrite meta as zcoin4 and subscribe
-      try{
-        await ensureZcoin4Meta();
-        subscribeMetaRealtime();
-        // ensure both admin and user wallets exist and load their balances
-        await ensureUserZBalance(user.uid, user.displayName || user.email || '-'); // will deduct initial airdrop from admin if set
-        await loadZBalance(user.uid);
-        if(String(user.uid).trim() === String(ADMIN_UID).trim()){
-          await loadAdminDashboard();
-        }
-      }catch(e){
-        console.error('Init error:', e);
-        admStatus.textContent = 'Init error: ' + (e?.message || e);
-      }
+      // load balance & history for current user
+      await loadMyBalanceAndHistory(user.uid);
     });
 
-    document.getElementById('logoutBtn').onclick = ()=> signOut(auth).then(()=>{
-      localStorage.removeItem('username');
-      location.href='/register-login';
-    });
+    // optional logout - keep behavior consistent with your other pages
+    // add a global click handler to logout if needed (not shown in UI)
+    window.doLogout = () => signOut(auth).then(()=>{ location.href = '/register-login'; });
+
   </script>
 </body>
 </html>
