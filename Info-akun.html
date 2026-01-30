@@ -311,7 +311,7 @@
         if(snaps.empty) txHistoryUl.innerHTML = '<li class="muted">Belum ada histori</li>';
         snaps.forEach(d=>{
           const t = d.data();
-          const dt = t.timestamp?.toDate?.toLocaleString('id-ID') || '-';
+          const dt = t.timestamp?.toDate?.().toLocaleString('id-ID') || '-';
           const amt = Number(t.amount || 0);
           const cls = amt>0 ? 'color: #2ecc71;' : 'color: #e74c3c;';
           txHistoryUl.innerHTML += `<li style="${cls}padding:6px 0;border-bottom:1px solid #1e2537;">${dt} → ${amt>0?'+':''}${nf(amt)} koin <small style="color:#999">(${t.type||'-'})</small></li>`;
@@ -519,6 +519,7 @@
             note: 'admin-drain-locked'
           });
 
+          // mark drained so manual or auto won't run again
           tx.update(ZCOIN_META_REF, { circulatingSupply: increment(locked), lockDrained: true });
         });
 
@@ -622,12 +623,12 @@
       }
     };
 
-    // ========== AUTH & INIT ==========
+    // ========== AUTH & INIT (PERBAIKAN) ==========
     onAuthStateChanged(auth, async user=>{
       if(!user) return location.href = '/register-login';
       currentUser = user;
 
-      // debug info to help if admin panel not appearing
+      // DEBUG: tunjukin uid yg ter-detect supaya gampang troubleshoot
       console.log('Detected user.uid:', String(user.uid));
       console.log('ADMIN_UID constant:', String(ADMIN_UID));
 
@@ -635,18 +636,28 @@
       emailEl.textContent       = user.email || '-';
       uidEl.textContent         = user.uid;
 
-      await ensureZcoinMeta();
-      subscribeMetaRealtime();
-
-      await ensureUserZBalance(user.uid, user.displayName || user.email || '-');
-      await loadZBalance(user.uid);
-
-      // trim comparison to avoid hidden whitespace mismatch
+      // tampilkan adminBox segera jika uid cocok (trim untuk menghindari whitespace hidden)
       if(String(user.uid).trim() === String(ADMIN_UID).trim()){
         adminBox.style.display = 'block';
-        await loadAdminDashboard();
       } else {
         adminBox.style.display = 'none';
+      }
+
+      // lakukan inisialisasi namun jangan biarkan error menghentikan pengecekan admin (pakai try/catch)
+      try{
+        await ensureZcoinMeta();
+        subscribeMetaRealtime();
+        await ensureUserZBalance(user.uid, user.displayName || user.email || '-');
+        await loadZBalance(user.uid);
+
+        // jika admin, muat dashboard admin juga (tangani error di dalam try)
+        if(String(user.uid).trim() === String(ADMIN_UID).trim()){
+          await loadAdminDashboard();
+        }
+      }catch(initErr){
+        console.error('Init error (will not block admin display):', initErr);
+        // Tampilkan peringatan kecil di UI admin jika ada
+        admStatus.textContent = 'Init warning: ' + (initErr?.message || initErr);
       }
     });
 
